@@ -1,0 +1,74 @@
+From af5a277d310a3c212c8a8120d65988ee0d0ad556 Mon Sep 17 00:00:00 2001
+From: Richard Russon <rich@flatcap.org>
+Date: Fri, 27 May 2016 03:08:08 +0100
+Subject: [PATCH 09/13] patch-1.5.24.vk.pgp_verbose_mime
+
+---
+ PATCHES   |  1 +
+ globals.h |  2 ++
+ init.h    | 12 ++++++++++++
+ pgp.c     |  3 ++-
+ 4 files changed, 17 insertions(+), 1 deletion(-)
+
+diff --git a/PATCHES b/PATCHES
+index dda8123..61325ce 100644
+--- a/PATCHES
++++ b/PATCHES
+@@ -16,3 +16,4 @@ patch-limit-current-thread-neo-UNKNOWN
+ patch-keywords-neo-UNKNOWN
+ patch-nntp-neo-UNKNOWN
+ patch-1.5.9.aw.listreply.1
++patch-1.5.3.vk.pgp_verbose_mime
+diff --git a/globals.h b/globals.h
+index b44a08a..950a074 100644
+--- a/globals.h
++++ b/globals.h
+@@ -272,6 +272,8 @@ WHERE REGEXP PgpDecryptionOkay;
+ WHERE char *PgpSignAs;
+ WHERE short PgpTimeout;
+ WHERE char *PgpEntryFormat;
++WHERE char *PgpMimeSignatureFilename;
++WHERE char *PgpMimeSignatureDescription;
+ WHERE char *PgpClearSignCommand;
+ WHERE char *PgpDecodeCommand;
+ WHERE char *PgpVerifyCommand;
+diff --git a/init.h b/init.h
+index 1b16e4a..a2822de 100644
+--- a/init.h
++++ b/init.h
+@@ -3184,6 +3184,18 @@ struct option_t MuttVars[] = {
+   ** a line quoted text if it also matches $$smileys. This mostly
+   ** happens at the beginning of a line.
+   */
++  { "pgp_mime_signature_filename", DT_STR, R_NONE, UL &PgpMimeSignatureFilename, UL "signature.asc"},
++  /*
++  ** .pp
++  ** This option sets the filename used for signature parts in PGP/MIME
++  ** signed messages.
++  */
++  { "pgp_mime_signature_description", DT_STR, R_NONE, UL &PgpMimeSignatureDescription, UL "Digital signature"},
++  /*
++  ** .pp
++  ** This option sets the Content-Description used for signature parts in
++  ** PGP/MIME signed messages.
++  */
+ 
+ 
+ 
+diff --git a/pgp.c b/pgp.c
+index fb7be4c..0caff87 100644
+--- a/pgp.c
++++ b/pgp.c
+@@ -1261,7 +1261,8 @@ BODY *pgp_sign_message (BODY *a)
+   t->disposition = DISPNONE;
+   t->encoding = ENC7BIT;
+   t->unlink = 1; /* ok to remove this file after sending. */
+-  mutt_set_parameter ("name", "signature.asc", &t->parameter);
++  mutt_set_parameter ("name", PgpMimeSignatureFilename, &t->parameter);
++  t->description = safe_strdup (PgpMimeSignatureDescription);
+ 
+   return (a);
+ }
+-- 
+2.8.2
+

@@ -1,0 +1,25 @@
+From c99e20ccba35d29772f65edf5600d0e45ac309f3 Mon Sep 17 00:00:00 2001
+From: Richard Russon <rich@flatcap.org>
+Date: Fri, 6 May 2016 00:23:59 +0100
+Subject: [PATCH 07/22] debian-specific/correct_docdir_in_man_page
+
+---
+ doc/mutt.man | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/doc/mutt.man b/doc/mutt.man
+index b5b7337..f1f1399 100644
+--- a/doc/mutt.man
++++ b/doc/mutt.man
+@@ -195,7 +195,7 @@ User's personal mapping between MIME types and file extensions.
+ System mapping between MIME types and file extensions.
+ .IP "@bindir@/mutt_dotlock"
+ The privileged dotlocking program.
+-.IP "@docdir@/manual.txt"
++.IP "/usr/share/doc/mutt/manual.txt.gz"
+ The Mutt manual.
+ .SH BUGS
+ .PP
+-- 
+2.8.2
+

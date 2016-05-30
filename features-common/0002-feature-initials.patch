@@ -1,0 +1,290 @@
+From a78243d173363756c6bea4edc48b34b4a9552349 Mon Sep 17 00:00:00 2001
+From: Richard Russon <rich@flatcap.org>
+Date: Tue, 24 May 2016 17:02:13 +0100
+Subject: [PATCH 02/18] feature: initials
+
+---
+ PATCHES             |   1 +
+ README.initials     |  48 ++++++++++++++++++++
+ doc/manual.xml.head | 126 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ doc/muttrc.initials |  27 +++++++++++
+ hdrline.c           |  23 ++++++++++
+ 5 files changed, 225 insertions(+)
+ create mode 100644 README.initials
+ create mode 100644 doc/muttrc.initials
+
+diff --git a/PATCHES b/PATCHES
+index 558c519..4888981 100644
+--- a/PATCHES
++++ b/PATCHES
+@@ -1 +1,2 @@
+ patch-ifdef-neo-UNKNOWN
++patch-initials-neo-UNKNOWN
+diff --git a/README.initials b/README.initials
+new file mode 100644
+index 0000000..417545f
+--- /dev/null
++++ b/README.initials
+@@ -0,0 +1,48 @@
++Initials Expando Patch
++======================
++
++    Expando for author's initials
++
++Patch
++-----
++
++    To check if Mutt supports "Initials", look for "patch-initials" in the mutt
++    version.
++
++    Dependencies
++    * mutt-1.6.1
++
++Introduction
++------------
++
++    The "initials" patch adds an expando (%I) for an author's initials.
++
++    The index panel displays a list of emails. Its layout is controlled by the
++    $index_format variable. Using this expando saves space in the index panel.
++    This can be useful if you are regularly working with a small set of people.
++
++Variables
++---------
++
++    This patch has no config of its own. It adds an expando which can be used
++    in the $index_format variable.
++
++See Also
++--------
++
++    * NeoMutt project
++    * $index_format
++    * index-color patch
++    * folder-hook
++
++Known Bugs
++----------
++
++    None
++
++Credits
++-------
++
++    * Vsevolod Volkov <vvv@mutt.org.ua>
++    * Richard Russon <rich@flatcap.org>
++
+diff --git a/doc/manual.xml.head b/doc/manual.xml.head
+index 4352ef9..7df30bb 100644
+--- a/doc/manual.xml.head
++++ b/doc/manual.xml.head
+@@ -8252,6 +8252,132 @@ <sect1 id="ifdef">
+ 	</sect2>
+ </sect1>
+ 
++<sect1 id="initials">
++	<title>Initials Expando Patch</title>
++	<subtitle>Expando for author's initials</subtitle>
++
++	<sect2 id="initials-patch">
++		<title>Patch</title>
++
++		<para>
++			To check if Mutt supports <quote>Initials</quote>, look for
++			<quote>patch-initials</quote> in the mutt version.
++			See: <xref linkend="mutt-patches"/>.
++		</para>
++
++		<itemizedlist>
++			<title>Dependencies:</title>
++			<listitem><para>mutt-1.6.1</para></listitem>
++		</itemizedlist>
++
++		<para>This patch is part of the <ulink url="http://www.neomutt.org/">NeoMutt Project</ulink>.</para>
++	</sect2>
++
++	<sect2 id="initials-intro">
++		<title>Introduction</title>
++
++        <para>
++		The <quote>initials</quote> patch adds an expando (%I) for an author's
++		initials.
++        </para>
++
++		<para>
++		The index panel displays a list of emails.  Its layout is controlled by
++		the <link linkend="index-format">$index_format</link> variable.  Using
++		this expando saves space in the index panel.  This can be useful if you
++		are regularly working with a small set of people.
++		</para>
++	</sect2>
++
++	<sect2 id="initials-variables">
++		<title>Variables</title>
++
++        <para>
++        This patch has no config of its own.  It adds an expando which can be
++		used in the <link linkend="index-format">$index_format</link> variable.
++        </para>
++	</sect2>
++
++<!--
++	<sect2 id="initials-functions">
++		<title>Functions</title>
++		<para>None</para>
++	</sect2>
++
++	<sect2 id="initials-commands">
++		<title>Commands</title>
++		<para>None</para>
++	</sect2>
++
++	<sect2 id="initials-colors">
++		<title>Colors</title>
++		<para>None</para>
++	</sect2>
++
++	<sect2 id="initials-sort">
++		<title>Sort</title>
++		<para>None</para>
++	</sect2>
++-->
++
++	<sect2 id="initials-muttrc">
++		<title>Muttrc</title>
++<screen>
++<emphasis role="comment"># Example Mutt config file for the 'initials' patch.
++ 
++# The 'initials' patch has no config of its own.
++# It adds an expando for an author's initials,
++# which can be used in the 'index_format' variable.
++ 
++# The default 'index_format' is:</emphasis>
++set index_format='%4C %Z %{%b %d} %-15.15L (%?l?%4l&amp;%4c?) %s'
++ 
++<emphasis role="comment"># Where %L represents the author/recipient
++ 
++# This might look like:
++#       1   + Nov 17 David Bowie   Changesbowie    ( 689)
++#       2   ! Nov 17 Stevie Nicks  Rumours         ( 555)
++#       3   + Nov 16 Jimi Hendrix  Voodoo Child    ( 263)
++#       4   + Nov 16 Debbie Harry  Parallel Lines  ( 540)
++ 
++# Using the %I expando:</emphasis>
++set index_format='%4C %Z %{%b %d} %I (%?l?%4l&amp;%4c?) %s'
++ 
++<emphasis role="comment"># This might look like:
++#       1   + Nov 17 DB Changesbowie    ( 689)
++#       2   ! Nov 17 SN Rumours         ( 555)
++#       3   + Nov 16 JH Voodoo Child    ( 263)
++#       4   + Nov 16 DH Parallel Lines  ( 540)
++ 
++# vim: syntax=muttrc</emphasis>
++</screen>
++	</sect2>
++
++	<sect2 id="initials-see-also">
++		<title>See Also</title>
++
++		<itemizedlist>
++			<listitem><para><ulink url="http://www.neomutt.org/">NeoMutt Project</ulink></para></listitem>
++			<listitem><para><link linkend="index-format">$index_format</link></para></listitem>
++			<listitem><para><link linkend="index-color">index-color patch</link></para></listitem>
++			<listitem><para><link linkend="folder-hook">folder-hook</link></para></listitem>
++		</itemizedlist>
++	</sect2>
++
++	<sect2 id="initials-known-bugs">
++		<title>Known Bugs</title>
++		<para>None</para>
++	</sect2>
++
++	<sect2 id="initials-credits">
++		<title>Credits</title>
++		<itemizedlist>
++		<listitem><para>Vsevolod Volkov <email>vvv@mutt.org.ua</email></para></listitem>
++		<listitem><para>Richard Russon <email>rich@flatcap.org</email></para></listitem>
++		</itemizedlist>
++	</sect2>
++</sect1>
++
+ </chapter>
+ 
+ <chapter id="security">
+diff --git a/doc/muttrc.initials b/doc/muttrc.initials
+new file mode 100644
+index 0000000..644c1b7
+--- /dev/null
++++ b/doc/muttrc.initials
+@@ -0,0 +1,27 @@
++# Example Mutt config file for the 'initials' patch.
++
++# The 'initials' patch has no config of its own.
++# It adds an expando for an author's initials,
++# which can be used in the 'index_format' variable.
++
++# The default 'index_format' is:
++set index_format='%4C %Z %{%b %d} %-15.15L (%?l?%4l&%4c?) %s'
++
++# Where %L represents the author/recipient
++
++# This might look like:
++#       1   + Nov 17 David Bowie   Changesbowie    ( 689)
++#       2   ! Nov 17 Stevie Nicks  Rumours         ( 555)
++#       3   + Nov 16 Jimi Hendrix  Voodoo Child    ( 263)
++#       4   + Nov 16 Debbie Harry  Parallel Lines  ( 540)
++
++# Using the %I expando:
++set index_format='%4C %Z %{%b %d} %I (%?l?%4l&%4c?) %s'
++
++# This might look like:
++#       1   + Nov 17 DB Changesbowie    ( 689)
++#       2   ! Nov 17 SN Rumours         ( 555)
++#       3   + Nov 16 JH Voodoo Child    ( 263)
++#       4   + Nov 16 DH Parallel Lines  ( 540)
++
++# vim: syntax=muttrc
+diff --git a/hdrline.c b/hdrline.c
+index b844411..ddde2e4 100644
+--- a/hdrline.c
++++ b/hdrline.c
+@@ -212,6 +212,7 @@ int mutt_user_is_recipient (HEADER *h)
+  * %f = entire from line
+  * %F = like %n, unless from self
+  * %i = message-id
++ * %I = initials of author
+  * %l = number of lines in the message
+  * %L = like %F, except `lists' are displayed first
+  * %m = number of messages in the mailbox
+@@ -463,6 +464,28 @@ hdr_format_str (char *dest,
+       mutt_format_s (dest, destlen, prefix, hdr->env->message_id ? hdr->env->message_id : "<no.id>");
+       break;
+ 
++    case 'I':
++      {
++	int iflag = FALSE;
++	int j = 0;
++
++	for (i = 0; hdr->env->from && hdr->env->from->personal &&
++		    hdr->env->from->personal[i] && (j < (SHORT_STRING - 1)); i++) {
++	  if (isalpha ((int) hdr->env->from->personal[i])) {
++	    if (!iflag) {
++	      buf2[j++] = hdr->env->from->personal[i];
++	      iflag = TRUE;
++	    }
++	  } else {
++	    iflag = FALSE;
++	  }
++	}
++
++	buf2[j] = '\0';
++      }
++      mutt_format_s (dest, destlen, prefix, buf2);
++      break;
++
+     case 'l':
+       if (!optional)
+       {
+-- 
+2.8.2
+

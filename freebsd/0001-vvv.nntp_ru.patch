@@ -1,0 +1,559 @@
+From ca4e19a585562652fc4b8c3cf72dfa3abd2b9c04 Mon Sep 17 00:00:00 2001
+From: Richard Russon <rich@flatcap.org>
+Date: Fri, 27 May 2016 15:15:43 +0100
+Subject: [PATCH 01/21] vvv.nntp_ru
+
+---
+ po/ru.po | 311 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 306 insertions(+), 5 deletions(-)
+
+diff --git a/po/ru.po b/po/ru.po
+index 5a39585..e0d555a 100644
+--- a/po/ru.po
++++ b/po/ru.po
+@@ -206,11 +206,37 @@ msgstr "Перейти в: "
+ msgid "Mask"
+ msgstr "Маска"
+ 
++#: browser.c:59
++msgid "List"
++msgstr "Список"
++
++#: browser.c:60
++msgid "Subscribe"
++msgstr "Подписаться"
++
++#: browser.c:61
++msgid "Unsubscribe"
++msgstr "Отписаться"
++
++#: browser.c:62 curs_main.c:505
++msgid "Catchup"
++msgstr "Прочитано"
++
+ #: browser.c:400 browser.c:1055
+ #, c-format
+ msgid "%s is not a directory."
+ msgstr "%s не является каталогом."
+ 
++#: browser.c:743
++#, c-format
++msgid "Subscribed newsgroups"
++msgstr "Подписанные группы новостей"
++
++#: browser.c:745
++#, c-format
++msgid "Newsgroups on server [%s]"
++msgstr "Группы новостей на сервере [%s]"
++
+ #: browser.c:539
+ #, c-format
+ msgid "Mailboxes [%d]"
+@@ -300,6 +326,20 @@ msgstr "Не удалось просмотреть каталог"
+ msgid "Error trying to view file"
+ msgstr "Ошибка при попытке просмотра файла"
+ 
++#: browser.c:1597
++#, c-format
++msgid "Subscribe pattern: "
++msgstr "Подписаться по шаблону: "
++
++#: browser.c:1599
++#, c-format
++msgid "Unsubscribe pattern: "
++msgstr "Отписаться по шаблону: "
++
++#: browser.c:1620
++msgid "No newsgroups match the mask"
++msgstr "Нет групп новостей, удовлетворяющих маске"
++
+ #: buffy.c:504
+ msgid "New mail in "
+ msgstr "Новая почта в "
+@@ -680,6 +720,10 @@ msgstr "Не удалось вложить %s!"
+ msgid "Open mailbox to attach message from"
+ msgstr "Вложить сообщение из почтового ящика"
+ 
++#: compose.c:887
++msgid "Open newsgroup to attach message from"
++msgstr "Вложить сообщение из группы новостей"
++
+ #: compose.c:762
+ #, c-format
+ msgid "Unable to open mailbox %s"
+@@ -1615,6 +1659,14 @@ msgstr "Ответить"
+ msgid "Group"
+ msgstr "Всем"
+ 
++#: curs_main.c:503 pager.c:1552
++msgid "Post"
++msgstr "Отправить"
++
++#: curs_main.c:504 pager.c:1553
++msgid "Followup"
++msgstr "Ответить"
++
+ #: curs_main.c:571
+ msgid "Mailbox was externally modified.  Flags may be wrong."
+ msgstr ""
+@@ -1636,6 +1688,36 @@ msgstr "Нет отмеченных сообщений."
+ msgid "Nothing to do."
+ msgstr "Нет помеченных сообщений."
+ 
++#: curs_main.c:854
++msgid "Enter Message-Id: "
++msgstr "Введите Message-Id: "
++
++#: curs_main.c:863
++msgid "Article has no parent reference."
++msgstr "Нет ссылок на исходное сообщение."
++
++#: curs_main.c:886
++msgid "Message is not visible in limited view."
++msgstr "Сообщение не видимо при просмотре с ограничением."
++
++#: curs_main.c:892
++#, c-format
++msgid "Fetching %s from server..."
++msgstr "Получение %s с сервера..."
++
++#: curs_main.c:902
++#, c-format
++msgid "Article %s not found on the server."
++msgstr "Сообщение %s не найдено на сервере."
++
++#: curs_main.c:921
++msgid "No Message-Id. Unable to perform operation."
++msgstr "Нет Message-Id. Невозможно выполнить операцию."
++
++#: curs_main.c:988
++msgid "No deleted messages found in the thread."
++msgstr "Нет удалённых сообщений в дискуссии."
++
+ #: curs_main.c:817
+ msgid "Jump to message: "
+ msgstr "Перейти к сообщению: "
+@@ -1716,6 +1798,14 @@ msgstr "Открыть почтовый ящик"
+ msgid "No mailboxes have new mail"
+ msgstr "Нет почтовых ящиков с новой почтой"
+ 
++#: curs_main.c:1402
++msgid "Open newsgroup in read-only mode"
++msgstr "Открыть группу новостей только для чтения"
++
++#: curs_main.c:1404
++msgid "Open newsgroup"
++msgstr "Открыть группу новостей"
++
+ #: curs_main.c:1204 mx.c:472 mx.c:621
+ #, c-format
+ msgid "%s is not a mailbox."
+@@ -1725,6 +1815,10 @@ msgstr "%s не является почтовым ящиком."
+ msgid "Exit Mutt without saving?"
+ msgstr "Выйти из Mutt без сохранения изменений?"
+ 
++#: curs_main.c:1557
++msgid "Cannot break thread"
++msgstr "Не удалось резделить дикуссию"
++
+ #: curs_main.c:1321 curs_main.c:1357 curs_main.c:1815 curs_main.c:1847
+ #: flags.c:282 thread.c:1028 thread.c:1083 thread.c:1138
+ msgid "Threading is not enabled."
+@@ -1833,6 +1927,16 @@ msgstr "Не удалось отредактировать сообщение"
+ msgid "Cannot mark message(s) as read"
+ msgstr "Не удалось пометить сообщения как прочитанные"
+ 
++#: curs_main.c:2459 pager.c:2606 recvattach.c:1243
++msgid "Reply by mail as poster prefers?"
++msgstr "Ответить по почте, как предпочитает отправитель?"
++
++#: curs_main.c:2464 pager.c:2575 pager.c:2586 pager.c:2610
++msgid "Posting to this group not allowed, may be moderated. Continue?"
++msgstr ""
++"Отправка в эту группу новостей не разрешена или требует модерации. "
++"Продолжить?"
++
+ #. L10N: CHECK_ACL
+ #: curs_main.c:2240 pager.c:2688
+ msgid "Cannot undelete message"
+@@ -2796,6 +2900,8 @@ msgid ""
+ "  -e <command>\tspecify a command to be executed after initialization\n"
+ "  -f <file>\tspecify which mailbox to read\n"
+ "  -F <file>\tspecify an alternate muttrc file\n"
++"  -g <server>\tspecify a news server (if compiled with NNTP)\n"
++"  -G\t\tselect a newsgroup (if compiled with NNTP)\n"
+ "  -H <file>\tspecify a draft file to read header and body from\n"
+ "  -i <file>\tspecify a file which Mutt should include in the body\n"
+ "  -m <type>\tspecify a default mailbox type\n"
+@@ -2807,6 +2913,8 @@ msgstr ""
+ "инициализации\n"
+ "  -f <file>\tуказать почтовый ящик для работы\n"
+ "  -F <file>\tуказать альтернативный muttrc\n"
++"  -g <server>\tуказать сервер новостей (если собрана поддержка NNTP)\n"
++"  -G\t\tуказать группу новостей (если собрана поддержка NNTP)\n"
+ "  -H <file>\tуказать файл, содержащий шаблон заголовка и тела письма\n"
+ "  -i <file>\tуказать файл для вставки в тело письма\n"
+ "  -m <тип>\tуказать тип почтового ящика по умолчанию\n"
+@@ -3350,6 +3458,10 @@ msgstr "Запись сообщений не поддерживается POP-с
+ msgid "Append messages to %s?"
+ msgstr "Добавить сообщения к %s?"
+ 
++#: muttlib.c:1534
++msgid "Can't save message to news server."
++msgstr "Невозможно сохранить сообщение на сервере новостей."
++
+ #: muttlib.c:1528
+ #, c-format
+ msgid "%s is not a mailbox!"
+@@ -3393,6 +3505,10 @@ msgstr "Не удалось заблокировать %s\n"
+ msgid "Could not synchronize mailbox %s!"
+ msgstr "Не удалось синхронизировать почтовый ящик %s!"
+ 
++#: mx.c:854
++msgid "Mark all articles read?"
++msgstr "Пометить все сообщения как прочитанные?"
++
+ #: mx.c:835
+ #, c-format
+ msgid "Move read messages to %s?"
+@@ -3453,6 +3569,99 @@ msgstr "Ошибка записи сообщения"
+ msgid "Integer overflow -- can't allocate memory."
+ msgstr "Переполнение -- не удалось выделить память."
+ 
++#: newsrc.c:548
++msgid "Loading list of groups from cache..."
++msgstr "Загрузка списка групп новостей из кэша..."
++
++#: newsrc.c:876
++msgid "No news server defined!"
++msgstr "Сервер новостей не определён!"
++
++#: newsrc.c:892
++#, c-format
++msgid "%s is an invalid news server specification!"
++msgstr "Неверно указан сервер новостей: %s"
++
++#: nntp.c:166
++msgid "Server doesn't support reader mode."
++msgstr "Сервер новостей не поддерживает режим чтения."
++
++#: nntp.c:582
++#, c-format
++msgid "%s authentication failed."
++msgstr "Ошибка %s-аутентификации."
++
++#: nntp.c:653 nntp.c:738
++msgid "Could not switch to reader mode."
++msgstr "Не удалось переключиться в режим чтения."
++
++#: nntp.c:667
++#, c-format
++msgid "Connected to %s. %s"
++msgstr "Соединение с %s установлено. %s"
++
++#: nntp.c:668
++msgid "Posting is ok."
++msgstr "Отправка разрешена."
++
++#: nntp.c:668
++msgid "Posting is NOT ok."
++msgstr "Отправка ЗАПРЕЩЕНА."
++
++#: nntp.c:787
++#, c-format
++msgid "Connection to %s lost. Reconnect?"
++msgstr "Соединение с %s закрыто. Установить соединение повторно?"
++
++#: nntp.c:1218
++msgid "Fetching list of articles..."
++msgstr "Получение списка сообщений..."
++
++#: nntp.c:1442
++#, c-format
++msgid "%s is an invalid newsgroup specification!"
++msgstr "Неверно указана группа новостей: %s"
++
++#: nntp.c:1460
++#, c-format
++msgid "Newsgroup %s not found on the server."
++msgstr "Группа новостей %s не найдена на сервере."
++
++#: nntp.c:1482
++#, c-format
++msgid "Newsgroup %s has been removed from the server."
++msgstr "Группа новостей %s была удалена с сервера."
++
++#: nntp.c:1639
++#, c-format
++msgid "Article %d not found on the server."
++msgstr "Сообщение %d не найдено на сервере."
++
++#: nntp.c:1719 nntp.c:1748
++#, c-format
++msgid "Can't post article: %s"
++msgstr "Не удалось отправить сообщение: %s"
++
++#: nntp.c:1872
++#, c-format
++msgid "Loading list of groups from server %s..."
++msgstr "Загрузка списка групп новостей с сервера %s..."
++
++#: nntp.c:1894 nntp.c:2259
++msgid "Loading descriptions..."
++msgstr "Загрузка описаний..."
++
++#: nntp.c:2186
++msgid "Checking for new newsgroups..."
++msgstr "Проверка наличия новых групп новостей..."
++
++#: nntp.c:2411
++msgid ""
++"Unable to find child articles because server does not support XPAT command."
++msgstr ""
++"Невозможно найти ответы на это сообщение. Сервер не поддерживает команду "
++"XPAT."
++
+ #: pager.c:1533
+ msgid "PrevPg"
+ msgstr "Назад"
+@@ -3966,6 +4175,10 @@ msgstr "Дайджест не содержит ни одной части!"
+ msgid "Can't delete attachment from POP server."
+ msgstr "Удаление вложений не поддерживается POP-сервером."
+ 
++#: recvattach.c:1127
++msgid "Can't delete attachment from news server."
++msgstr "Невозможно удалить вложение с сервера новостей."
++
+ #: recvattach.c:1126
+ msgid "Deletion of attachments from encrypted messages is unsupported."
+ msgstr "Удаление вложений из зашифрованных сообщений не поддерживается."
+@@ -4179,6 +4392,10 @@ msgstr "Отказаться от неизмененного сообщения?
+ msgid "Aborted unmodified message."
+ msgstr "Сообщение не изменилось, отказ."
+ 
++#: send.c:1727
++msgid "Article not posted."
++msgstr "Сообщение не отправлено."
++
+ #: send.c:1657
+ msgid "Message postponed."
+ msgstr "Сообщение отложено."
+@@ -4199,6 +4416,10 @@ msgstr "Нет темы сообщения, прервать отправку?"
+ msgid "No subject specified."
+ msgstr "Тема сообщения не указана."
+ 
++#: send.c:1830
++msgid "No newsgroup specified."
++msgstr "Не указана группа новостей."
++
+ #: send.c:1755 smtp.c:188
+ msgid "Sending message..."
+ msgstr "Сообщение отправляется..."
+@@ -4219,6 +4440,10 @@ msgstr "Сообщение отправлено."
+ msgid "Sending in background."
+ msgstr "Сообщение отправляется в фоновом режиме."
+ 
++#: send.c:2042
++msgid "Article posted."
++msgstr "Сообщение отправлено."
++
+ #: sendlib.c:425
+ msgid "No boundary parameter found! [report this error]"
+ msgstr "Параметр boundary не найден! (Сообщите об этой ошибке)"
+@@ -4559,17 +4784,17 @@ msgid "display the currently selected file's name"
+ msgstr "показать имя текущего файла"
+ 
+ #: ../keymap_alldefs.h:15
+-msgid "subscribe to current mailbox (IMAP only)"
+-msgstr "подключиться к текущему почтовому ящику (только IMAP)"
++msgid "subscribe to current mbox (IMAP/NNTP only)"
++msgstr "подписаться на текущий почтовый ящик (только IMAP/NNTP)"
+ 
+ #: ../keymap_alldefs.h:16
+-msgid "unsubscribe from current mailbox (IMAP only)"
+-msgstr "отключиться от текущего почтового ящика (только IMAP)"
++msgid "unsubscribe from current mbox (IMAP/NNTP only)"
++msgstr "отписаться от текущего почтового ящика (только IMAP/NNTP)"
+ 
+ #: ../keymap_alldefs.h:17
+ msgid "toggle view all/subscribed mailboxes (IMAP only)"
+ msgstr ""
+-"переключиться между режимами просмотра всех/подключенных почтовых ящиков "
++"переключиться между режимами просмотра всех/подписанных почтовых ящиков "
+ "(только IMAP)"
+ 
+ #: ../keymap_alldefs.h:18
+@@ -4577,6 +4802,10 @@ msgid "list mailboxes with new mail"
+ msgstr "список почтовых ящиков с новой почтой"
+ 
+ #: ../keymap_alldefs.h:19
++msgid "mark all articles in newsgroup as read"
++msgstr "пометить все сообщения в группе новостей как прочитанные"
++
++#: ../keymap_alldefs.h:19
+ msgid "change directories"
+ msgstr "изменить каталог"
+ 
+@@ -4592,6 +4821,10 @@ msgstr "вложить файлы в это сообщение"
+ msgid "attach message(s) to this message"
+ msgstr "вложить сообщения в это сообщение"
+ 
++#: ../keymap_alldefs.h:24
++msgid "attach news article(s) to this message"
++msgstr "вложить сообщения из группы новостей в это сообщение"
++
+ #: ../keymap_alldefs.h:23
+ msgid "edit the BCC list"
+ msgstr "изменить список 'BCC:'"
+@@ -4632,10 +4865,22 @@ msgstr "редактировать сообщение"
+ msgid "edit attachment using mailcap entry"
+ msgstr "редактировать вложение в соответствии с записью в mailcap"
+ 
++#: ../keymap_alldefs.h:35
++msgid "edit the newsgroups list"
++msgstr "изменить список групп новостей"
++
+ #: ../keymap_alldefs.h:33
+ msgid "edit the Reply-To field"
+ msgstr "изменить поле 'Reply-To:'"
+ 
++#: ../keymap_alldefs.h:37
++msgid "edit the Followup-To field"
++msgstr "изменить поле 'Followup-To'"
++
++#: ../keymap_alldefs.h:38
++msgid "edit the X-Comment-To field"
++msgstr "изменить поле 'X-Comment-To'"
++
+ #: ../keymap_alldefs.h:34
+ msgid "edit the subject of this message"
+ msgstr "редактировать тему сообщения"
+@@ -4869,6 +5114,14 @@ msgstr "первая запись"
+ msgid "toggle a message's 'important' flag"
+ msgstr "установить/сбросить флаг 'важное' для сообщения"
+ 
++#: ../keymap_alldefs.h:97
++msgid "followup to newsgroup"
++msgstr "ответить в группу новостей"
++
++#: ../keymap_alldefs.h:98
++msgid "forward to newsgroup"
++msgstr "переслать в группу новостей"
++
+ #: ../keymap_alldefs.h:92
+ msgid "forward a message with comments"
+ msgstr "переслать сообщение с комментариями"
+@@ -4877,6 +5130,18 @@ msgstr "переслать сообщение с комментариями"
+ msgid "select the current entry"
+ msgstr "выбрать текущую запись"
+ 
++#: ../keymap_alldefs.h:101
++msgid "get all children of the current message"
++msgstr "получить все ответы на данное сообщение"
++
++#: ../keymap_alldefs.h:102
++msgid "get message with Message-Id"
++msgstr "получить сообщение с Message-Id"
++
++#: ../keymap_alldefs.h:103
++msgid "get parent of the current message"
++msgstr "получить исходное сообщение"
++
+ #: ../keymap_alldefs.h:94
+ msgid "reply to all recipients"
+ msgstr "ответить всем адресатам"
+@@ -4905,6 +5170,10 @@ msgstr "последняя запись"
+ msgid "reply to specified mailing list"
+ msgstr "ответить в указанный список рассылки"
+ 
++#: ../keymap_alldefs.h:111
++msgid "load list of all newsgroups from NNTP server"
++msgstr "загрузить список всех групп новостей с сервера"
++
+ #: ../keymap_alldefs.h:101
+ msgid "execute a macro"
+ msgstr "выполнить макрос"
+@@ -4925,6 +5194,14 @@ msgstr "открыть другой почтовый ящик/файл"
+ msgid "open a different folder in read only mode"
+ msgstr "открыть другой почтовый ящик/файл в режиме \"только для чтения\""
+ 
++#: ../keymap_alldefs.h:117
++msgid "open a different newsgroup"
++msgstr "открыть другую группу новостей"
++
++#: ../keymap_alldefs.h:118
++msgid "open a different newsgroup in read only mode"
++msgstr "открыть другую группу новостей только для чтения"
++
+ #: ../keymap_alldefs.h:106
+ msgid "clear a status flag from a message"
+ msgstr "сбросить у сообщения флаг состояния"
+@@ -5081,6 +5358,10 @@ msgstr "в начало сообщения"
+ msgid "pipe message/attachment to a shell command"
+ msgstr "передать сообщение/вложение внешней программе"
+ 
++#: ../keymap_alldefs.h:158
++msgid "post message to newsgroup"
++msgstr "отправить сообщение в группу новостей"
++
+ #: ../keymap_alldefs.h:145
+ msgid "move to the previous entry"
+ msgstr "предыдущая запись"
+@@ -5113,6 +5394,10 @@ msgstr "сохранить изменения почтового ящика и 
+ msgid "recall a postponed message"
+ msgstr "продолжить отложенное сообщение"
+ 
++#: ../keymap_alldefs.h:167
++msgid "reconstruct thread containing current message"
++msgstr "воссоздать всю дискуссию, содержащую данное сообщение"
++
+ #: ../keymap_alldefs.h:153
+ msgid "clear and redraw the screen"
+ msgstr "очистить и перерисовать экран"
+@@ -5169,6 +5454,10 @@ msgstr "сортировать сообщения"
+ msgid "sort messages in reverse order"
+ msgstr "сортировать сообщения в обратном порядке"
+ 
++#: ../keymap_alldefs.h:182
++msgid "subscribe to newsgroups matching a pattern"
++msgstr "подписаться на группы новостей, соответствующих образцу"
++
+ #: ../keymap_alldefs.h:167
+ msgid "tag the current entry"
+ msgstr "пометить текущую запись"
+@@ -5193,6 +5482,10 @@ msgstr "пометить текущую дискуссию"
+ msgid "toggle a message's 'new' flag"
+ msgstr "установить/сбросить флаг 'новое' для сообщения"
+ 
++#: ../keymap_alldefs.h:189
++msgid "toggle view of read messages"
++msgstr "включить/отключить показ прочитанных сообщений"
++
+ #: ../keymap_alldefs.h:173
+ msgid "toggle whether the mailbox will be rewritten"
+ msgstr "разрешить/запретить перезапись почтового ящика"
+@@ -5207,6 +5500,10 @@ msgstr ""
+ msgid "move to the top of the page"
+ msgstr "начало страницы"
+ 
++#: ../keymap_alldefs.h:193
++msgid "mark all articles in newsgroup as unread"
++msgstr "пометить все сообщения в группе новостей как непрочитанные"
++
+ #: ../keymap_alldefs.h:176
+ msgid "undelete the current entry"
+ msgstr "восстановить текущую запись"
+@@ -5219,6 +5516,10 @@ msgstr "восстановить все сообщения в дискуссии
+ msgid "undelete all messages in subthread"
+ msgstr "восстановить все сообщения в поддискуссии"
+ 
++#: ../keymap_alldefs.h:197
++msgid "unsubscribe from newsgroups matching a pattern"
++msgstr "отписаться от групп новостей, соответствующих образцу"
++
+ #: ../keymap_alldefs.h:179
+ msgid "show the Mutt version number and date"
+ msgstr "вывести номер версии Mutt и дату"
+-- 
+2.8.2
+

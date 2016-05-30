@@ -1,0 +1,58 @@
+From 0a355cac6ac9349ee2cdf389bf67408967f3399f Mon Sep 17 00:00:00 2001
+From: Richard Russon <rich@flatcap.org>
+Date: Fri, 18 Mar 2016 22:38:18 +0000
+Subject: [PATCH 08/10] fix: quieten two compiler warnings
+
+---
+ curs_main.c | 2 ++
+ mbyte.c     | 6 +++---
+ 2 files changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/curs_main.c b/curs_main.c
+index 6d3904f..4c70d55 100644
+--- a/curs_main.c
++++ b/curs_main.c
+@@ -132,7 +132,9 @@ short mutt_ts_capability(void)
+ {
+   char *term = getenv("TERM");
+   char *tcaps;
++#ifdef HAVE_USE_EXTENDED_NAMES
+   int tcapi;
++#endif
+   char **termp;
+   char *known[] = {
+     "color-xterm",
+diff --git a/mbyte.c b/mbyte.c
+index 470686c..fb5718f 100644
+--- a/mbyte.c
++++ b/mbyte.c
+@@ -107,7 +107,7 @@ static size_t wcrtomb_iconv (char *s, wchar_t wc, iconv_t cd)
+   char buf[MB_LEN_MAX+1];
+   ICONV_CONST char *ib;
+   char *ob;
+-  size_t ibl, obl, r;
++  size_t ibl, obl;
+ 
+   if (s)
+   {
+@@ -117,7 +117,7 @@ static size_t wcrtomb_iconv (char *s, wchar_t wc, iconv_t cd)
+     ib = buf;
+     ob = s;
+     obl = MB_LEN_MAX;
+-    r = iconv (cd, &ib, &ibl, &ob, &obl);
++    iconv (cd, &ib, &ibl, &ob, &obl);
+   }
+   else
+   {
+@@ -125,7 +125,7 @@ static size_t wcrtomb_iconv (char *s, wchar_t wc, iconv_t cd)
+     ibl = 1;
+     ob = buf;
+     obl = sizeof (buf);
+-    r = iconv (cd, &ib, &ibl, &ob, &obl);
++    iconv (cd, &ib, &ibl, &ob, &obl);
+   }
+   return ob - s;
+ }
+-- 
+2.8.2
+

@@ -1,0 +1,72 @@
+From b68663d724bbad0175573518cd21a5a55f62b931 Mon Sep 17 00:00:00 2001
+From: Richard Russon <rich@flatcap.org>
+Date: Fri, 27 May 2016 15:24:27 +0100
+Subject: [PATCH 21/21] maildir-mtime
+
+---
+ PATCHES   |  1 +
+ browser.c | 18 ++++++++++++++++++
+ 2 files changed, 19 insertions(+)
+
+diff --git a/PATCHES b/PATCHES
+index f3b1426..a3b057c 100644
+--- a/PATCHES
++++ b/PATCHES
+@@ -1,3 +1,4 @@
++patch-1.5.7.ust.maildir-mtime.2
+ patch-1.5.6.cb.reverse_reply.2
+ vvv.quote
+ patch-ifdef-neo-UNKNOWN
+diff --git a/browser.c b/browser.c
+index 62fae18..11c27f5 100644
+--- a/browser.c
++++ b/browser.c
+@@ -32,6 +32,7 @@
+ #ifdef USE_IMAP
+ #include "imap.h"
+ #endif
++#include "mx.h"
+ 
+ #include <stdlib.h>
+ #include <dirent.h>
+@@ -387,6 +388,21 @@ static void init_state (struct browser_state *state, MUTTMENU *menu)
+     menu->data = state->entry;
+ }
+ 
++static void check_maildir_times (BUFFY *buf, struct stat *st)
++{
++  char buffer[_POSIX_PATH_MAX + SHORT_STRING];
++  struct stat s;
++
++  if(!buf || buf->magic != M_MAILDIR)
++    return;
++
++  snprintf (buffer, sizeof (buffer), "%s/tmp", buf->path);
++  if (lstat (buffer, &s) != 0)
++    return;
++
++  st->st_mtime = s.st_mtime;
++}
++
+ static int examine_directory (MUTTMENU *menu, struct browser_state *state,
+ 			      char *d, const char *prefix)
+ {
+@@ -450,6 +466,7 @@ static int examine_directory (MUTTMENU *menu, struct browser_state *state,
+     tmp = Incoming;
+     while (tmp && mutt_strcmp (buffer, tmp->path))
+       tmp = tmp->next;
++    check_maildir_times (tmp, &s);
+     add_folder (menu, state, de->d_name, &s, (tmp) ? tmp->new : 0);
+   }
+   closedir (dp);  
+@@ -514,6 +531,7 @@ static int examine_mailboxes (MUTTMENU *menu, struct browser_state *state)
+     strfcpy (buffer, NONULL(tmp->path), sizeof (buffer));
+     mutt_pretty_mailbox (buffer, sizeof (buffer));
+ 
++    check_maildir_times (tmp, &s);
+     add_folder (menu, state, buffer, &s, tmp->new);
+   }
+   while ((tmp = tmp->next));
+-- 
+2.8.2
+

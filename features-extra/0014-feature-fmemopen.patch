@@ -1,0 +1,399 @@
+From 31ae63b3c80f41e5c8a93cbcbf635819007e93a5 Mon Sep 17 00:00:00 2001
+From: Richard Russon <rich@flatcap.org>
+Date: Tue, 24 May 2016 17:29:02 +0100
+Subject: [PATCH 14/18] feature: fmemopen
+
+---
+ PATCHES             |   1 +
+ README.fmemopen     |  47 ++++++++++++++++++++++++
+ configure.ac        |   2 +
+ doc/manual.xml.head | 103 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ doc/muttrc.fmemopen |   0
+ handler.c           |  33 ++++++++++++++++-
+ pattern.c           |  45 ++++++++++++++++++++++-
+ 7 files changed, 228 insertions(+), 3 deletions(-)
+ create mode 100644 README.fmemopen
+ create mode 100644 doc/muttrc.fmemopen
+
+diff --git a/PATCHES b/PATCHES
+index 763deff..4fad8c6 100644
+--- a/PATCHES
++++ b/PATCHES
+@@ -11,3 +11,4 @@ patch-status-color-neo-UNKNOWN
+ patch-index-color-neo-UNKNOWN
+ patch-tls-sni-neo-UNKNOWN
+ patch-quasi-delete-neo-UNKNOWN
++patch-fmemopen-neo-UNKNOWN
+diff --git a/README.fmemopen b/README.fmemopen
+new file mode 100644
+index 0000000..adab594
+--- /dev/null
++++ b/README.fmemopen
+@@ -0,0 +1,47 @@
++Fmemopen Patch
++==============
++
++    Replace some temporary files with memory buffers
++
++Patch
++-----
++
++    To check if Mutt supports "fmemopen", look for "patch-fmemopen" in the mutt
++    version.
++
++    Dependencies
++    * mutt-1.6.1
++    * 'open_memstream()', 'fmemopen()' from glibc
++
++Introduction
++------------
++
++    The "fmemopen" patch speeds up some searches.
++
++    This patch changes a few places where Mutt creates temporary files. It
++    replaces them with in-memory buffers. This should improve the performance
++    when searching the header or body using the $thorough_search option.
++
++    There are no user-configurable parts.
++
++    This patch depends on 'open_memstream()' and 'fmemopen()'. They are
++    provided by glibc. Without them, Mutt will simply create temporary files.
++
++See Also
++--------
++
++    * NeoMutt project
++    * Compile-Time Features
++    * 'fmemopen(3)'
++
++Known Bugs
++----------
++
++    None
++
++Credits
++-------
++
++    * Julius Plenz <plenz@cis.fu-berlin.de>
++    * Richard Russon <rich@flatcap.org>
++
+diff --git a/configure.ac b/configure.ac
+index 54a7400..1fe1932 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -1325,6 +1325,8 @@ if test $mutt_cv_langinfo_yesexpr = yes; then
+   AC_DEFINE(HAVE_LANGINFO_YESEXPR,1,[ Define if you have <langinfo.h> and nl_langinfo(YESEXPR). ])
+ fi
+ 
++AC_CHECK_FUNCS(fmemopen open_memstream)
++
+ dnl Documentation tools
+ have_openjade="no"
+ AC_PATH_PROG([OSPCAT], [ospcat], [none])
+diff --git a/doc/manual.xml.head b/doc/manual.xml.head
+index d5ea867..4c4936d 100644
+--- a/doc/manual.xml.head
++++ b/doc/manual.xml.head
+@@ -9581,6 +9581,109 @@ <sect1 id="cond-date">
+ 	</sect2>
+ </sect1>
+ 
++<sect1 id="fmemopen">
++	<title>Fmemopen Patch</title>
++	<subtitle>Replace some temporary files with memory buffers</subtitle>
++
++	<sect2 id="fmemopen-patch">
++		<title>Patch</title>
++
++		<para>
++			To check if Mutt supports <quote>fmemopen</quote>, look for
++			<quote>patch-fmemopen</quote> in the mutt version.
++			See: <xref linkend="mutt-patches"/>.
++		</para>
++
++		<itemizedlist>
++			<title>Dependencies:</title>
++			<listitem><para>mutt-1.6.1</para></listitem>
++			<listitem><para><literal>open_memstream()</literal>, <literal>fmemopen()</literal> from glibc</para></listitem>
++		</itemizedlist>
++
++		<para>This patch is part of the <ulink url="http://www.neomutt.org/">NeoMutt Project</ulink>.</para>
++	</sect2>
++
++	<sect2 id="fmemopen-intro">
++		<title>Introduction</title>
++
++        <para>
++		The <quote>fmemopen</quote> patch speeds up some searches.
++        </para>
++
++        <para>
++		This patch changes a few places where Mutt creates temporary files.
++		It replaces them with in-memory buffers.  This should improve the
++		performance when searching the header or body using the
++		<link linkend="thorough-search">$thorough_search</link> option.
++        </para>
++
++        <para>
++		There are no user-configurable parts.
++        </para>
++
++        <para>
++		This patch depends on <literal>open_memstream()</literal> and
++		<literal>fmemopen()</literal>.  They are provided by glibc.  Without
++		them, Mutt will simply create temporary files.
++        </para>
++	</sect2>
++
++<!--
++	<sect2 id="fmemopen-variables">
++		<title>Variables</title>
++		<para>None</para>
++	</sect2>
++
++	<sect2 id="fmemopen-functions">
++		<title>Functions</title>
++		<para>None</para>
++	</sect2>
++
++	<sect2 id="fmemopen-commands">
++		<title>Commands</title>
++		<para>None</para>
++	</sect2>
++
++	<sect2 id="fmemopen-colors">
++		<title>Colors</title>
++		<para>None</para>
++	</sect2>
++
++	<sect2 id="fmemopen-sort">
++		<title>Sort</title>
++		<para>None</para>
++	</sect2>
++-->
++
++	<sect2 id="fmemopen-muttrc">
++		<title>Muttrc</title>
++		<para>None</para>
++	</sect2>
++
++	<sect2 id="fmemopen-see-also">
++		<title>See Also</title>
++
++		<itemizedlist>
++			<listitem><para><ulink url="http://www.neomutt.org/">NeoMutt Project</ulink></para></listitem>
++			<listitem><para><link linkend="compile-time-features">Compile-Time Features</link></para></listitem>
++			<listitem><para><literal>fmemopen(3)</literal></para></listitem>
++		</itemizedlist>
++	</sect2>
++
++	<sect2 id="fmemopen-known-bugs">
++		<title>Known Bugs</title>
++		<para>None</para>
++	</sect2>
++
++	<sect2 id="fmemopen-credits">
++		<title>Credits</title>
++		<itemizedlist>
++		<listitem><para>Julius Plenz <email>plenz@cis.fu-berlin.de</email></para></listitem>
++		<listitem><para>Richard Russon <email>rich@flatcap.org</email></para></listitem>
++		</itemizedlist>
++	</sect2>
++</sect1>
++
+ <sect1 id="ifdef">
+ 	<title>Ifdef Patch</title>
+ 	<subtitle>Conditional config options</subtitle>
+diff --git a/doc/muttrc.fmemopen b/doc/muttrc.fmemopen
+new file mode 100644
+index 0000000..e69de29
+diff --git a/handler.c b/handler.c
+index 4944d49..6068291 100644
+--- a/handler.c
++++ b/handler.c
+@@ -1595,7 +1595,9 @@ static int run_decode_and_handler (BODY *b, STATE *s, handler_t handler, int pla
+   int origType;
+   char *savePrefix = NULL;
+   FILE *fp = NULL;
++#ifndef HAVE_FMEMOPEN
+   char tempfile[_POSIX_PATH_MAX];
++#endif
+   size_t tmplength = 0;
+   LOFF_T tmpoffset = 0;
+   int decode = 0;
+@@ -1603,6 +1605,11 @@ static int run_decode_and_handler (BODY *b, STATE *s, handler_t handler, int pla
+ 
+   fseeko (s->fpin, b->offset, 0);
+ 
++#ifdef HAVE_FMEMOPEN
++  char *temp;
++  size_t tempsize;
++#endif
++
+   /* see if we need to decode this part before processing it */
+   if (b->encoding == ENCBASE64 || b->encoding == ENCQUOTEDPRINTABLE ||
+       b->encoding == ENCUUENCODED || plaintext ||
+@@ -1618,6 +1625,14 @@ static int run_decode_and_handler (BODY *b, STATE *s, handler_t handler, int pla
+     {
+       /* decode to a tempfile, saving the original destination */
+       fp = s->fpout;
++#ifdef HAVE_FMEMOPEN
++     s->fpout = open_memstream (&temp, &tempsize);
++     if (!s->fpout) {
++       mutt_error _("Unable to open memory stream!");
++       dprint (1, (debugfile, "Can't open memory stream.\n"));
++       return -1;
++     }
++#else
+       mutt_mktemp (tempfile, sizeof (tempfile));
+       if ((s->fpout = safe_fopen (tempfile, "w")) == NULL)
+       {
+@@ -1625,6 +1640,7 @@ static int run_decode_and_handler (BODY *b, STATE *s, handler_t handler, int pla
+         dprint (1, (debugfile, "Can't open %s.\n", tempfile));
+         return -1;
+       }
++#endif
+       /* decoding the attachment changes the size and offset, so save a copy
+         * of the "real" values now, and restore them after processing
+         */
+@@ -1653,9 +1669,20 @@ static int run_decode_and_handler (BODY *b, STATE *s, handler_t handler, int pla
+       /* restore final destination and substitute the tempfile for input */
+       s->fpout = fp;
+       fp = s->fpin;
++#ifdef HAVE_FMEMOPEN
++      if (tempsize) {
++        s->fpin = fmemopen (temp, tempsize, "r");
++      } else { /* fmemopen cannot handle zero-length buffers */
++        s->fpin = safe_fopen ("/dev/null", "r");
++      }
++      if (!s->fpin) {
++        mutt_perror ("failed to re-open memstream!");
++        return -1;
++      }
++#else
+       s->fpin = fopen (tempfile, "r");
+       unlink (tempfile);
+-
++#endif
+       /* restore the prefix */
+       s->prefix = savePrefix;
+     }
+@@ -1680,6 +1707,10 @@ static int run_decode_and_handler (BODY *b, STATE *s, handler_t handler, int pla
+ 
+       /* restore the original source stream */
+       safe_fclose (&s->fpin);
++#ifdef HAVE_FMEMOPEN
++      if (tempsize)
++        FREE(&temp);
++#endif
+       s->fpin = fp;
+     }
+   }
+diff --git a/pattern.c b/pattern.c
+index ea0230e..b3f517d 100644
+--- a/pattern.c
++++ b/pattern.c
+@@ -144,16 +144,21 @@ int mutt_which_case (const char *s)
+ static int
+ msg_search (CONTEXT *ctx, pattern_t* pat, int msgno)
+ {
+-  char tempfile[_POSIX_PATH_MAX];
+   MESSAGE *msg = NULL;
+   STATE s;
+-  struct stat st;
+   FILE *fp = NULL;
+   long lng = 0;
+   int match = 0;
+   HEADER *h = ctx->hdrs[msgno];
+   char *buf;
+   size_t blen;
++#ifdef HAVE_FMEMOPEN
++  char *temp;
++  size_t tempsize;
++#else
++  char tempfile[_POSIX_PATH_MAX];
++  struct stat st;
++#endif
+ 
+   if ((msg = mx_open_message (ctx, msgno)) != NULL)
+   {
+@@ -163,12 +168,20 @@ msg_search (CONTEXT *ctx, pattern_t* pat, int msgno)
+       memset (&s, 0, sizeof (s));
+       s.fpin = msg->fp;
+       s.flags = M_CHARCONV;
++#ifdef HAVE_FMEMOPEN
++      s.fpout = open_memstream (&temp, &tempsize);
++      if (!s.fpout) {
++	mutt_perror ("Error opening memstream");
++	return 0;
++      }
++#else
+       mutt_mktemp (tempfile, sizeof (tempfile));
+       if ((s.fpout = safe_fopen (tempfile, "w+")) == NULL)
+       {
+ 	mutt_perror (tempfile);
+ 	return (0);
+       }
++#endif
+ 
+       if (pat->op != M_BODY)
+ 	mutt_copy_header (msg->fp, h, s.fpout, CH_FROM | CH_DECODE, NULL);
+@@ -184,7 +197,11 @@ msg_search (CONTEXT *ctx, pattern_t* pat, int msgno)
+ 	  if (s.fpout)
+ 	  {
+ 	    safe_fclose (&s.fpout);
++#ifdef HAVE_FMEMOPEN
++            FREE(&temp);
++#else
+ 	    unlink (tempfile);
++#endif
+ 	  }
+ 	  return (0);
+ 	}
+@@ -193,11 +210,30 @@ msg_search (CONTEXT *ctx, pattern_t* pat, int msgno)
+ 	mutt_body_handler (h->content, &s);
+       }
+ 
++#ifdef HAVE_FMEMOPEN
++      fclose (s.fpout);
++      lng = tempsize;
++
++      if (tempsize) {
++        fp = fmemopen (temp, tempsize, "r");
++        if (!fp) {
++          mutt_perror ("Error re-opening memstream");
++          return 0;
++        }
++      } else { /* fmemopen cannot handle empty buffers */
++        fp = safe_fopen ("/dev/null", "r");
++        if (!fp) {
++          mutt_perror ("Error opening /dev/null");
++          return 0;
++        }
++      }
++#else
+       fp = s.fpout;
+       fflush (fp);
+       fseek (fp, 0, 0);
+       fstat (fileno (fp), &st);
+       lng = (long) st.st_size;
++#endif
+     }
+     else
+     {
+@@ -244,7 +280,12 @@ msg_search (CONTEXT *ctx, pattern_t* pat, int msgno)
+     if (option (OPTTHOROUGHSRC))
+     {
+       safe_fclose (&fp);
++#ifdef HAVE_FMEMOPEN
++      if (tempsize)
++        FREE(&temp);
++#else
+       unlink (tempfile);
++#endif
+     }
+   }
+ 
+-- 
+2.8.2
+

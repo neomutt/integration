@@ -1,0 +1,697 @@
+From 0b9e0bff31ea93360f8d61d6e7daa62bd095db14 Mon Sep 17 00:00:00 2001
+From: Kevin McCarthy <kevin@8t8.us>
+Date: Wed, 27 Apr 2016 17:56:58 -0700
+Subject: [PATCH 23/31] Fix remaining direct usages of COLS/LINES to use mutt
+ window functions.
+
+Most of these were just message update/clearing.
+---
+ buffy.c       |   3 +-
+ commands.c    |  10 ++---
+ curs_main.c   |   8 +---
+ filter.c      |   7 ++-
+ flags.c       |   9 ++--
+ handler.c     |   3 +-
+ help.c        |  10 ++---
+ init.c        |   2 +-
+ init.h        |   4 +-
+ keymap.c      |   2 +-
+ main.c        |   3 --
+ mutt_curses.h |   7 +--
+ muttlib.c     |   2 +-
+ pager.c       |  21 +--------
+ recvattach.c  |   2 +-
+ recvcmd.c     |   8 ++--
+ sendlib.c     |   4 +-
+ sidebar.c     | 139 ++++++++++++----------------------------------------------
+ 18 files changed, 69 insertions(+), 175 deletions(-)
+
+diff --git a/buffy.c b/buffy.c
+index 6befe68..5bec109 100644
+--- a/buffy.c
++++ b/buffy.c
+@@ -791,7 +791,8 @@ int mutt_buffy_list (void)
+     strfcpy (path, tmp->path, sizeof (path));
+     mutt_pretty_mailbox (path, sizeof (path));
+     
+-    if (!first && (COLS - 7 >= 0) && (pos + strlen (path) >= (size_t)COLS - 7))
++    if (!first && (MuttMessageWindow->cols >= 7) &&
++        (pos + strlen (path) >= (size_t)MuttMessageWindow->cols - 7))
+       break;
+     
+     if (!first)
+diff --git a/commands.c b/commands.c
+index dd067d5..191b4be 100644
+--- a/commands.c
++++ b/commands.c
+@@ -315,10 +315,10 @@ void ci_bounce_message (HEADER *h, int *redraw)
+   snprintf (scratch, sizeof (scratch),
+            (h ? _("Bounce message to %s") : _("Bounce messages to %s")), buf);
+ 
+-  if (mutt_strwidth (prompt) > COLS - extra_space)
++  if (mutt_strwidth (prompt) > MuttMessageWindow->cols - extra_space)
+   {
+     mutt_format_string (prompt, sizeof (prompt),
+-			0, COLS-extra_space, FMT_LEFT, 0,
++			0, MuttMessageWindow->cols-extra_space, FMT_LEFT, 0,
+ 			scratch, sizeof (scratch), 0);
+     safe_strcat (prompt, sizeof (prompt), "...?");
+   }
+@@ -328,12 +328,12 @@ void ci_bounce_message (HEADER *h, int *redraw)
+   if (query_quadoption (OPT_BOUNCE, prompt) != M_YES)
+   {
+     rfc822_free_address (&adr);
+-    CLEARLINE (LINES - 1);
++    mutt_window_clearline (MuttMessageWindow, 0);
+     mutt_message (h ? _("Message not bounced.") : _("Messages not bounced."));
+     return;
+   }
+ 
+-  CLEARLINE (LINES - 1);
++  mutt_window_clearline (MuttMessageWindow, 0);
+   
+   rc = mutt_bounce_message (NULL, h, adr);
+   rfc822_free_address (&adr);
+@@ -608,7 +608,7 @@ void mutt_shell_escape (void)
+       strfcpy (buf, Shell, sizeof (buf));
+     if(buf[0])
+     {
+-      CLEARLINE (LINES-1);
++      mutt_window_clearline (MuttMessageWindow, 0);
+       mutt_endwin (NULL);
+       fflush (stdout);
+       if (mutt_system (buf) != 0 || option (OPTWAITKEY))
+diff --git a/curs_main.c b/curs_main.c
+index e98d913..fbdfa91 100644
+--- a/curs_main.c
++++ b/curs_main.c
+@@ -867,11 +867,6 @@ int mutt_index_menu (void)
+ 
+       if (menu->redraw & REDRAW_STATUS)
+       {
+-#ifdef USE_SIDEBAR
+-        /* Temporarily lie about the sidebar width */
+-	short sw = SidebarWidth;
+-	SidebarWidth = 0;
+-#endif
+ 	menu_status_line (buf, sizeof (buf), menu, NONULL (Status));
+         mutt_window_move (MuttStatusWindow, 0, 0);
+ 	SETCOLOR (MT_COLOR_STATUS);
+@@ -1774,7 +1769,7 @@ int mutt_index_menu (void)
+ 	  mutt_enter_vfolder (cp, buf, sizeof (buf), &menu->redraw, 1);
+ 	  if (!buf[0])
+ 	  {
+-	    CLEARLINE (LINES-1);
++            mutt_window_clearline (MuttMessageWindow, 0);
+ 	    break;
+ 	  }
+ 	}
+@@ -2970,6 +2965,7 @@ int mutt_index_menu (void)
+ 
+       case OP_SIDEBAR_TOGGLE_VISIBLE:
+ 	toggle_option (OPTSIDEBAR);
++	mutt_reflow_windows ();
+ 	menu->redraw = REDRAW_FULL;
+ 	break;
+ 
+diff --git a/filter.c b/filter.c
+index a8dc2f5..0e94d24 100644
+--- a/filter.c
++++ b/filter.c
+@@ -119,8 +119,11 @@ mutt_create_filter_fd (const char *cmd, FILE **in, FILE **out, FILE **err,
+       close (fderr);
+     }
+ 
+-    snprintf (columns, sizeof (columns), "%d", COLS - SidebarWidth);
+-    setenv ("COLUMNS", columns, 1);
++    if (MuttIndexWindow && (MuttIndexWindow->cols > 0))
++    {
++      snprintf (columns, sizeof (columns), "%d", MuttIndexWindow->cols);
++      setenv ("COLUMNS", columns, 1);
++    }
+ 
+     execl (EXECSHELL, "sh", "-c", cmd, NULL);
+     _exit (127);
+diff --git a/flags.c b/flags.c
+index 9d1f827..f544f51 100644
+--- a/flags.c
++++ b/flags.c
+@@ -356,18 +356,19 @@ int mutt_change_flag (HEADER *h, int bf)
+   int i, flag;
+   event_t event;
+ 
+-  mvprintw (LINES - 1, 0, "%s? (D/N/O/r/*/!): ", bf ? _("Set flag") : _("Clear flag"));
+-  clrtoeol ();
++  mutt_window_mvprintw (MuttMessageWindow, 0, 0,
++                        "%s? (D/N/O/r/*/!): ", bf ? _("Set flag") : _("Clear flag"));
++  mutt_window_clrtoeol (MuttMessageWindow);
+ 
+   event = mutt_getch();
+   i = event.ch;
+   if (i < 0)
+   {
+-    CLEARLINE (LINES-1);
++    mutt_window_clearline (MuttMessageWindow, 0);
+     return (-1);
+   }
+ 
+-  CLEARLINE (LINES-1);
++  mutt_window_clearline (MuttMessageWindow, 0);
+ 
+   switch (i)
+   {
+diff --git a/handler.c b/handler.c
+index 6068291..4b2aa5c 100644
+--- a/handler.c
++++ b/handler.c
+@@ -791,7 +791,8 @@ static int text_enriched_handler (BODY *a, STATE *s)
+ 
+   memset (&stte, 0, sizeof (stte));
+   stte.s = s;
+-  stte.WrapMargin = ((s->flags & M_DISPLAY) ? (COLS-4) : ((COLS-4)<72)?(COLS-4):72);
++  stte.WrapMargin = ((s->flags & M_DISPLAY) ? (MuttIndexWindow->cols-4) :
++                     ((MuttIndexWindow->cols-4)<72)?(MuttIndexWindow->cols-4):72);
+   stte.line_max = stte.WrapMargin * 4;
+   stte.line = (wchar_t *) safe_calloc (1, (stte.line_max + 1) * sizeof (wchar_t));
+   stte.param = (wchar_t *) safe_calloc (1, (STRING) * sizeof (wchar_t));
+diff --git a/help.c b/help.c
+index c48c68f..3f0cf95 100644
+--- a/help.c
++++ b/help.c
+@@ -209,7 +209,7 @@ static void format_line (FILE *f, int ismacro,
+ 
+   /* don't try to press string into one line with less than 40 characters.
+      The double parenthesis avoids a gcc warning, sigh ... */
+-  if ((split = COLS < 40))
++  if ((split = MuttIndexWindow->cols < 40))
+   {
+     col_a = col = 0;
+     col_b = LONG_STRING;
+@@ -217,8 +217,8 @@ static void format_line (FILE *f, int ismacro,
+   }
+   else
+   {
+-    col_a = COLS > 83 ? (COLS - 32) >> 2 : 12;
+-    col_b = COLS > 49 ? (COLS - 10) >> 1 : 19;
++    col_a = MuttIndexWindow->cols > 83 ? (MuttIndexWindow->cols - 32) >> 2 : 12;
++    col_b = MuttIndexWindow->cols > 49 ? (MuttIndexWindow->cols - 10) >> 1 : 19;
+     col = pad (f, mutt_strwidth(t1), col_a);
+   }
+ 
+@@ -252,7 +252,7 @@ static void format_line (FILE *f, int ismacro,
+   {
+     while (*t3)
+     {
+-      n = COLS - col;
++      n = MuttIndexWindow->cols - col;
+ 
+       if (ismacro >= 0)
+       {
+@@ -271,7 +271,7 @@ static void format_line (FILE *f, int ismacro,
+ 	}
+ 	else
+ 	{
+-	  n += col - COLS;
++	  n += col - MuttIndexWindow->cols;
+ 	  if (option (OPTMARKERS))
+ 	    ++n;
+ 	}
+diff --git a/init.c b/init.c
+index 64d3dcf..90240de 100644
+--- a/init.c
++++ b/init.c
+@@ -122,7 +122,7 @@ int query_quadoption (int opt, const char *prompt)
+ 
+     default:
+       v = mutt_yesorno (prompt, (v == M_ASKYES));
+-      CLEARLINE (LINES - 1);
++      mutt_window_clearline (MuttMessageWindow, 0);
+       return (v);
+   }
+ 
+diff --git a/init.h b/init.h
+index fa433d0..4a73af1 100644
+--- a/init.h
++++ b/init.h
+@@ -3087,7 +3087,7 @@ struct option_t MuttVars[] = {
+   ** You may optionally use the ``reverse-'' prefix to specify reverse sorting
+   ** order (example: ``\fCset sort_browser=reverse-date\fP'').
+   */
+-  { "sidebar_visible", DT_BOOL, R_BOTH, OPTSIDEBAR, 0 },
++  { "sidebar_visible", DT_BOOL, R_BOTH|R_REFLOW, OPTSIDEBAR, 0 },
+   /*
+   ** .pp
+   ** This specifies whether or not to show sidebar. The sidebar shows a list of
+@@ -3095,7 +3095,7 @@ struct option_t MuttVars[] = {
+   ** .pp
+   ** \fBSee also:\fP $$sidebar_format, $$sidebar_width
+   */
+-  { "sidebar_width", DT_NUM, R_BOTH, UL &SidebarWidth, 0 },
++  { "sidebar_width", DT_NUM, R_BOTH|R_REFLOW, UL &SidebarWidth, 30 },
+   /*
+   ** .pp
+   ** This controls the width of the sidebar.  It is measured in screen columns.
+diff --git a/keymap.c b/keymap.c
+index 300b116..e305bcd 100644
+--- a/keymap.c
++++ b/keymap.c
+@@ -1134,7 +1134,7 @@ void mutt_what_key (void)
+ {
+   int ch;
+ 
+-  mvprintw(LINES-1,0, _("Enter keys (^G to abort): "));
++  mutt_window_mvprintw (MuttMessageWindow, 0, 0, _("Enter keys (^G to abort): "));
+   do {
+     ch = getch();
+     if (ch != ERR && ch != ctrl ('G'))
+diff --git a/main.c b/main.c
+index 4a98236..a0e62fc 100644
+--- a/main.c
++++ b/main.c
+@@ -468,9 +468,6 @@ int main (int argc, char **argv)
+     clear ();
+     mutt_error = mutt_curses_error;
+     mutt_message = mutt_curses_message;
+-#ifdef USE_SIDEBAR
+-    sb_init();
+-#endif
+   }
+ 
+   /* Create the Maildir directory if it doesn't exist. */
+diff --git a/mutt_curses.h b/mutt_curses.h
+index 7d1ff40..19a1086 100644
+--- a/mutt_curses.h
++++ b/mutt_curses.h
+@@ -64,11 +64,8 @@
+ #undef lines
+ #endif /* lines */
+ 
+-#ifdef USE_SIDEBAR
+-#define CLEARLINE_WIN(x) move (x,SidebarWidth), clrtoeol()
+-#endif
+-#define CLEARLINE(x) move(x,0), clrtoeol()
+-#define CENTERLINE(x,y) move(y, (COLS-strlen(x))/2), addstr(x)
++#define CLEARLINE(win,x) mutt_window_clearline(win, x)
++#define CENTERLINE(win,x,y) mutt_window_move(win, y, (win->cols-strlen(x))/2), addstr(x)
+ #define BEEP() do { if (option (OPTBEEP)) beep(); } while (0)
+ 
+ #if ! (defined(USE_SLANG_CURSES) || defined(HAVE_CURS_SET))
+diff --git a/muttlib.c b/muttlib.c
+index 714a2b9..6cc1bc2 100644
+--- a/muttlib.c
++++ b/muttlib.c
+@@ -1729,7 +1729,7 @@ int mutt_save_confirm (const char *s, struct stat *st)
+     }
+   }
+ 
+-  CLEARLINE (LINES-1);
++  mutt_window_clearline (MuttMessageWindow, 0);
+   return (ret);
+ }
+ 
+diff --git a/pager.c b/pager.c
+index 4b46bae..c395343 100644
+--- a/pager.c
++++ b/pager.c
+@@ -1860,12 +1860,6 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
+       hfi.ctx = Context;
+       hfi.pager_progress = pager_progress_str;
+ 
+-#ifdef USE_SIDEBAR
+-      statuswidth = COLS;
+-      if (option (OPTSTATUSONTOP) && (PagerIndexLines > 0))
+-        statuswidth -= SidebarWidth;
+-#endif
+-
+       if (last_pos < sb.st_size - 1)
+ 	snprintf(pager_progress_str, sizeof(pager_progress_str), OFF_T_FMT "%%", (100 * last_offset / sb.st_size));
+       else
+@@ -1874,16 +1868,6 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
+       /* print out the pager status bar */
+       mutt_window_move (pager_status_window, 0, 0);
+       SETCOLOR (MT_COLOR_STATUS);
+-#ifdef USE_SIDEBAR
+-      short sw = SidebarWidth;
+-      if (option (OPTSTATUSONTOP) && PagerIndexLines > 0) {
+-        CLEARLINE_WIN (statusoffset);
+-      } else {
+-        CLEARLINE (statusoffset);
+-        /* Temporarily lie about the sidebar width */
+-        SidebarWidth = 0;
+-      }
+-#endif
+ 
+       if (IsHeader (extra) || IsMsgAttach (extra))
+       {
+@@ -1899,10 +1883,6 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
+ 	snprintf (bn, sizeof (bn), "%s (%s)", banner, pager_progress_str);
+ 	mutt_draw_statusline (pager_status_window->cols, bn);
+       }
+-#ifdef USE_SIDEBAR
+-      if (!option (OPTSTATUSONTOP) || PagerIndexLines == 0)
+-        SidebarWidth = sw; /* Restore the sidebar width */
+-#endif
+       NORMAL_COLOR;
+       if (option(OPTTSENABLED) && TSSupported)
+       {
+@@ -2966,6 +2946,7 @@ search_next:
+ 
+       case OP_SIDEBAR_TOGGLE_VISIBLE:
+ 	toggle_option (OPTSIDEBAR);
++	mutt_reflow_windows ();
+ 	redraw = REDRAW_FULL;
+ 	break;
+ #endif
+diff --git a/recvattach.c b/recvattach.c
+index 125395e..6a513b1 100644
+--- a/recvattach.c
++++ b/recvattach.c
+@@ -590,7 +590,7 @@ mutt_query_pipe_attachment (char *command, FILE *fp, BODY *body, int filter)
+ 	      _("WARNING!  You are about to overwrite %s, continue?"),
+ 	      body->filename);
+     if (mutt_yesorno (warning, M_NO) != M_YES) {
+-      CLEARLINE (LINES-1);
++      mutt_window_clearline (MuttMessageWindow, 0);
+       return;
+     }
+     mutt_mktemp (tfile, sizeof (tfile));
+diff --git a/recvcmd.c b/recvcmd.c
+index 6e02437..8ac7cac 100644
+--- a/recvcmd.c
++++ b/recvcmd.c
+@@ -203,10 +203,10 @@ void mutt_attach_bounce (FILE * fp, HEADER * hdr,
+   snprintf (prompt, sizeof (prompt) - 4, 
+    (p ? _("Bounce message to %s") : _("Bounce messages to %s")), buf);
+   
+-  if (mutt_strwidth (prompt) > COLS - extra_space)
++  if (mutt_strwidth (prompt) > MuttMessageWindow->cols - extra_space)
+   {
+     mutt_format_string (prompt, sizeof (prompt) - 4,
+-			0, COLS-extra_space, FMT_LEFT, 0,
++			0, MuttMessageWindow->cols-extra_space, FMT_LEFT, 0,
+ 			prompt, sizeof (prompt), 0);
+     safe_strcat (prompt, sizeof (prompt), "...?");
+   }
+@@ -216,12 +216,12 @@ void mutt_attach_bounce (FILE * fp, HEADER * hdr,
+   if (query_quadoption (OPT_BOUNCE, prompt) != M_YES)
+   {
+     rfc822_free_address (&adr);
+-    CLEARLINE (LINES - 1);
++    mutt_window_clearline (MuttMessageWindow, 0);
+     mutt_message (p ? _("Message not bounced.") : _("Messages not bounced."));
+     return;
+   }
+   
+-  CLEARLINE (LINES - 1);
++  mutt_window_clearline (MuttMessageWindow, 0);
+   
+   if (cur)
+     ret = mutt_bounce_message (fp, cur->hdr, adr);
+diff --git a/sendlib.c b/sendlib.c
+index ccaea8a..1a2cf89 100644
+--- a/sendlib.c
++++ b/sendlib.c
+@@ -1862,8 +1862,8 @@ int mutt_write_one_header (FILE *fp, const char *tag, const char *value,
+     else
+       wraplen = WrapHeaders;
+   }
+-  else if (wraplen <= 0 || wraplen > COLS)
+-    wraplen = COLS;
++  else if (wraplen <= 0 || wraplen > MuttIndexWindow->cols)
++    wraplen = MuttIndexWindow->cols;
+ 
+   if (tag)
+   {
+diff --git a/sidebar.c b/sidebar.c
+index b40d53e..4252716 100644
+--- a/sidebar.c
++++ b/sidebar.c
+@@ -30,8 +30,6 @@
+ #include "sort.h"
+ 
+ /* Previous values for some sidebar config */
+-static short  OldVisible;	/* sidebar_visible */
+-static short  OldWidth;		/* sidebar_width */
+ static short  PreviousSort;	/* sidebar_sort_method */
+ static time_t LastRefresh;	/* Time of last refresh */
+ 
+@@ -281,9 +279,7 @@ cb_format_str (char *dest, size_t destlen, size_t col, char op, const char *src,
+  * @buflen:  Buffer length
+  * @width:   Desired width in screen cells
+  * @box:     Mailbox name
+- * @size:    Size (total number of messages)
+- * @new:     Number of new messages
+- * @flagged: Number of flagged messages
++ * @b:       Mailbox object
+  *
+  * Take all the relevant mailbox data and the desired screen width and then get
+  * mutt_FormatString to do the actual work. mutt_FormatString will callback to
+@@ -304,11 +300,7 @@ make_sidebar_entry (char *buf, unsigned int buflen, int width, char *box,
+ 	int box_len = strlen (box);
+ 	sbe.box[box_len] = '\0';
+ 
+-	/* Temporarily lie about the screen width */
+-	int oc = COLS;
+-	COLS = width + SidebarWidth;
+-	mutt_FormatString (buf, buflen, 0, NONULL(SidebarFormat), cb_format_str, (unsigned long) &sbe, 0);
+-	COLS = oc;
++	mutt_FormatString (buf, buflen, 0, width, NONULL(SidebarFormat), cb_format_str, (unsigned long) &sbe, 0);
+ 
+ 	/* Force string to be exactly the right width */
+ 	int w = mutt_strwidth (buf);
+@@ -507,7 +499,7 @@ sort_buffy_array (BUFFY **arr, int arr_len)
+  * can change outside of the sidebar that we don't hear about.
+  *
+  * Returns:
+- *	0:  No, don't draw the sidebar
++ *	0: No, don't draw the sidebar
+  *	1: Yes, draw the sidebar
+  */
+ static int
+@@ -578,55 +570,9 @@ prepare_sidebar (int page_size)
+ }
+ 
+ /**
+- * visible - Should we display the sidebar?
+- *
+- * After validating the config options "sidebar_visible" and "sidebar_width",
+- * determine whether we should should display the sidebar.
+- *
+- * When not visible, set the global SidebarWidth to 0.
+- *
+- * Returns:
+- *	Boolean
+- */
+-static short
+-visible (void)
+-{
+-	short new_visible = option (OPTSIDEBAR);
+-	short new_width   = SidebarWidth;
+-
+-	if (OldWidth != new_width) {
+-		if (new_width > 0) {
+-			OldWidth = new_width;
+-		}
+-	}
+-
+-	if (OldVisible != new_visible) {
+-		if (new_visible) {
+-			set_option (OPTSIDEBAR);
+-		} else {
+-			unset_option (OPTSIDEBAR);
+-		}
+-		OldVisible = new_visible;
+-	} else if (new_width == 0) {
+-		unset_option (OPTSIDEBAR);
+-		OldVisible = 0;
+-	}
+-
+-	if (!option (OPTSIDEBAR)) {
+-		SidebarWidth = 0;
+-	} else if (new_width == 0) {
+-		SidebarWidth = OldWidth;
+-	} else {
+-		SidebarWidth = new_width;
+-	}
+-
+-	return new_visible;
+-}
+-
+-/**
+  * draw_divider - Draw a line between the sidebar and the rest of mutt
+- * @first_row:  Screen line to start (0-based)
+- * @num_rows:   Number of rows to fill
++ * @num_rows:   Height of the Sidebar
++ * @num_cols:   Width of the Sidebar
+  *
+  * Draw a divider using characters from the config option "sidebar_divider_char".
+  * This can be an ASCII or Unicode character.  First we calculate this
+@@ -639,7 +585,7 @@ visible (void)
+  *	n:  Success: character occupies n screen columns
+  */
+ static int
+-draw_divider (int first_row, int num_rows)
++draw_divider (int num_rows, int num_cols)
+ {
+ 	/* Calculate the width of the delimiter in screen cells */
+ 	int delim_len = mutt_strwidth (SidebarDividerChar);
+@@ -647,17 +593,14 @@ draw_divider (int first_row, int num_rows)
+ 	if (delim_len < 1)
+ 		return delim_len;
+ 
+-	if ((SidebarWidth + delim_len) > (COLS + 1))
++	if (delim_len > num_cols)
+ 		return 0;
+ 
+-	if (delim_len > SidebarWidth)
+-		return -1;
+-
+ 	SETCOLOR(MT_COLOR_DIVIDER);
+ 
+ 	int i;
+ 	for (i = 0; i < num_rows; i++) {
+-		move (first_row + i, SidebarWidth - delim_len);
++		mutt_window_move (MuttSidebarWindow, i, SidebarWidth - delim_len);	//RAR 0 for rhs
+ 		addstr (NONULL(SidebarDividerChar));
+ 	}
+ 
+@@ -665,10 +608,10 @@ draw_divider (int first_row, int num_rows)
+ }
+ 
+ /**
+- * fill_empty_space - Wipe the remaining sidebar space
+- * @first_row:  Screen line to start (0-based)
++ * fill_empty_space - Wipe the remaining Sidebar space
++ * @first_row:  Window line to start (0-based)
+  * @num_rows:   Number of rows to fill
+- * @width:      Width of the sidebar (minus the divider)
++ * @width:      Width of the Sidebar (minus the divider)
+  *
+  * Write spaces over the area the sidebar isn't using.
+  */
+@@ -680,17 +623,17 @@ fill_empty_space (int first_row, int num_rows, int width)
+ 
+ 	int r;
+ 	for (r = 0; r < num_rows; r++) {
+-		int i = 0;
+-		move (first_row + r, 0);
+-		for (; i < width; i++)
++		mutt_window_move (MuttSidebarWindow, first_row + r, 0);	//RAR rhs
++		int i;
++		for (i = 0; i < width; i++)
+ 			addch (' ');
+ 	}
+ }
+ 
+ /**
+  * draw_sidebar - Write out a list of mailboxes, on the left
+- * @first_row:  Screen line to start (0-based)
+- * @num_rows:   Number of rows to fill
++ * @num_rows:   Height of the Sidebar
++ * @num_cols:   Width of the Sidebar
+  * @div_width:  Width in screen characters taken by the divider
+  *
+  * Display a list of mailboxes in a panel on the left.  What's displayed will
+@@ -709,13 +652,13 @@ fill_empty_space (int first_row, int num_rows, int width)
+  * trimmed to fit the available space.
+  */
+ static void
+-draw_sidebar (int first_row, int num_rows, int div_width)
++draw_sidebar (int num_rows, int num_cols, int div_width)
+ {
+ 	BUFFY *b = TopBuffy;
+ 	if (!b)
+ 		return;
+ 
+-	int w = MIN(COLS, (SidebarWidth - div_width));
++	int w = MIN(num_cols, (SidebarWidth - div_width));
+ 	int row = 0;
+ 	for (b = TopBuffy; b && (row < num_rows); b = b->next) {
+ 		if (b->is_hidden) {
+@@ -741,7 +684,7 @@ draw_sidebar (int first_row, int num_rows, int div_width)
+ 			SETCOLOR(MT_COLOR_NORMAL);
+ 		}
+ 
+-		move (first_row + row, 0);
++		mutt_window_move (MuttSidebarWindow, row, 0);
+ 		if (Context && Context->path &&
+ 			(!strcmp (b->path, Context->path)||
+ 			 !strcmp (b->realpath, Context->path))) {
+@@ -813,28 +756,11 @@ draw_sidebar (int first_row, int num_rows, int div_width)
+ 		row++;
+ 	}
+ 
+-	fill_empty_space (first_row + row, num_rows - row, w);
++	fill_empty_space (row, num_rows - row, w);
+ }
+ 
+ 
+ /**
+- * sb_init - Set some default values for the sidebar.
+- */
+-void
+-sb_init (void)
+-{
+-	OldVisible = option (OPTSIDEBAR);
+-	if (SidebarWidth > 0) {
+-		OldWidth = SidebarWidth;
+-	} else {
+-		OldWidth = 20;
+-		if (OldVisible) {
+-			SidebarWidth = OldWidth;
+-		}
+-	}
+-}
+-
+-/**
+  * sb_draw - Completely redraw the sidebar
+  *
+  * Completely refresh the sidebar region.  First draw the divider; then, for
+@@ -843,36 +769,27 @@ sb_init (void)
+ void
+ sb_draw (void)
+ {
+-	if (!visible())
++	if (!option (OPTSIDEBAR))
+ 		return;
+ 
+-	/* XXX - if transitioning from invisible to visible */
+-	/* if (OldVisible == 0) */
+-	/* 	mutt_buffy_check (1); we probably have bad or no numbers */
+-
+-	int first_row = 0;
+-	int num_rows  = LINES - 2;
+-
+-	if (option (OPTHELP) || option (OPTSTATUSONTOP))
+-		first_row++;
+-
+-	if (option (OPTHELP))
+-		num_rows--;
++	int num_rows  = MuttSidebarWindow->rows;
++	int num_cols  = MuttSidebarWindow->cols;
++	if ((num_rows < 1) || (num_cols < 1))
++		return;
+ 
+-	int div_width = draw_divider (first_row, num_rows);
++	int div_width = draw_divider (num_rows, num_cols);
+ 	if (div_width < 0)
+ 		return;
+ 
+ 	if (!get_incoming()) {
+-		int w = MIN(COLS, (SidebarWidth - div_width));
+-		fill_empty_space (first_row, num_rows, w);
++		fill_empty_space (0, num_rows, SidebarWidth - div_width);
+ 		return;
+ 	}
+ 
+ 	if (!prepare_sidebar (num_rows))
+ 		return;
+ 
+-	draw_sidebar (first_row, num_rows, div_width);
++	draw_sidebar (num_rows, num_cols, div_width);
+ }
+ 
+ /**
+-- 
+2.8.2
+

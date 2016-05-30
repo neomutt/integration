@@ -1,0 +1,65 @@
+From 36b82c4ee2212e5ff5e1492c5c48e4f322602355 Mon Sep 17 00:00:00 2001
+From: Richard Russon <rich@flatcap.org>
+Date: Fri, 27 May 2016 03:03:32 +0100
+Subject: [PATCH 03/13] mutt-1.5.20-sendgroupreplyto
+
+---
+ init.h | 7 +++++++
+ mutt.h | 1 +
+ send.c | 8 ++++++++
+ 3 files changed, 16 insertions(+)
+
+diff --git a/init.h b/init.h
+index 1a28c02..1a4a942 100644
+--- a/init.h
++++ b/init.h
+@@ -2860,6 +2860,13 @@ struct option_t MuttVars[] = {
+   ** .pp
+   ** Also see the $$force_name variable.
+   */
++  { "send_group_reply_to",	DT_BOOL, R_NONE, OPTSENDGROUPREPLYTO, 0 },
++  /*
++  ** .pp
++  ** This variable controls how group replies are done.
++  ** When set, all recepients listet in "To:" are set in the
++  ** "To:" header again, else in the "CC", which is the default.
++  */
+   { "score", 		DT_BOOL, R_NONE, OPTSCORE, 1 },
+   /*
+   ** .pp
+diff --git a/mutt.h b/mutt.h
+index aa6a2ee..c309578 100644
+--- a/mutt.h
++++ b/mutt.h
+@@ -480,6 +480,7 @@ enum
+   OPTSAVEADDRESS,
+   OPTSAVEEMPTY,
+   OPTSAVENAME,
++  OPTSENDGROUPREPLYTO,
+   OPTSCORE,
+ #ifdef USE_SIDEBAR
+   OPTSIDEBAR,
+diff --git a/send.c b/send.c
+index a00ccb4..3ecab19 100644
+--- a/send.c
++++ b/send.c
+@@ -624,8 +624,16 @@ int mutt_fetch_recips (ENVELOPE *out, ENVELOPE *in, int flags)
+     if ((flags & SENDGROUPREPLY) && (!in->mail_followup_to || hmfupto != M_YES))
+     {
+       /* if(!mutt_addr_is_user(in->to)) */
++      if (option (OPTSENDGROUPREPLYTO))
++      {
++	rfc822_append (&out->to, in->to, 0);
++	rfc822_append (&out->cc, in->cc, 1);
++      }	  
++      else
++      {
+       rfc822_append (&out->cc, in->to, 1);
+       rfc822_append (&out->cc, in->cc, 1);
++      }
+     }
+   }
+   return 0;
+-- 
+2.8.2
+

@@ -1,0 +1,648 @@
+From 1cad34f8043331f0845ad1760f4472950c5359aa Mon Sep 17 00:00:00 2001
+From: Richard Russon <rich@flatcap.org>
+Date: Tue, 24 May 2016 17:22:39 +0100
+Subject: [PATCH 10/18] feature: status-color
+
+---
+ PATCHES                 |   1 +
+ README.status-color     |  67 ++++++++++++++++
+ color.c                 |  41 ++++++++--
+ curs_main.c             | 108 +++++++++++++++++++++++++-
+ doc/manual.xml.head     | 203 ++++++++++++++++++++++++++++++++++++++++++++++++
+ doc/muttrc.status-color |  49 ++++++++++++
+ mutt_curses.h           |   2 +
+ pager.c                 |   4 +-
+ protos.h                |   1 +
+ 9 files changed, 465 insertions(+), 11 deletions(-)
+ create mode 100644 README.status-color
+ create mode 100644 doc/muttrc.status-color
+
+diff --git a/PATCHES b/PATCHES
+index 9400723..f2056f5 100644
+--- a/PATCHES
++++ b/PATCHES
+@@ -7,3 +7,4 @@ patch-compress-neo-UNKNOWN
+ patch-sidebar-neo-UNKNOWN
+ patch-progress-neo-UNKNOWN
+ patch-skip-quoted-neo-UNKNOWN
++patch-status-color-neo-UNKNOWN
+diff --git a/README.status-color b/README.status-color
+new file mode 100644
+index 0000000..cbaa0fb
+--- /dev/null
++++ b/README.status-color
+@@ -0,0 +1,67 @@
++Status Color Patch
++==================
++
++    Custom rules for theming the status bar
++
++Patch
++-----
++
++    To check if Mutt supports "Status Color", look for "patch-status-color" in
++    the mutt version.
++
++    Dependencies
++    * mutt-1.6.1
++
++Introduction
++------------
++
++    The "status-color" patch allows you to theme different parts of the status
++    bar (also when it's used by the index).
++
++    Unlike normal color commands, 'color status' can now take up to 2 extra
++    parameters (regex, num).
++
++Commands
++--------
++
++        color status foreground background [ regex [ num ]]
++
++    With zero parameters, Mutt will set the default color for the entire status
++    bar.
++
++    With one parameter, Mutt will only color the parts matching the regex.
++
++    With two parameters, Mutt will only color the num'th sub-match of the regex.
++
++Colors
++------
++
++    Status Colors
++
++    | Name   | Default Color | Description |
++    |--------|---------------|-------------|
++    | status | 'reverse'     | Status bar  |
++
++See Also
++--------
++
++    * NeoMutt project
++    * Compile-Time Features
++    * Regular Expressions
++    * Patterns
++    * index-color patch
++    * Color command
++
++Known Bugs
++----------
++
++    None
++
++Credits
++-------
++
++    * David Sterba <dsterba@suse.cz>
++    * Thomas Glanzmann <thomas@glanzmann.de>
++    * Kirill A. Shutemov <kirill@shutemov.name>
++    * Richard Russon <rich@flatcap.org>
++
+diff --git a/color.c b/color.c
+index e2ff989..0efc743 100644
+--- a/color.c
++++ b/color.c
+@@ -34,6 +34,7 @@ int ColorQuoteUsed;
+ int ColorDefs[MT_COLOR_MAX];
+ COLOR_LINE *ColorHdrList = NULL;
+ COLOR_LINE *ColorBodyList = NULL;
++COLOR_LINE *ColorStatusList = NULL;
+ COLOR_LINE *ColorIndexList = NULL;
+ 
+ /* local to this file */
+@@ -507,7 +508,7 @@ static int _mutt_parse_uncolor (BUFFER *buf, BUFFER *s, unsigned long data,
+ static int 
+ add_pattern (COLOR_LINE **top, const char *s, int sensitive,
+ 	     int fg, int bg, int attr, BUFFER *err,
+-	     int is_index)
++	     int is_index, int match)
+ {
+ 
+   /* is_index used to store compiled pattern
+@@ -578,6 +579,7 @@ add_pattern (COLOR_LINE **top, const char *s, int sensitive,
+     }
+     tmp->next = *top;
+     tmp->pattern = safe_strdup (s);
++    tmp->match = match;
+ #ifdef HAVE_COLOR
+     if(fg != -1 && bg != -1)
+     {
+@@ -720,7 +722,7 @@ _mutt_parse_color (BUFFER *buf, BUFFER *s, BUFFER *err,
+ 		   parser_callback_t callback, short dry_run)
+ {
+   int object = 0, attr = 0, fg = 0, bg = 0, q_level = 0;
+-  int r = 0;
++  int r = 0, match = 0;
+ 
+   if(parse_object(buf, s, &object, &q_level, err) == -1)
+     return -1;
+@@ -728,8 +730,6 @@ _mutt_parse_color (BUFFER *buf, BUFFER *s, BUFFER *err,
+   if(callback(buf, s, &fg, &bg, &attr, err) == -1)
+     return -1;
+ 
+-  /* extract a regular expression if needed */
+-  
+   if (object == MT_COLOR_HEADER || object == MT_COLOR_BODY || object == MT_COLOR_INDEX)
+   {
+     if (!MoreArgs (s))
+@@ -741,7 +741,7 @@ _mutt_parse_color (BUFFER *buf, BUFFER *s, BUFFER *err,
+     mutt_extract_token (buf, s, 0);
+   }
+    
+-  if (MoreArgs (s))
++  if (MoreArgs (s) && (object != MT_COLOR_STATUS))
+   {
+     strfcpy (err->data, _("too many arguments"), err->dsize);
+     return (-1);
+@@ -766,12 +766,37 @@ _mutt_parse_color (BUFFER *buf, BUFFER *s, BUFFER *err,
+ #endif
+   
+   if (object == MT_COLOR_HEADER)
+-    r = add_pattern (&ColorHdrList, buf->data, 0, fg, bg, attr, err,0);
++    r = add_pattern (&ColorHdrList, buf->data, 0, fg, bg, attr, err, 0, match);
+   else if (object == MT_COLOR_BODY)
+-    r = add_pattern (&ColorBodyList, buf->data, 1, fg, bg, attr, err, 0);
++    r = add_pattern (&ColorBodyList, buf->data, 1, fg, bg, attr, err, 0, match);
++  else if ((object == MT_COLOR_STATUS) && MoreArgs (s)) {
++    /* 'color status fg bg' can have upto 2 arguments:
++     * 0 arguments: sets the default status color (handled below by else part)
++     * 1 argument : colorize pattern on match
++     * 2 arguments: colorize nth submatch of pattern
++     */
++    mutt_extract_token (buf, s, 0);
++
++    if (MoreArgs (s)) {
++      BUFFER temporary;
++      memset (&temporary, 0, sizeof (BUFFER));
++      mutt_extract_token (&temporary, s, 0);
++      match = atoi (temporary.data);
++      FREE(&temporary.data);
++    }
++
++    if (MoreArgs (s)) {
++      strfcpy (err->data, _("too many arguments"), err->dsize);
++      return -1;
++    }
++
++    r = add_pattern (&ColorStatusList, buf->data, 1,
++		    fg, bg, attr, err, 0, match);
++  }
+   else if (object == MT_COLOR_INDEX)
+   {
+-    r = add_pattern (&ColorIndexList, buf->data, 1, fg, bg, attr, err, 1);
++    r = add_pattern (&ColorIndexList, buf->data, 1,
++		    fg, bg, attr, err, 1, match);
+     set_option (OPTFORCEREDRAWINDEX);
+   }
+   else if (object == MT_COLOR_QUOTED)
+diff --git a/curs_main.c b/curs_main.c
+index a241fe6..d23f33c 100644
+--- a/curs_main.c
++++ b/curs_main.c
+@@ -482,6 +482,112 @@ static void resort_index (MUTTMENU *menu)
+   menu->redraw = REDRAW_INDEX | REDRAW_STATUS;
+ }
+ 
++/**
++ * mutt_draw_statusline - XXX
++ */
++void
++mutt_draw_statusline (int cols, char *inbuf)
++{
++	int i          = 0;
++	int cnt        = 0;
++	int last_color = 0;
++	int color      = 0;
++	int offset     = 0;
++	int found      = 0;
++	int null_rx    = 0;
++	char buf[2048];
++
++	struct line_t {
++		short chunks;
++		struct syntax_t {
++			int color;
++			int first;
++			int last;
++		} *syntax;
++	} lineInfo = { 0, NULL };
++
++	mutt_format_string (buf, sizeof (buf), cols, cols, 0, ' ', inbuf, mutt_strlen (inbuf), 0);
++
++	lineInfo.syntax = safe_malloc (sizeof (struct syntax_t));
++	lineInfo.syntax[0].first = -1;
++	lineInfo.syntax[0].last  = -1;
++	lineInfo.syntax[0].color = ColorDefs[MT_COLOR_STATUS];
++	lineInfo.chunks = 1;
++
++	do {
++		found = 0;
++		null_rx = 0;
++		COLOR_LINE *color_line = ColorStatusList;
++
++		if (!buf[offset])
++			break;
++
++		while (color_line) {
++			regmatch_t pmatch[color_line->match + 1];
++
++			if (regexec (&color_line->rx, buf + offset, color_line->match + 1, pmatch, (offset ? REG_NOTBOL : 0)) == 0) {
++				if (pmatch[color_line->match].rm_eo != pmatch[color_line->match].rm_so) {
++					if (!found) {
++						if (++(lineInfo.chunks) > 1) {
++							safe_realloc (&(lineInfo.syntax), (lineInfo.chunks) * sizeof (struct syntax_t));
++						}
++					}
++					i = lineInfo.chunks - 1;
++					pmatch[color_line->match].rm_so += offset;
++					pmatch[color_line->match].rm_eo += offset;
++					if (!found ||
++						(pmatch[color_line->match].rm_so < (lineInfo.syntax)[i].first) ||
++						((pmatch[color_line->match].rm_so == (lineInfo.syntax)[i].first) &&
++						(pmatch[color_line->match].rm_eo > (lineInfo.syntax)[i].last))) {
++						(lineInfo.syntax)[i].color = color_line->pair;
++						(lineInfo.syntax)[i].first = pmatch[color_line->match].rm_so;
++						(lineInfo.syntax)[i].last = pmatch[color_line->match].rm_eo;
++					}
++					found = 1;
++					null_rx = 0;
++				} else {
++					null_rx = 1; /* empty regexp; don't add it, but keep looking */
++				}
++			}
++			color_line = color_line->next;
++		}
++
++		if (null_rx)
++			offset++; /* avoid degenerate cases */
++		else
++			offset = (lineInfo.syntax)[i].last;
++	} while (found || null_rx);
++
++	for (cnt = 0; cnt < mutt_strlen (buf); cnt++) {
++		color = lineInfo.syntax[0].color;
++		for (i = 0; i < lineInfo.chunks; i++) {
++			/* we assume the chunks are sorted */
++			if (cnt > (lineInfo.syntax)[i].last)
++				continue;
++			if (cnt < (lineInfo.syntax)[i].first)
++				break;
++			if (cnt != (lineInfo.syntax)[i].last) {
++				color = (lineInfo.syntax)[i].color;
++				break;
++			}
++			/* don't break here, as cnt might be in the next chunk as well */
++		}
++		if (color != last_color) {
++			attrset (color);
++			last_color = color;
++		}
++		/* XXX more than one char at a time? */
++		addch ((unsigned char)buf[cnt]);
++#if 0
++		waddnstr (stdscr, tgbuf, 10);
++		SETCOLOR (MT_COLOR_NORMAL);
++		waddnstr (stdscr, tgbuf + 10, -1);
++#endif
++	}
++
++	safe_free (&lineInfo.syntax);
++}
++
+ static const struct mapping_t IndexHelp[] = {
+   { N_("Quit"),  OP_QUIT },
+   { N_("Del"),   OP_DELETE },
+@@ -667,7 +773,7 @@ int mutt_index_menu (void)
+ #ifdef USE_SIDEBAR
+ 	sb_set_buffystats (Context);
+ #endif
+-	mutt_paddstr (COLS, buf);
++	mutt_draw_statusline (COLS, buf);
+ 	NORMAL_COLOR;
+ 	menu->redraw &= ~REDRAW_STATUS;
+ 	if (option(OPTTSENABLED) && TSSupported)
+diff --git a/doc/manual.xml.head b/doc/manual.xml.head
+index 4637b82..6417cf6 100644
+--- a/doc/manual.xml.head
++++ b/doc/manual.xml.head
+@@ -10761,6 +10761,209 @@ <sect1 id="skip-quoted-patch">
+ 	</sect2>
+ </sect1>
+ 
++<sect1 id="status-color">
++	<title>Status Color Patch</title>
++	<subtitle>Custom rules for theming the status bar</subtitle>
++
++	<sect2 id="status-color-patch">
++		<title>Patch</title>
++
++		<para>
++			To check if Mutt supports <quote>Status Color</quote>, look for
++			<quote>patch-status-color</quote> in the mutt version.
++			See: <xref linkend="mutt-patches"/>.
++		</para>
++
++		<itemizedlist>
++			<title>Dependencies:</title>
++			<listitem><para>mutt-1.6.1</para></listitem>
++		</itemizedlist>
++
++		<para>This patch is part of the <ulink url="http://www.neomutt.org/">NeoMutt Project</ulink>.</para>
++	</sect2>
++
++	<sect2 id="status-color-intro">
++		<title>Introduction</title>
++
++        <para>
++		The <quote>status-color</quote> patch allows you to theme different
++		parts of the status bar (also when it's used by the index).
++        </para>
++
++        <para>
++		Unlike normal color commands, <literal>color status</literal> can now
++		take up to 2 extra parameters (regex, num).
++        </para>
++	</sect2>
++
++<!--
++	<sect2 id="status-color-variables">
++		<title>Variables</title>
++		<para>None</para>
++	</sect2>
++
++	<sect2 id="status-color-functions">
++		<title>Functions</title>
++		<para>None</para>
++	</sect2>
++-->
++
++	<sect2 id="status-color-commands">
++		<title>Commands</title>
++		<cmdsynopsis>
++			<command>color</command>
++			<arg choice="plain">
++				<option>status</option>
++			</arg>
++			<arg choice="plain">
++				<replaceable class="parameter">foreground</replaceable>
++			</arg>
++			<arg choice="plain">
++				<replaceable class="parameter">background</replaceable>
++			</arg>
++			<group choice="opt">
++				<arg choice="plain">
++					<replaceable class="parameter">regex</replaceable>
++				</arg>
++				<group choice="opt">
++					<arg choice="plain">
++						<replaceable class="parameter">num</replaceable>
++					</arg>
++				</group>
++			</group>
++		</cmdsynopsis>
++
++		<para>
++			With zero parameters, Mutt will set the default color for the entire
++			status bar.
++		</para>
++
++		<para>
++			With one parameter, Mutt will only color the parts matching the
++			regex.
++		</para>
++
++		<para>
++			With two parameters, Mutt will only color the num'th sub-match of
++			the regex.
++		</para>
++	</sect2>
++
++	<sect2 id="status-color-colors">
++		<title>Colors</title>
++
++		<table id="table-status-color-colors">
++			<title>Status Colors</title>
++			<tgroup cols="3">
++				<thead>
++					<row>
++						<entry>Name</entry>
++						<entry>Default Color</entry>
++						<entry>Description</entry>
++					</row>
++				</thead>
++				<tbody>
++					<row>
++						<entry>status</entry>
++						<entry><literal>reverse</literal></entry>
++						<entry>Status bar</entry>
++					</row>
++				</tbody>
++			</tgroup>
++		</table>
++	</sect2>
++
++<!--
++	<sect2 id="status-color-sort">
++		<title>Sort</title>
++		<para>None</para>
++	</sect2>
++-->
++
++	<sect2 id="status-color-muttrc">
++		<title>Muttrc</title>
++<screen>
++<emphasis role="comment"># Example Mutt config file for the 'status-color' patch.
++ 
++# The 'status-color' patch allows you to theme different parts of
++# the status bar (also when it's used by the index).
++ 
++# For the examples below, set some defaults</emphasis>
++set status_format='-%r-Mutt: %f [Msgs:%?M?%M/?%m%?n? New:%n?%?o? Old:%o?%?d? Del:%d?%?F? Flag:%F?%?t? Tag:%t?%?p? Post:%p?%?b? Inc:%b?%?l? %l?]---(%s/%S)-%&gt;-(%P)---'
++set index_format='%4C %Z %{%b %d} %-15.15L (%?l?%4l&amp;%4c?) %s'
++set sort=threads
++set sort_aux=last-date-received
++ 
++<emphasis role="comment"># 'status color' can take up to 2 extra parameters
++ 
++# color status foreground background [ regex [ num ]]
++ 
++# 0 extra parameters
++# Set the default color for the entire status line</emphasis>
++color status blue white
++ 
++<emphasis role="comment"># 1 extra parameter
++# Set the color for a matching pattern
++# color status foreground background regexp
++ 
++# Highlight New, Deleted, or Flagged emails</emphasis>
++color status brightred white '(New|Del|Flag):[0-9]+'
++ 
++<emphasis role="comment"># Highlight mailbox ordering if it's different from the default
++# First, highlight anything (*/*)</emphasis>
++color status brightred default '\([^)]+/[^)]+\)'
++ 
++<emphasis role="comment"># Then override the color for one specfic case</emphasis>
++color status default   default '\(threads/last-date-received\)'
++ 
++<emphasis role="comment"># 2 extra parameters
++# Set the color for the nth submatch of a pattern
++# color status foreground background regexp num
++ 
++# Highlight the contents of the []s but not the [] themselves</emphasis>
++color status red default '\[([^]]+)\]' 1
++ 
++<emphasis role="comment"># The '1' refers to the first regex submatch, which is the inner
++# part in ()s
++ 
++# Highlight the mailbox</emphasis>
++color status brightwhite default 'Mutt: ([^ ]+)' 1
++ 
++<emphasis role="comment"># Search for 'Mutt: ' but only highlight what comes after it
++ 
++# vim: syntax=muttrc</emphasis>
++</screen>
++	</sect2>
++
++	<sect2 id="status-color-see-also">
++		<title>See Also</title>
++
++		<itemizedlist>
++			<listitem><para><ulink url="http://www.neomutt.org/">NeoMutt Project</ulink></para></listitem>
++			<listitem><para><link linkend="compile-time-features">Compile-Time Features</link></para></listitem>
++			<listitem><para><link linkend="regexp">Regular Expressions</link></para></listitem>
++			<listitem><para><link linkend="patterns">Patterns</link></para></listitem>
++			<listitem><para><link linkend="index-color">index-color patch</link></para></listitem>
++			<listitem><para><link linkend="color">Color command</link></para></listitem>
++		</itemizedlist>
++	</sect2>
++
++	<sect2 id="status-color-known-bugs">
++		<title>Known Bugs</title>
++		<para>None</para>
++	</sect2>
++
++	<sect2 id="status-color-credits">
++		<title>Credits</title>
++		<itemizedlist>
++		<listitem><para>David Sterba <email>dsterba@suse.cz</email></para></listitem>
++		<listitem><para>Thomas Glanzmann <email>thomas@glanzmann.de</email></para></listitem>
++		<listitem><para>Kirill A. Shutemov <email>kirill@shutemov.name</email></para></listitem>
++		<listitem><para>Richard Russon <email>rich@flatcap.org</email></para></listitem>
++		</itemizedlist>
++	</sect2>
++</sect1>
++
+ <sect1 id="trash-folder">
+ 	<title>Trash Folder Patch</title>
+ 	<subtitle>Automatically move "deleted" emails to a trash bin</subtitle>
+diff --git a/doc/muttrc.status-color b/doc/muttrc.status-color
+new file mode 100644
+index 0000000..385396f
+--- /dev/null
++++ b/doc/muttrc.status-color
+@@ -0,0 +1,49 @@
++# Example Mutt config file for the 'status-color' patch.
++
++# The 'status-color' patch allows you to theme different parts of
++# the status bar (also when it's used by the index).
++
++# For the examples below, set some defaults
++set status_format='-%r-Mutt: %f [Msgs:%?M?%M/?%m%?n? New:%n?%?o? Old:%o?%?d? Del:%d?%?F? Flag:%F?%?t? Tag:%t?%?p? Post:%p?%?b? Inc:%b?%?l? %l?]---(%s/%S)-%>-(%P)---'
++set index_format='%4C %Z %{%b %d} %-15.15L (%?l?%4l&%4c?) %s'
++set sort=threads
++set sort_aux=last-date-received
++
++# 'status color' can take up to 2 extra parameters
++
++# color status foreground background [ regex [ num ]]
++
++# 0 extra parameters
++# Set the default color for the entire status line
++color status blue white
++
++# 1 extra parameter
++# Set the color for a matching pattern
++# color status foreground background regexp
++
++# Highlight New, Deleted, or Flagged emails
++color status brightred white '(New|Del|Flag):[0-9]+'
++
++# Highlight mailbox ordering if it's different from the default
++# First, highlight anything (*/*)
++color status brightred default '\([^)]+/[^)]+\)'
++
++# Then override the color for one specfic case
++color status default   default '\(threads/last-date-received\)'
++
++# 2 extra parameters
++# Set the color for the nth submatch of a pattern
++# color status foreground background regexp num
++
++# Highlight the contents of the []s but not the [] themselves
++color status red default '\[([^]]+)\]' 1
++
++# The '1' refers to the first regex submatch, which is the inner
++# part in ()s
++
++# Highlight the mailbox
++color status brightwhite default 'Mutt: ([^ ]+)' 1
++
++# Search for 'Mutt: ' but only highlight what comes after it
++
++# vim: syntax=muttrc
+diff --git a/mutt_curses.h b/mutt_curses.h
+index 6f63160..514f12d 100644
+--- a/mutt_curses.h
++++ b/mutt_curses.h
+@@ -142,6 +142,7 @@ enum
+ typedef struct color_line
+ {
+   regex_t rx;
++  int match; /* which substringmap 0 for old behaviour */
+   char *pattern;
+   pattern_t *color_pattern; /* compiled pattern to speed up index color
+                                calculation */
+@@ -188,6 +189,7 @@ extern int ColorQuoteUsed;
+ extern int ColorDefs[];
+ extern COLOR_LINE *ColorHdrList;
+ extern COLOR_LINE *ColorBodyList;
++extern COLOR_LINE *ColorStatusList;
+ extern COLOR_LINE *ColorIndexList;
+ 
+ void ci_init_color (void);
+diff --git a/pager.c b/pager.c
+index 03f231e..5865eb3 100644
+--- a/pager.c
++++ b/pager.c
+@@ -1833,13 +1833,13 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
+ 	size_t l2 = sizeof (buffer);
+ 	hfi.hdr = (IsHeader (extra)) ? extra->hdr : extra->bdy->hdr;
+ 	mutt_make_string_info (buffer, l1 < l2 ? l1 : l2, NONULL (PagerFmt), &hfi, M_FORMAT_MAKEPRINT);
+-	mutt_paddstr (statuswidth, buffer);
++	mutt_draw_statusline (statuswidth, buffer);
+       }
+       else
+       {
+ 	char bn[STRING];
+ 	snprintf (bn, sizeof (bn), "%s (%s)", banner, pager_progress_str);
+-	mutt_paddstr (statuswidth, bn);
++	mutt_draw_statusline (statuswidth, bn);
+       }
+ #ifdef USE_SIDEBAR
+       if (!option (OPTSTATUSONTOP) || PagerIndexLines == 0)
+diff --git a/protos.h b/protos.h
+index 8e5f7aa..e4c9283 100644
+--- a/protos.h
++++ b/protos.h
+@@ -180,6 +180,7 @@ void mutt_decode_base64 (STATE *s, long len, int istext, iconv_t cd);
+ void mutt_default_save (char *, size_t, HEADER *);
+ void mutt_display_address (ENVELOPE *);
+ void mutt_display_sanitize (char *);
++void mutt_draw_statusline (int n, char *);
+ void mutt_edit_content_type (HEADER *, BODY *, FILE *);
+ void mutt_edit_file (const char *, const char *);
+ void mutt_edit_headers (const char *, const char *, HEADER *, char *, size_t);
+-- 
+2.8.2
+

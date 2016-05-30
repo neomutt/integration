@@ -1,0 +1,1822 @@
+From e7f6a60e6aefbc9821f64d45305d0ed98f686524 Mon Sep 17 00:00:00 2001
+From: Richard Russon <rich@flatcap.org>
+Date: Tue, 24 May 2016 17:42:12 +0100
+Subject: [PATCH 16/18] feature: keywords
+
+---
+ OPS                 |   1 +
+ PATCHES             |   1 +
+ README.keywords     | 105 ++++++++++++++++
+ commands.c          |  10 +-
+ copy.c              |  67 +++++++++++
+ copy.h              |   1 +
+ curs_main.c         |  20 ++++
+ doc/manual.xml.head | 340 +++++++++++++++++++++++++++++++++++++++++++++++++---
+ doc/muttrc.keywords |   0
+ doc/vimrc-keywords  |  10 ++
+ enter.c             |  43 +++++++
+ functions.h         |   2 +
+ globals.h           |   3 +
+ hash.c              |  27 +++++
+ hash.h              |   7 ++
+ hcache.c            |   4 +-
+ hdrline.c           |  71 ++++++-----
+ headers.c           | 187 +++++++++++++++++++++++++++++
+ imap/imap.c         |   3 +-
+ imap/message.c      |   3 +-
+ init.c              |  55 +++++++++
+ init.h              |  38 ++++++
+ main.c              |   4 +
+ mh.c                |   5 +-
+ mutt.h              |  13 +-
+ muttlib.c           |   5 +-
+ pager.c             |  12 ++
+ parse.c             |  76 ++++++++++--
+ pattern.c           |  14 ++-
+ protos.h            |   6 +
+ sendlib.c           |   2 -
+ sort.c              |  42 +++++++
+ sort.h              |   1 +
+ 33 files changed, 1111 insertions(+), 67 deletions(-)
+ create mode 100644 README.keywords
+ create mode 100644 doc/muttrc.keywords
+ create mode 100644 doc/vimrc-keywords
+
+diff --git a/OPS b/OPS
+index f14ff39..61f602f 100644
+--- a/OPS
++++ b/OPS
+@@ -56,6 +56,7 @@ OP_DELETE_THREAD "delete all messages in thread"
+ OP_DISPLAY_ADDRESS "display full address of sender"
+ OP_DISPLAY_HEADERS "display message and toggle header weeding"
+ OP_DISPLAY_MESSAGE "display a message"
++OP_EDIT_LABEL "add, change, or delete a message's label"
+ OP_EDIT_MESSAGE "edit the raw message"
+ OP_EDITOR_BACKSPACE "delete the char in front of the cursor"
+ OP_EDITOR_BACKWARD_CHAR "move the cursor one character to the left"
+diff --git a/PATCHES b/PATCHES
+index 1021dc0..0feb437 100644
+--- a/PATCHES
++++ b/PATCHES
+@@ -13,3 +13,4 @@ patch-tls-sni-neo-UNKNOWN
+ patch-quasi-delete-neo-UNKNOWN
+ patch-fmemopen-neo-UNKNOWN
+ patch-limit-current-thread-neo-UNKNOWN
++patch-keywords-neo-UNKNOWN
+diff --git a/README.keywords b/README.keywords
+new file mode 100644
+index 0000000..9d14436
+--- /dev/null
++++ b/README.keywords
+@@ -0,0 +1,105 @@
++Keywords Patch
++==============
++
++    Labels/Tagging for emails
++
++Patch
++-----
++
++    To check if Mutt supports "Keywords", look for "patch-keywords" in the mutt
++    version.
++
++    Dependencies
++    * mutt-1.5.24
++
++Introduction
++------------
++
++    Unify label/keyword handling.
++
++    Since x-labels were added to mutt in 2000, a number of other approaches to
++    what we now call "tagging" have also emerged. One of them was even made
++    standard in RFC 2822. This update unifies the handling of all these
++    strategies.
++
++    We start by changing mutt's internal keyword storage from a single string
++    which may contain whitespace to a list of discrete keywords. This has
++    advantages for keyword completion as well as for portabilty among varying
++    "standards" for keyword storage. This may represent a significant change
++    for existing mutt users who have set x-labels containing spaces, and should
++    be regarded with suspicion. The advantages are significant, though.
++
++    Next we allow mutt to parse keywords into this internal list from any of
++    the following headers: X-Label (freeform), X-Keywords (space-delimited),
++    X-Mozilla-Keys (space-delimited), and Keywords (RFC 2822,
++    comma-space-delimited). Mutt remembers which headers it sourced keywords
++    from, and can rewrite those headers when saving messages for compatibility
++    with the mailer of origin.
++
++    (X-Label was specified as freeform text by mutt, its only known
++    implementation. X-Labels have been used both as a "tagging" device,
++    probably with space delimiting, and as a "memo" field, where
++    space-delimited parsing would ruin the semantics of the memo. By default
++    mutt will not split X-Labels at all. Set $xlabel_delimiter if your needs
++    vary.)
++
++    Finally we add two booleans: $keywords_legacy=true and
++    $keywords_standard=FALSE. When $keywords_legacy is true, mutt will always
++    save keyword to whatever original header it came from. When
++    $keywords_standard=true, mutt will save to the Keywords: header. If both
++    are true mutt saves to both; if neither is true, mutt saves only to legacy
++    headers to avoid complete loss of keywords.
++
++    Overall this represents convergence path for all competing
++    labelling/tagging/keywording systems toward one that is specified by RFC.
++
++    You can change or delete the X-Label: field within Mutt using the
++    edit-label command, bound to the y key by default. This works for tagged
++    messages, too.
++
++Variables
++---------
++
++    Keyword Variables
++
++    | Name                | Type    | Default |
++    |---------------------|---------|---------|
++    | 'keywords_legacy'   | boolean | 'yes'   |
++    | 'keywords_standard' | boolean | 'no'    |
++    | 'xlabel_delimiter'  | string  | (empty) |
++
++Functions
++---------
++
++    Keyword Functions
++
++    | Menus       | Default Key | Function       | Description                              |
++    |-------------|-------------|----------------|------------------------------------------|
++    | index,pager | y           | '<edit-label>' | add, change, or delete a message's label |
++
++Sort
++----
++
++    Keywords Sort
++
++    | Sort    | Description   |
++    |---------|---------------|
++    | 'label' | Sort by label |
++
++See Also
++--------
++
++    * NeoMutt project
++    * $index_format
++    * index-color patch
++    * folder-hook
++
++Known Bugs
++----------
++
++Credits
++-------
++
++    * David Champion <dgc@uchicago.edu>
++    * Richard Russon <rich@flatcap.org>
++
+diff --git a/commands.c b/commands.c
+index 554efb6..4970c3a 100644
+--- a/commands.c
++++ b/commands.c
+@@ -533,9 +533,9 @@ int mutt_select_sort (int reverse)
+   int method = Sort; /* save the current method in case of abort */
+ 
+   switch (mutt_multi_choice (reverse ?
+-			     _("Rev-Sort (d)ate/(f)rm/(r)ecv/(s)ubj/t(o)/(t)hread/(u)nsort/si(z)e/s(c)ore/s(p)am?: ") :
+-			     _("Sort (d)ate/(f)rm/(r)ecv/(s)ubj/t(o)/(t)hread/(u)nsort/si(z)e/s(c)ore/s(p)am?: "),
+-			     _("dfrsotuzcp")))
++			     _("Rev-Sort Date/Frm/Recv/Subj/tO/Thread/Unsort/siZe/sCore/sPam/Label?: ") :
++			     _("Sort Date/Frm/Recv/Subj/tO/Thread/Unsort/siZe/sCore/sPam/Label?: "),
++			     _("dfrsotuzcpl")))
+   {
+   case -1: /* abort - don't resort */
+     return -1;
+@@ -579,6 +579,10 @@ int mutt_select_sort (int reverse)
+   case 10: /* s(p)am */
+     Sort = SORT_SPAM;
+     break;
++
++  case 11: /* (l)abel */
++    Sort = SORT_LABEL;
++    break;
+   }
+   if (reverse)
+     Sort |= SORT_REVERSE;
+diff --git a/copy.c b/copy.c
+index 7a250e6..050ab9d 100644
+--- a/copy.c
++++ b/copy.c
+@@ -111,6 +111,15 @@ mutt_copy_hdr (FILE *in, FILE *out, LOFF_T off_start, LOFF_T off_end, int flags,
+ 	ignore = 0;
+       }
+ 
++      if (flags & CH_UPDATE_LABEL)
++      {
++	if ((mutt_strncasecmp ("X-Label:", buf, 8) == 0) ||
++	    (mutt_strncasecmp ("X-Keywords:", buf, 11) == 0) ||
++	    (mutt_strncasecmp ("X-Mozilla-Keys:", buf, 15) == 0) ||
++	    (mutt_strncasecmp ("Keywords:", buf, 9) == 0))
++	  continue;
++      }
++
+       if (!ignore && fputs (buf, out) == EOF)
+ 	return (-1);
+     }
+@@ -413,6 +422,61 @@ mutt_copy_header (FILE *in, HEADER *h, FILE *out, int flags, const char *prefix)
+       fprintf (out, "Lines: %d\n", h->lines);
+   }
+ 
++  if (flags & CH_UPDATE_LABEL && h->label_changed)
++  {
++    h->label_changed = 0;
++    if (h->env->labels != NULL)
++    {
++      char buf[HUGE_STRING];
++      char *tmp = NULL;
++      int fail = 0;
++
++      if (fail == 0 &&
++          ((h->env->kwtypes & M_X_LABEL) || (h->env->kwtypes == 0)) &&
++          (option(OPTKEYWORDSLEGACY) || option(OPTKEYWORDSSTANDARD) == 0))
++      {
++        mutt_labels(buf, sizeof(buf), h->env, XlabelDelim);
++        tmp = strdup(buf);
++        rfc2047_encode_string(&tmp);
++        fail = fprintf(out, "X-Label: %s\n", tmp) != 10 + strlen(tmp);
++        FREE(&tmp);
++      }
++
++      if (fail == 0 && (h->env->kwtypes & M_X_KEYWORDS) &&
++          (option(OPTKEYWORDSLEGACY) || option(OPTKEYWORDSSTANDARD) == 0))
++      {
++        mutt_labels(buf, sizeof(buf), h->env, " ");
++        tmp = strdup(buf);
++        rfc2047_encode_string(&tmp);
++        fail = fprintf(out, "X-Keywords: %s\n", tmp) != 13 + strlen(tmp);
++        FREE(&tmp);
++      }
++
++      if (fail == 0 && (h->env->kwtypes & M_X_MOZILLA_KEYS) &&
++          (option(OPTKEYWORDSLEGACY) || option(OPTKEYWORDSSTANDARD) == 0))
++      {
++        mutt_labels(buf, sizeof(buf), h->env, " ");
++        tmp = strdup(buf);
++        rfc2047_encode_string(&tmp);
++        fail = fprintf(out, "X-Mozilla-Keys: %s\n", tmp) != 17 + strlen(tmp);
++        FREE(&tmp);
++      }
++
++      if (fail == 0 && ((h->env->kwtypes & M_KEYWORDS) ||
++                        option(OPTKEYWORDSSTANDARD)))
++      {
++        mutt_labels(buf, sizeof(buf), h->env, NULL);
++        tmp = strdup(buf);
++        rfc2047_encode_string(&tmp);
++        fail = fprintf(out, "Keywords: %s\n", tmp) != 11 + strlen(tmp);
++        FREE(&tmp);
++      }
++
++      if (fail)
++        return -1;
++    }
++  }
++
+   if ((flags & CH_NONEWLINE) == 0)
+   {
+     if (flags & CH_PREFIX)
+@@ -493,6 +557,9 @@ _mutt_copy_message (FILE *fpout, FILE *fpin, HEADER *hdr, BODY *body,
+       _mutt_make_string (prefix, sizeof (prefix), NONULL (Prefix), Context, hdr, 0);
+   }
+ 
++  if (hdr->label_changed)
++    chflags |= CH_UPDATE_LABEL;
++
+   if ((flags & M_CM_NOHEADER) == 0)
+   {
+     if (flags & M_CM_PREFIX)
+diff --git a/copy.h b/copy.h
+index 5f12a3c..9a98d21 100644
+--- a/copy.h
++++ b/copy.h
+@@ -53,6 +53,7 @@
+ #define CH_UPDATE_IRT     (1<<16) /* update In-Reply-To: */
+ #define CH_UPDATE_REFS    (1<<17) /* update References: */
+ #define CH_DISPLAY        (1<<18) /* display result to user */
++#define CH_UPDATE_LABEL   (1<<19) /* update X-Label: from hdr->env->x_label? */
+ 
+ 
+ int mutt_copy_hdr (FILE *, FILE *, LOFF_T, LOFF_T, int, const char *);
+diff --git a/curs_main.c b/curs_main.c
+index 8b84c48..0d2027e 100644
+--- a/curs_main.c
++++ b/curs_main.c
+@@ -1407,6 +1407,9 @@ int mutt_index_menu (void)
+ 	  FREE (&Context);
+ 	}
+ 
++        if (Labels)
++          hash_destroy(&Labels, NULL);
++
+         mutt_sleep (0);
+ 
+ 	/* Set CurrentMenu to MENU_MAIN before executing any folder
+@@ -1421,6 +1424,8 @@ int mutt_index_menu (void)
+ 					(option (OPTREADONLY) || op == OP_MAIN_CHANGE_FOLDER_READONLY) ?
+ 					M_READONLY : 0, NULL)) != NULL)
+ 	{
++	  Labels = hash_create(131, 0);
++	  mutt_scan_labels(Context);
+ 	  menu->current = ci_first_message ();
+ 	}
+ 	else
+@@ -2227,6 +2232,21 @@ int mutt_index_menu (void)
+ 	menu->redraw = REDRAW_FULL;
+ 	break;
+ 
++      case OP_EDIT_LABEL:
++
++	CHECK_MSGCOUNT;
++	CHECK_READONLY;
++	rc = mutt_label_message(tag ? NULL : CURHDR);
++	if (rc > 0) {
++	  Context->changed = 1;
++	  menu->redraw = REDRAW_FULL;
++	  mutt_message ("%d label%s changed.", rc, rc == 1 ? "" : "s");
++	}
++	else {
++	  mutt_message _("No labels changed.");
++	}
++	break;
++
+       case OP_LIST_REPLY:
+ 
+ 	CHECK_ATTACH;
+diff --git a/doc/manual.xml.head b/doc/manual.xml.head
+index 6eba963..3932b4d 100644
+--- a/doc/manual.xml.head
++++ b/doc/manual.xml.head
+@@ -1156,7 +1156,7 @@ <table id="tab-keys-editor">
+ <row><entry>^E or &lt;End&gt;</entry><entry><literal>&lt;eol&gt;</literal></entry><entry>move to the end of the line</entry></row>
+ <row><entry>^F or &lt;Right&gt;</entry><entry><literal>&lt;forward-char&gt;</literal></entry><entry>move forward one char</entry></row>
+ <row><entry>Esc F</entry><entry><literal>&lt;forward-word&gt;</literal></entry><entry>move forward one word</entry></row>
+-<row><entry>&lt;Tab&gt;</entry><entry><literal>&lt;complete&gt;</literal></entry><entry>complete filename or alias</entry></row>
++<row><entry>&lt;Tab&gt;</entry><entry><literal>&lt;complete&gt;</literal></entry><entry>complete filename, alias, or label</entry></row>
+ <row><entry>^T</entry><entry><literal>&lt;complete-query&gt;</literal></entry><entry>complete address with query</entry></row>
+ <row><entry>^K</entry><entry><literal>&lt;kill-eol&gt;</literal></entry><entry>delete to the end of the line</entry></row>
+ <row><entry>Esc d</entry><entry><literal>&lt;kill-eow&gt;</literal></entry><entry>delete to the end of the word</entry></row>
+@@ -5176,8 +5176,8 @@ <sect2 id="formatstrings-basics">
+ symbol (<literal>=</literal>) as a numeric prefix (like the minus
+ above), it will force the string to be centered within its minimum space
+ range. For example, <literal>%=14y</literal> will reserve 14 characters
+-for the %y expansion &mdash; that's the X-Label: header, in <link
+-linkend="index-format">$index_format</link>. If the expansion results in
++for the %y expansion &mdash; that's the set of message keywords (formerly
++X-Label).  If the expansion results in
+ a string less than 14 characters, it will be centered in a 14-character
+ space.  If the X-Label for a message were <quote>test</quote>, that
+ expansion would look like
+@@ -5803,7 +5803,7 @@ <table id="tab-patterns">
+ <row><entry>~V</entry><entry>cryptographically verified messages</entry></row>
+ <row><entry>~x <emphasis>EXPR</emphasis></entry><entry>messages which contain <emphasis>EXPR</emphasis> in the <quote>References</quote> or <quote>In-Reply-To</quote> field</entry></row>
+ <row><entry>~X [<emphasis>MIN</emphasis>]-[<emphasis>MAX</emphasis>]</entry><entry>messages with <emphasis>MIN</emphasis> to <emphasis>MAX</emphasis> attachments *)</entry></row>
+-<row><entry>~y <emphasis>EXPR</emphasis></entry><entry>messages which contain <emphasis>EXPR</emphasis> in the <quote>X-Label</quote> field</entry></row>
++<row><entry>~y <emphasis>EXPR</emphasis></entry><entry>messages which contain <emphasis>EXPR</emphasis> in their keywords</entry></row>
+ <row><entry>~z [<emphasis>MIN</emphasis>]-[<emphasis>MAX</emphasis>]</entry><entry>messages with a size in the range <emphasis>MIN</emphasis> to <emphasis>MAX</emphasis> *) **)</entry></row>
+ <row><entry>~=</entry><entry>duplicated messages (see <link linkend="duplicate-threads">$duplicate_threads</link>)</entry></row>
+ <row><entry>~$</entry><entry>unreferenced messages (requires threaded view)</entry></row>
+@@ -6673,18 +6673,6 @@ <sect1 id="using-lists">
+ </para>
+ 
+ <para>
+-The <quote>X-Label:</quote> header field can be used to further identify
+-mailing lists or list subject matter (or just to annotate messages
+-individually).  The <link linkend="index-format">$index_format</link>
+-variable's <quote>%y</quote> and <quote>%Y</quote> expandos can be used
+-to expand <quote>X-Label:</quote> fields in the index, and Mutt's
+-pattern-matcher can match regular expressions to <quote>X-Label:</quote>
+-fields with the <quote>~y</quote> selector.  <quote>X-Label:</quote> is
+-not a standard message header field, but it can easily be inserted by
+-procmail and other mail filtering agents.
+-</para>
+-
+-<para>
+ Lastly, Mutt has the ability to <link linkend="sort">sort</link> the
+ mailbox into <link linkend="threads">threads</link>.  A thread is a
+ group of messages which all relate to the same subject.  This is usually
+@@ -6697,6 +6685,121 @@ <sect1 id="using-lists">
+ 
+ </sect1>
+ 
++<sect1 id="using-keywords">
++<title>Keyword Management</title>
++
++<para>
++Mutt has supported textual labels (usually known as X-Labels after
++the header that we use to store them) for many years.  Since we
++initially added support for X-Lanels, however, the larger community
++has evolved more common ways of using and managing such labels, often
++known as <quote>keywords</quote> or <quote>tags</quote>.
++</para>
++
++<para>
++If you are new to Mutt or to using keywords in Mutt, you only need
++to know that the &lt;edit-label&gt; binding (<literal>y</literal> by
++default) will edit keywords, and that you can search for keywords
++using the <literal>~y</literal> pattern, and use the <literal>%y</literal>
++expando to display it in your <literal>$index_format</literal>.  You also
++can sort by keyword.  Keywords that you set will be stored to the
++<literal>X-Label:</literal> header by default.
++</para>
++
++<para>
++If you've been using X-Labels for a while, things have grown slightly.
++Mutt still supports X-Labels much as it has since 2000, but the scope
++of this support has expanded to support three additional header-based
++techniques for storing keyword metadata on messages:
++</para>
++
++<variablelist>
++
++<varlistentry>
++<term>X-Keywords</term>
++<listitem>
++<para>
++Informal design; space-delimited keywords
++</para>
++</listitem>
++</varlistentry>
++
++<varlistentry>
++<term>X-Mozilla-Keys</term>
++<listitem>
++<para>
++Informal design used by Mozilla-based agents; space-delimited keywords
++</para>
++</listitem>
++</varlistentry>
++
++<varlistentry>
++<term>Keywords</term>
++<listitem>
++<para>
++Standardized in RFC2822 (2001); comma-space-delimited keywords
++</para>
++</listitem>
++</varlistentry>
++
++<varlistentry>
++<term>X-Label</term>
++<listitem>
++<para>
++Mutt-specific design; freeform text (but see <link linkend="xlabel-delimiter">$xlabel_delimiter</link>)
++</para>
++</listitem>
++</varlistentry>
++
++</variablelist>
++
++<para>
++With X-Label, mutt's only notion of a message keyword was the literal
++string value of the X-Label header.  Under the new, integrated support,
++each message may have a list of distinct message keywords.  When reading
++keywords from one of the headers in the list above, the header value is
++split on the indicated delimiter (space or comma-space) for X-Keywords:,
++X-Mozilla-Keys:, and Keywords:.  By default, X-Label: is parsed as a
++single keyword.  By setting $xlabel_delimiter, you can force splitting
++of X-Label: as well.
++</para>
++
++<para>
++Two boolean variables control how keywords are saved when writing
++messages to a mailbox.  The default settings preserve backward
++compatibility within mutt completely, but by changing these
++values you can transition to more standard keyword storage. <link
++linkend="keywords-legacy">$keywords_legacy</link>, if set, will tell
++mutt to use only "legacy" headers -- i.e., <literal>X-Keywords:</literal>,
++<literal>X-Mozilla-Keys</literal>, <literal>Keywords</literal>, or
++<literal>X-Label:</literal>.  Keywords will be saved to whichever
++header was in use by the message the keyword was read from.  If
++<link linkend="keywords-standard">$keywords_standard</link> is
++set, keywords will be saved without exception to the standard
++<literal>Keywords:</literal> header.  (If both are set, both will be used;
++if both are unset, legacy headers are used.)  Additionally, <link
++linkend="xlabel-delimiter">$xlabel_delimiter</link> is used to format
++the X-Label: header on saves.
++</para>
++
++<para>
++To migrate completely to the new standard,
++unset <literal>$keywords_legacy</literal> and set
++<literal>$keywords_standard</literal>, and set
++<literal>$xlabel_delimiter</literal> either to what you currently use to
++delimit keywords in X-Labels, or to <quote>,&nbsp;</quote> (comma
++space).
++</para>
++
++<para>
++Note that it is common practice to insert <literal>X-Label:</literal> or
++other keyword headers from proxmail or other mail filters.  This is
++a useful trick for categorizing messages en masse as they are delivered
++to your inbox, and it is fully compatible with the new keywords code.
++</para>
++
++</sect1>
++
+ <sect1 id="new-mail">
+ <title>New Mail Detection</title>
+ 
+@@ -10197,6 +10300,211 @@ <sect1 id="initials">
+ 	</sect2>
+ </sect1>
+ 
++<sect1 id="keywords">
++	<title>Keywords Patch</title>
++	<subtitle>Labels/Tagging for emails</subtitle>
++
++	<sect2 id="keywords-patch">
++		<title>Patch</title>
++
++		<para>
++			To check if Mutt supports <quote>Keywords</quote>, look for
++			<quote>patch-keywords</quote> in the mutt version.
++			See: <xref linkend="mutt-patches"/>.
++		</para>
++
++		<itemizedlist>
++			<title>Dependencies:</title>
++			<listitem><para>mutt-1.6.1</para></listitem>
++		</itemizedlist>
++
++		<para>This patch is part of the <ulink url="http://www.neomutt.org/">NeoMutt Project</ulink>.</para>
++	</sect2>
++
++	<sect2 id="keywords-intro">
++		<title>Introduction</title>
++
++		<para>
++		Unify label/keyword handling.
++		</para>
++
++		<para>
++		Since x-labels were added to mutt in 2000, a number of other approaches
++		to what we now call <quote>tagging</quote> have also emerged.
++		One of them was even made standard in RFC 2822.
++		This update unifies the handling of all these strategies.
++		</para>
++
++		<para>
++		We start by changing mutt's internal keyword storage from a single
++		string which may contain whitespace to a list of discrete keywords.
++		This has advantages for keyword completion as well as for portabilty
++		among varying "standards" for keyword storage.  This may represent
++		a significant change for existing mutt users who have set x-labels
++		containing spaces, and should be regarded with suspicion.  The
++		advantages are significant, though.
++		</para>
++
++		<para>
++		Next we allow mutt to parse keywords into this internal list from
++		any of the following headers: X-Label (freeform), X-Keywords
++		(space-delimited), X-Mozilla-Keys (space-delimited), and Keywords (RFC
++		2822, comma-space-delimited).  Mutt remembers which headers it sourced
++		keywords from, and can rewrite those headers when saving messages for
++		compatibility with the mailer of origin.
++		</para>
++
++		<para>
++		(X-Label was specified as freeform text by mutt, its only known
++		implementation.  X-Labels have been used both as a
++		<quote>tagging</quote> device, probably with space delimiting, and as a
++		<quote>memo</quote> field, where space-delimited parsing would ruin the
++		semantics of the memo.  By default mutt will not split X-Labels at all.
++		Set $xlabel_delimiter if your needs vary.)
++		</para>
++
++		<para>
++		Finally we add two booleans: $keywords_legacy=true and
++		$keywords_standard=FALSE.  When $keywords_legacy is true, mutt will
++		always save keyword to whatever original header it came from.  When
++		$keywords_standard=true, mutt will save to the Keywords: header.  If
++		both are true mutt saves to both; if neither is true, mutt saves only
++		to legacy headers to avoid complete loss of keywords.
++		</para>
++
++		<para>
++		Overall this represents convergence path for all competing
++		labelling/tagging/keywording systems toward one that is specified by
++		RFC.
++		</para>
++
++		<para>
++		You can change or delete the X-Label: field within
++		Mutt using the edit-label command, bound to the
++		y key by default.  This works for tagged messages, too.
++		</para>
++	</sect2>
++
++	<sect2 id="keywords-variables">
++		<title>Variables</title>
++
++		<table id="table-keywords-variables">
++			<title>Keywords Variables</title>
++			<tgroup cols="3">
++				<thead>
++					<row>
++						<entry>Name</entry>
++						<entry>Type</entry>
++						<entry>Default</entry>
++					</row>
++				</thead>
++				<tbody>
++					<row>
++						<entry><literal>keywords_legacy</literal></entry>
++						<entry>boolean</entry>
++						<entry><literal>yes</literal></entry>
++					</row>
++					<row>
++						<entry><literal>keywords_standard</literal></entry>
++						<entry>boolean</entry>
++						<entry><literal>no</literal></entry>
++					</row>
++					<row>
++						<entry><literal>xlabel_delimiter</literal></entry>
++						<entry>string</entry>
++						<entry>(empty)</entry>
++					</row>
++				</tbody>
++			</tgroup>
++		</table>
++	</sect2>
++
++	<sect2 id="keywords-functions">
++		<title>Functions</title>
++
++		<table id="table-keywords-funcions">
++			<title>Keyword Functions</title>
++			<tgroup cols="4">
++				<thead>
++					<row>
++						<entry>Menus</entry>
++						<entry>Default Key</entry>
++						<entry>Function</entry>
++						<entry>Description</entry>
++					</row>
++				</thead>
++				<tbody>
++					<row>
++						<entry>index,pager</entry>
++						<entry>y</entry>
++						<entry><literal>&lt;edit-label&gt;</literal></entry>
++						<entry>add, change, or delete a message's label</entry>
++					</row>
++				</tbody>
++			</tgroup>
++		</table>
++	</sect2>
++
++<!--
++	<sect2 id="keywords-commands">
++		<title>Commands</title>
++	</sect2>
++
++	<sect2 id="keywords-colors">
++		<title>Colors</title>
++		<para>None</para>
++	</sect2>
++-->
++
++	<sect2 id="keywords-sort">
++		<title>Sort</title>
++		<table id="table-keywords-sort">
++			<title>Keywords Sort</title>
++			<tgroup cols="2">
++				<thead>
++					<row>
++						<entry>Sort</entry>
++						<entry>Description</entry>
++					</row>
++				</thead>
++				<tbody>
++					<row>
++						<entry><literal>label</literal></entry>
++						<entry>Sort by label</entry>
++					</row>
++				</tbody>
++			</tgroup>
++		</table>
++	</sect2>
++
++	<sect2 id="keywords-muttrc">
++		<title>Muttrc</title>
++	</sect2>
++
++	<sect2 id="keywords-see-also">
++		<title>See Also</title>
++
++		<itemizedlist>
++			<listitem><para><ulink url="https://github.com/neomutt/neomutt/wiki">NeoMutt Project</ulink></para></listitem>
++			<listitem><para><link linkend="index-format">$index_format</link></para></listitem>
++			<listitem><para><link linkend="index-color">index-color patch</link></para></listitem>
++			<listitem><para><link linkend="folder-hook">folder-hook</link></para></listitem>
++		</itemizedlist>
++	</sect2>
++
++	<sect2 id="keywords-known-bugs">
++		<title>Known Bugs</title>
++	</sect2>
++
++	<sect2 id="keywords-credits">
++		<title>Credits</title>
++		<itemizedlist>
++		<listitem><para>David Champion <email>dgc@uchicago.edu</email></para></listitem>
++		<listitem><para>Richard Russon <email>rich@flatcap.org</email></para></listitem>
++		</itemizedlist>
++	</sect2>
++</sect1>
++
+ <sect1 id="limit-current-thread">
+ 	<title>Limit-Current-Thread Patch</title>
+ 	<subtitle>Focus on one Email Thread</subtitle>
+diff --git a/doc/muttrc.keywords b/doc/muttrc.keywords
+new file mode 100644
+index 0000000..e69de29
+diff --git a/doc/vimrc-keywords b/doc/vimrc-keywords
+new file mode 100644
+index 0000000..2725191
+--- /dev/null
++++ b/doc/vimrc-keywords
+@@ -0,0 +1,10 @@
++" Vim syntax file for the mutt keywords patch
++
++syntax keyword muttrcVarBool    skipwhite contained keywords_legacy       nextgroup=muttrcSetBoolAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
++syntax keyword muttrcVarBool    skipwhite contained keywords_standard     nextgroup=muttrcSetBoolAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
++
++syntax keyword muttrcVarStr     contained skipwhite xlabel_delimiter      nextgroup=muttrcVarEqualsIdxFmt
++
++syntax match muttrcFunction     contained "\<edit-label\>"
++
++" vim: syntax=vim
+diff --git a/enter.c b/enter.c
+index 23610ae..d1373ea 100644
+--- a/enter.c
++++ b/enter.c
+@@ -565,6 +565,49 @@ int _mutt_enter_string (char *buf, size_t buflen, int y, int x,
+ 	    }
+ 	    break;
+ 	  }
++	  else if (flags & M_LABEL && ch == OP_EDITOR_COMPLETE)
++	  {
++	    for (i = state->curpos; i && state->wbuf[i-1] != ',' && 
++		 state->wbuf[i-1] != ':'; i--)
++	      ;
++	    for (; i < state->lastchar && state->wbuf[i] == ' '; i++)
++	      ;
++	    my_wcstombs (buf, buflen, state->wbuf + i, state->curpos - i);
++	    r = mutt_label_complete (buf, buflen, i, state->tabs);
++	    replace_part (state, i, buf);
++	    if (!r)
++	    {
++	      rv = 1;
++	      goto bye;
++	    }
++	    break;
++	  }
++	  else if (flags & M_PATTERN && ch == OP_EDITOR_COMPLETE)
++	  {
++        char *p;
++	    for (i = state->curpos; i && state->wbuf[i-1] != ',' && 
++		 state->wbuf[i-1] != ':'; i--)
++	      ;
++	    for (; i < state->lastchar && state->wbuf[i] == ' '; i++)
++	      ;
++	    my_wcstombs (buf, buflen, state->wbuf + i, state->curpos - i);
++        p = &buf[i];
++        while (p > buf && *(p-1) != '~')
++          p--;
++        if (*p == '~' && *(p+1) == 'y')
++        {
++	      r = mutt_label_complete (buf, buflen, i, state->tabs);
++	      replace_part (state, i, buf);
++	      if (!r)
++	      {
++	        rv = 1;
++	        goto bye;
++	      }
++        }
++        else
++          goto self_insert;
++	    break;
++	  }
+ 	  else if (flags & M_ALIAS && ch == OP_EDITOR_COMPLETE_QUERY)
+ 	  {
+ 	    /* invoke the query-menu to get more addresses */
+diff --git a/functions.h b/functions.h
+index 9b00208..73a43c1 100644
+--- a/functions.h
++++ b/functions.h
+@@ -99,6 +99,7 @@ const struct binding_t OpMain[] = { /* map: index */
+   { "delete-thread",		OP_DELETE_THREAD,		"\004" },
+   { "delete-subthread",		OP_DELETE_SUBTHREAD,		"\033d" },
+   { "edit",			OP_EDIT_MESSAGE,		"e" },
++  { "edit-label",		OP_EDIT_LABEL,			"y" },
+   { "edit-type",		OP_EDIT_TYPE,			"\005" },
+   { "forward-message",		OP_FORWARD_MESSAGE,		"f" },
+   { "flag-message",		OP_FLAG_MESSAGE,		"F" },
+@@ -200,6 +201,7 @@ const struct binding_t OpPager[] = { /* map: pager */
+   { "set-flag",  	OP_MAIN_SET_FLAG,		"w" },
+   { "clear-flag",       OP_MAIN_CLEAR_FLAG,		"W" },
+   { "edit",		OP_EDIT_MESSAGE,		"e" },
++  { "edit-label",	OP_EDIT_LABEL,			"y" },
+   { "edit-type",	OP_EDIT_TYPE,			"\005" },
+   { "forward-message",	OP_FORWARD_MESSAGE,		"f" },
+   { "flag-message",	OP_FLAG_MESSAGE,		"F" },
+diff --git a/globals.h b/globals.h
+index 94640b3..83e13fe 100644
+--- a/globals.h
++++ b/globals.h
+@@ -66,6 +66,7 @@ WHERE char *ImapUser INITVAL (NULL);
+ #endif
+ WHERE char *Inbox;
+ WHERE char *Ispell;
++WHERE char *KeywordsSave;
+ WHERE char *Locale;
+ WHERE char *MailcapPath;
+ WHERE char *Maildir;
+@@ -153,6 +154,7 @@ WHERE char *TSIconFormat;
+ WHERE short TSSupported;
+ WHERE char *Username;
+ WHERE char *Visual;
++WHERE char *XlabelDelim;
+ 
+ WHERE char *CurrentFolder;
+ WHERE char *LastFolder;
+@@ -161,6 +163,7 @@ WHERE char *LastFolder;
+ WHERE const char *ReleaseDate;
+ 
+ WHERE HASH *Groups;
++WHERE HASH *Labels;
+ WHERE HASH *ReverseAlias;
+ 
+ WHERE LIST *AutoViewList INITVAL(0);
+diff --git a/hash.c b/hash.c
+index 08f7171..b20e5c5 100644
+--- a/hash.c
++++ b/hash.c
+@@ -176,3 +176,30 @@ void hash_destroy (HASH **ptr, void (*destroy) (void *))
+   FREE (&pptr->table);
+   FREE (ptr);		/* __FREE_CHECKED__ */
+ }
++
++struct hash_elem *hash_walk(const HASH *table, struct hash_walk_state *state)
++{
++  if (state->last && state->last->next)
++  {
++    state->last = state->last->next;
++    return state->last;
++  }
++
++  if (state->last)
++    state->index++;
++
++  while (state->index < table->nelem)
++  {
++    if (table->table[state->index])
++    {
++      state->last = table->table[state->index];
++      return state->last;
++    }
++    state->index++;
++  } 
++
++  state->index = 0;
++  state->last = NULL;
++  return NULL;
++}
++
+diff --git a/hash.h b/hash.h
+index fb77d0c..2939bec 100644
+--- a/hash.h
++++ b/hash.h
+@@ -46,4 +46,11 @@ void hash_delete_hash (HASH * table, int hash, const char *key, const void *data
+ 		       void (*destroy) (void *));
+ void hash_destroy (HASH ** hash, void (*destroy) (void *));
+ 
++struct hash_walk_state {
++  int index;
++  struct hash_elem *last;
++};
++
++struct hash_elem *hash_walk(const HASH *table, struct hash_walk_state *state);
++
+ #endif
+diff --git a/hcache.c b/hcache.c
+index f4c0ecf..d91b9c6 100644
+--- a/hcache.c
++++ b/hcache.c
+@@ -439,13 +439,13 @@ dump_envelope(ENVELOPE * e, unsigned char *d, int *off, int convert)
+   d = dump_char(e->message_id, d, off, 0);
+   d = dump_char(e->supersedes, d, off, 0);
+   d = dump_char(e->date, d, off, 0);
+-  d = dump_char(e->x_label, d, off, convert);
+ 
+   d = dump_buffer(e->spam, d, off, convert);
+ 
+   d = dump_list(e->references, d, off, 0);
+   d = dump_list(e->in_reply_to, d, off, 0);
+   d = dump_list(e->userhdrs, d, off, convert);
++  d = dump_list(e->labels, d, off, convert);
+ 
+   return d;
+ }
+@@ -476,13 +476,13 @@ restore_envelope(ENVELOPE * e, const unsigned char *d, int *off, int convert)
+   restore_char(&e->message_id, d, off, 0);
+   restore_char(&e->supersedes, d, off, 0);
+   restore_char(&e->date, d, off, 0);
+-  restore_char(&e->x_label, d, off, convert);
+ 
+   restore_buffer(&e->spam, d, off, convert);
+ 
+   restore_list(&e->references, d, off, 0);
+   restore_list(&e->in_reply_to, d, off, 0);
+   restore_list(&e->userhdrs, d, off, convert);
++  restore_list(&e->labels, d, off, convert);
+ }
+ 
+ static int
+diff --git a/hdrline.c b/hdrline.c
+index 7fbc357..8c18085 100644
+--- a/hdrline.c
++++ b/hdrline.c
+@@ -876,42 +876,57 @@ hdr_format_str (char *dest,
+ 
+      case 'y':
+        if (optional)
+-	 optional = hdr->env->x_label ? 1 : 0;
++	 optional = hdr->env->labels ? 1 : 0;
+ 
+        colorlen = add_index_color (dest, destlen, flags, MT_COLOR_INDEX_LABEL);
+-       mutt_format_s (dest + colorlen, destlen - colorlen, prefix, NONULL (hdr->env->x_label));
++       mutt_format_s (dest + colorlen, destlen - colorlen, prefix, mutt_labels(NULL, 0, hdr->env, NULL));
+        add_index_color (dest + colorlen, destlen - colorlen, flags, MT_COLOR_INDEX);
+        break;
+- 
++
+     case 'Y':
+-      if (hdr->env->x_label)
++      if (hdr->env->labels == NULL)
+       {
+-	i = 1;	/* reduce reuse recycle */
+-	htmp = NULL;
+-	if (flags & M_FORMAT_TREE
+-	    && (hdr->thread->prev && hdr->thread->prev->message
+-		&& hdr->thread->prev->message->env->x_label))
+-	  htmp = hdr->thread->prev->message;
+-	else if (flags & M_FORMAT_TREE
+-		 && (hdr->thread->parent && hdr->thread->parent->message
+-		     && hdr->thread->parent->message->env->x_label))
+-	  htmp = hdr->thread->parent->message;
+-	if (htmp && mutt_strcasecmp (hdr->env->x_label,
+-				     htmp->env->x_label) == 0)
+-	  i = 0;
++        if (optional)
++          optional = 0;
++        mutt_format_s(dest, destlen, prefix, "");
++        break;
+       }
+       else
+-	i = 0;
+-
+-      if (optional)
+-	optional = i;
+-
+-      colorlen = add_index_color (dest, destlen, flags, MT_COLOR_INDEX_LABEL);
+-      if (i)
+-        mutt_format_s (dest + colorlen, destlen - colorlen, prefix, NONULL (hdr->env->x_label));
+-      else
+-        mutt_format_s (dest + colorlen, destlen - colorlen, prefix, "");
+-      add_index_color (dest + colorlen, destlen - colorlen, flags, MT_COLOR_INDEX);
++      {
++        char labels[HUGE_STRING];
++        char labelstmp[HUGE_STRING];
++
++        i = 1;  /* reduce reuse recycle */
++        htmp = NULL;
++        if ((flags & M_FORMAT_TREE) &&
++            hdr->thread->prev &&
++            hdr->thread->prev->message &&
++            hdr->thread->prev->message->env->labels)
++          htmp = hdr->thread->prev->message;
++        else if ((flags & M_FORMAT_TREE) &&
++                 hdr->thread->parent &&
++                 hdr->thread->parent->message &&
++                 hdr->thread->parent->message->env->labels)
++          htmp = hdr->thread->parent->message;
++
++        mutt_labels(labels, sizeof(labels), hdr->env, NULL);
++        if (htmp)
++        {
++          mutt_labels(labelstmp, sizeof(labelstmp), htmp->env, NULL);
++          if (htmp && mutt_strcasecmp (labels, labelstmp) == 0)
++            i = 0;
++        }
++
++        if (optional)
++	  optional = i;
++
++        colorlen = add_index_color (dest, destlen, flags, MT_COLOR_INDEX_LABEL);
++        if (i)
++	  mutt_format_s (dest + colorlen, destlen - colorlen, prefix, labels);
++        else
++          mutt_format_s (dest + colorlen, destlen - colorlen, prefix, "");
++        add_index_color (dest + colorlen, destlen - colorlen, flags, MT_COLOR_INDEX);
++      }
+ 
+       break;
+ 
+diff --git a/headers.c b/headers.c
+index 0a75998..465bcf3 100644
+--- a/headers.c
++++ b/headers.c
+@@ -211,3 +211,190 @@ void mutt_edit_headers (const char *editor,
+     }
+   }
+ }
++
++void mutt_label_ref_dec(ENVELOPE *env)
++{
++  uintptr_t count;
++  LIST *label;
++
++  for (label = env->labels; label; label = label->next)
++  {
++    if (label->data == NULL)
++      continue;
++    count = (uintptr_t)hash_find(Labels, label->data);
++    if (count)
++    {
++      hash_delete(Labels, label->data, NULL, NULL);
++      count--;
++      if (count > 0)
++        hash_insert(Labels, label->data, (void *)count, 0);
++    }
++    dprint(1, (debugfile, "--label %s: %d\n", label->data, count));
++  }
++}
++
++void mutt_label_ref_inc(ENVELOPE *env)
++{
++  uintptr_t count;
++  LIST *label;
++
++  for (label = env->labels; label; label = label->next)
++  {
++    if (label->data == NULL)
++      continue;
++    count = (uintptr_t)hash_find(Labels, label->data);
++    if (count)
++      hash_delete(Labels, label->data, NULL, NULL);
++    count++;  /* was zero if not found */
++    hash_insert(Labels, label->data, (void *)count, 0);
++    dprint(1, (debugfile, "++label %s: %d\n", label->data, count));
++  }
++}
++
++/*
++ * set labels on a message
++ */
++static int label_message(HEADER *hdr, char *new)
++{
++  if (hdr == NULL)
++    return 0;
++  if (hdr->env->labels == NULL && new == NULL)
++    return 0;
++  if (hdr->env->labels != NULL && new != NULL)
++  {
++    char old[HUGE_STRING];
++    mutt_labels(old, sizeof(old), hdr->env, NULL);
++    if (!strcmp(old, new))
++      return 0;
++  }
++
++  if (hdr->env->labels != NULL)
++  {
++    mutt_label_ref_dec(hdr->env);
++    mutt_free_list(&hdr->env->labels);
++  }
++
++  if (new == NULL)
++    hdr->env->labels = NULL;
++  else
++  {
++    char *last, *label;
++
++    for (label = strtok_r(new, ",", &last); label;
++         label = strtok_r(NULL, ",", &last)) 
++    {
++      SKIPWS(label);
++      if (mutt_find_list(hdr->env->labels, label))
++        continue;
++      if (hdr->env->labels == NULL)
++      {
++        hdr->env->labels = mutt_new_list();
++        hdr->env->labels->data = safe_strdup(label);
++      }
++      else
++        mutt_add_list(hdr->env->labels, label);
++    }
++    mutt_label_ref_inc(hdr->env);
++  }
++  return hdr->changed = hdr->label_changed = 1;
++}
++
++int mutt_label_message(HEADER *hdr)
++{
++  char buf[LONG_STRING], *new;
++  int i;
++  int changed;
++
++  *buf = '\0';
++  if (hdr != NULL && hdr->env->labels != NULL)
++    mutt_labels(buf, sizeof(buf)-2, hdr->env, NULL);
++
++  /* add a comma-space so that new typing is a new keyword */
++  if (buf[0])
++    strcat(buf, ", ");    /* __STRCAT_CHECKED__ */
++
++  if (mutt_get_field("Label: ", buf, sizeof(buf), M_LABEL /* | M_CLEAR */) != 0)
++    return 0;
++
++  new = buf;
++  SKIPWS(new);
++  if (new && *new)
++  {
++    char *p;
++    int len = strlen(new);
++    p = &new[len]; /* '\0' */
++    while (p > new)
++    {
++      if (!isspace((unsigned char)*(p-1)) && *(p-1) != ',')
++        break;
++      p--;
++    }
++    *p = '\0';
++  }
++  if (*new == '\0')
++    new = NULL;
++
++  changed = 0;
++  if (hdr != NULL) {
++    changed += label_message(hdr, new);
++  } else {
++#define HDR_OF(index) Context->hdrs[Context->v2r[(index)]]
++    for (i = 0; i < Context->vcount; ++i) {
++      if (HDR_OF(i)->tagged)
++        if (label_message(HDR_OF(i), new)) {
++          ++changed;
++          mutt_set_flag(Context, HDR_OF(i),
++            M_TAG, 0);
++        }
++    }
++  }
++
++  return changed;
++}
++
++/* scan a context (mailbox) and hash all labels we find */
++void mutt_scan_labels(CONTEXT *ctx)
++{
++  int i;
++
++  for (i = 0; i < ctx->msgcount; i++)
++    if (ctx->hdrs[i]->env->labels)
++      mutt_label_ref_inc(ctx->hdrs[i]->env);
++}
++
++
++char *mutt_labels(char *dst, int sz, ENVELOPE *env, char *sep)
++{
++  static char sbuf[HUGE_STRING];
++  int off = 0;
++  int len;
++  LIST *label;
++
++  if (sep == NULL)
++    sep = ", ";
++
++  if (dst == NULL)
++  {
++    dst = sbuf;
++    sz = sizeof(sbuf);
++  }
++
++  *dst = '\0';
++
++  for (label = env->labels; label; label = label->next)
++  {
++    if (label->data == NULL)
++      continue;
++    len = MIN(mutt_strlen(label->data), sz-off);
++    strfcpy(&dst[off], label->data, len+1);
++    off += len;
++    if (label->next)
++    {
++      len = MIN(mutt_strlen(sep), sz-off);
++      strfcpy(&dst[off], sep, len+1);
++      off += len;
++    }
++  }
++
++  return dst;
++}
+diff --git a/imap/imap.c b/imap/imap.c
+index 7655a5f..5c85f0c 100644
+--- a/imap/imap.c
++++ b/imap/imap.c
+@@ -1228,7 +1228,7 @@ int imap_sync_mailbox (CONTEXT* ctx, int expunge, int* index_hint)
+        * we delete the message and reupload it.
+        * This works better if we're expunging, of course. */
+       if ((h->env && (h->env->refs_changed || h->env->irt_changed)) ||
+-	  h->attach_del)
++	  h->attach_del || h->label_changed)
+       {
+         mutt_message (_("Saving changed messages... [%d/%d]"), n+1,
+                       ctx->msgcount);
+@@ -1238,6 +1238,7 @@ int imap_sync_mailbox (CONTEXT* ctx, int expunge, int* index_hint)
+ 	  dprint (1, (debugfile, "imap_sync_mailbox: Error opening mailbox in append mode\n"));
+ 	else
+ 	  _mutt_save_message (h, appendctx, 1, 0, 0);
++	h->label_changed = 0;
+       }
+     }
+   }
+diff --git a/imap/message.c b/imap/message.c
+index 7a79f44..3280f5d 100644
+--- a/imap/message.c
++++ b/imap/message.c
+@@ -69,7 +69,7 @@ int imap_read_headers (IMAP_DATA* idata, int msgbegin, int msgend)
+   int rc, mfhrc, oldmsgcount;
+   int fetchlast = 0;
+   int maxuid = 0;
+-  static const char * const want_headers = "DATE FROM SUBJECT TO CC MESSAGE-ID REFERENCES CONTENT-TYPE CONTENT-DESCRIPTION IN-REPLY-TO REPLY-TO LINES LIST-POST X-LABEL";
++  static const char * const want_headers = "DATE FROM SUBJECT TO CC MESSAGE-ID REFERENCES CONTENT-TYPE CONTENT-DESCRIPTION IN-REPLY-TO REPLY-TO LINES LIST-POST X-LABEL X-KEYWORDS X-MOZILLA-KEYS KEYWORDS";
+   progress_t progress;
+   int retval = -1;
+ 
+@@ -406,6 +406,7 @@ int imap_fetch_message (MESSAGE *msg, CONTEXT *ctx, int msgno)
+   IMAP_CACHE *cache;
+   int read;
+   int rc;
++
+   /* Sam's weird courier server returns an OK response even when FETCH
+    * fails. Thanks Sam. */
+   short fetched = 0;
+diff --git a/init.c b/init.c
+index 0113e7d..0c37cc4 100644
+--- a/init.c
++++ b/init.c
+@@ -3395,3 +3395,58 @@ static const char* myvar_get (const char* var)
+ 
+   return NULL;
+ }
++
++int mutt_label_complete (char *buffer, size_t len, int pos, int numtabs)
++{
++  char *pt = buffer;
++  int spaces; /* keep track of the number of leading spaces on the line */
++  int prefix;
++
++  SKIPWS (buffer);
++  spaces = buffer - pt;
++
++  for (pt = buffer; pt && *pt && *(pt+1); pt++);
++  for (; pt > buffer && !isspace(*(pt-1)); pt--);
++  prefix = pt - buffer;
++
++  /* first TAB. Collect all the matches */
++  if (numtabs == 1)
++  {
++    struct hash_elem *entry;
++    struct hash_walk_state state;
++
++    Num_matched = 0;
++    strfcpy (User_typed, pt, sizeof (User_typed));
++    memset (Matches, 0, Matches_listsize);
++    memset (Completed, 0, sizeof (Completed));
++    memset (&state, 0, sizeof(state));
++    while ((entry = hash_walk(Labels, &state)))
++      candidate (Completed, User_typed, entry->key, sizeof (Completed));
++    matches_ensure_morespace (Num_matched);
++    qsort(Matches, Num_matched, sizeof(char *), (sort_t *) mutt_strcasecmp);
++    Matches[Num_matched++] = User_typed;
++
++    /* All matches are stored. Longest non-ambiguous string is ""
++     * i.e. dont change 'buffer'. Fake successful return this time */
++    if (User_typed[0] == 0)
++      return 1;
++  }
++
++  if (Completed[0] == 0 && User_typed[0])
++    return 0;
++
++   /* Num_matched will _always_ be atleast 1 since the initial
++    * user-typed string is always stored */
++  if (numtabs == 1 && Num_matched == 2)
++    snprintf(Completed, sizeof(Completed), "%s", Matches[0]);
++  else if (numtabs > 1 && Num_matched > 2)
++    /* cycle thru all the matches */
++    snprintf(Completed, sizeof(Completed), "%s", 
++             Matches[(numtabs - 2) % Num_matched]);
++
++  /* return the completed label */
++  strncpy (&buffer[prefix], Completed, len - spaces);
++
++  return 1;
++}
++
+diff --git a/init.h b/init.h
+index 6996359..9544b16 100644
+--- a/init.h
++++ b/init.h
+@@ -1389,6 +1389,28 @@ struct option_t MuttVars[] = {
+   ** from your spool mailbox to your $$mbox mailbox, or as a result of
+   ** a ``$mbox-hook'' command.
+   */
++  { "keywords_legacy", DT_BOOL, R_NONE, OPTKEYWORDSLEGACY, 1 },
++  /*
++  ** .pp
++  ** If \fIset\fP, keywords/labels/tags will be written to whatever
++  ** legacy, nonstandard headers (X-Label, X-Keywords, X-Mozilla-Keys)
++  ** they were sourced from.
++  ** .pp
++  ** If both ``$$keywords_legacy'' and
++  ** ``$$keywords_standard'' are \fCfalse\fP, mutt will save keywords
++  ** to legacy headers to ensure that it does not lose your labels.
++  */
++  { "keywords_standard", DT_BOOL, R_NONE, OPTKEYWORDSSTANDARD, 0 },
++  /*
++  ** .pp
++  ** If \fIset\fP, keywords/labels/tags will be written to the
++  ** RFC2822-standard Keywords: header; this may imply a conversion from
++  ** legacy headers.
++  ** .pp
++  ** If both ``$$keywords_legacy'' and
++  ** ``$$keywords_standard'' are \fCfalse\fP, mutt will save keywords
++  ** to legacy headers to ensure that it does not lose your labels.
++  */
+   { "locale",		DT_STR,  R_BOTH, UL &Locale, UL "C" },
+   /*
+   ** .pp
+@@ -3751,6 +3773,20 @@ struct option_t MuttVars[] = {
+   {"xterm_set_titles",	DT_SYN,  R_NONE, UL "ts_enabled", 0 },
+   /*
+   */
++  { "xlabel_delimiter", DT_STR, R_NONE, UL &XlabelDelim, UL "" },
++  /*
++  ** .pp
++  ** The character used to delimit distinct keywords in X-Label headers.
++  ** X-Label is primarily a Mutt artifact, and the semantics of the field
++  ** were never defined: it is free-form text.  However interaction with
++  ** X-Keywords:, X-Mozilla-Keys:, and Keywords: requires that we adopt
++  ** some means of identifying separate keywords within the field.  Set
++  ** this to your personal convention.
++  ** .pp
++  ** This affect both parsing existing X-Label headers and writing new
++  ** X-Label headers.  You can modify this variable in runtime to accomplish
++  ** various kinds of conversion.
++  */
+   /*--*/
+   { NULL, 0, 0, 0, 0 }
+ };
+@@ -3767,6 +3803,7 @@ const struct mapping_t SortMethods[] = {
+   { "to",		SORT_TO },
+   { "score",		SORT_SCORE },
+   { "spam",		SORT_SPAM },
++  { "label",		SORT_LABEL },
+   { NULL,               0 }
+ };
+ 
+@@ -3786,6 +3823,7 @@ const struct mapping_t SortAuxMethods[] = {
+   { "to",		SORT_TO },
+   { "score",		SORT_SCORE },
+   { "spam",		SORT_SPAM },
++  { "label",		SORT_LABEL },
+   { NULL,               0 }
+ };
+ 
+diff --git a/main.c b/main.c
+index 801480d..ba492bd 100644
+--- a/main.c
++++ b/main.c
+@@ -832,9 +832,13 @@ int main (int argc, char **argv)
+ #ifdef USE_SIDEBAR
+       sb_set_open_buffy (folder);
+ #endif
++      Labels = hash_create (131, 0);
++      mutt_scan_labels(Context);
+       mutt_index_menu ();
+       if (Context)
+ 	FREE (&Context);
++      if (Labels)
++        hash_destroy(&Labels, NULL);
+     }
+ #ifdef USE_IMAP
+     imap_logout_all ();
+diff --git a/mh.c b/mh.c
+index 3465417..68b8436 100644
+--- a/mh.c
++++ b/mh.c
+@@ -1655,7 +1655,7 @@ static int mh_sync_message (CONTEXT * ctx, int msgno)
+ {
+   HEADER *h = ctx->hdrs[msgno];
+ 
+-  if (h->attach_del || 
++  if (h->attach_del || h->label_changed ||
+       (h->env && (h->env->refs_changed || h->env->irt_changed)))
+     if (mh_rewrite_message (ctx, msgno) != 0)
+       return -1;
+@@ -1667,7 +1667,7 @@ static int maildir_sync_message (CONTEXT * ctx, int msgno)
+ {
+   HEADER *h = ctx->hdrs[msgno];
+ 
+-  if (h->attach_del || 
++  if (h->attach_del || h->label_changed ||
+       (h->env && (h->env->refs_changed || h->env->irt_changed)))
+   {
+     /* when doing attachment deletion/rethreading, fall back to the MH case. */
+@@ -1789,6 +1789,7 @@ int mh_sync_mailbox (CONTEXT * ctx, int *index_hint)
+       }
+     }
+     else if (ctx->hdrs[i]->changed || ctx->hdrs[i]->attach_del ||
++	     ctx->hdrs[i]->label_changed ||
+ 	     (ctx->magic == M_MAILDIR
+ 	      && (option (OPTMAILDIRTRASH) || ctx->hdrs[i]->trash)
+ 	      && (ctx->hdrs[i]->deleted != ctx->hdrs[i]->trash)))
+diff --git a/mutt.h b/mutt.h
+index 40e2de6..c56991a 100644
+--- a/mutt.h
++++ b/mutt.h
+@@ -88,6 +88,7 @@
+ #define  M_CLEAR   (1<<5) /* clear input if printable character is pressed */
+ #define  M_COMMAND (1<<6) /* do command completion */
+ #define  M_PATTERN (1<<7) /* pattern mode - only used for history classes */
++#define  M_LABEL   (1<<8) /* do label completion */
+ 
+ /* flags for mutt_get_token() */
+ #define M_TOKEN_EQUAL		1	/* treat '=' as a special */
+@@ -320,6 +321,12 @@ enum
+ #define M_SPAM          1
+ #define M_NOSPAM        2
+ 
++/* flags for keywords headers */
++#define M_X_LABEL         (1<<0)  /* introduced to mutt in 2000 */
++#define M_X_KEYWORDS      (1<<1)  /* used in c-client, dovecot */
++#define M_X_MOZILLA_KEYS  (1<<2)  /* tbird */
++#define M_KEYWORDS        (1<<3)  /* rfc2822 */
++
+ /* boolean vars */
+ enum
+ {
+@@ -395,6 +402,8 @@ enum
+   OPTIMPLICITAUTOVIEW,
+   OPTINCLUDEONLYFIRST,
+   OPTKEEPFLAGGED,
++  OPTKEYWORDSLEGACY,
++  OPTKEYWORDSSTANDARD,
+   OPTMAILCAPSANITIZE,
+   OPTMAILCHECKRECENT,
+   OPTMAILDIRTRASH,
+@@ -615,11 +624,12 @@ typedef struct envelope
+   char *message_id;
+   char *supersedes;
+   char *date;
+-  char *x_label;
+   BUFFER *spam;
+   LIST *references;		/* message references (in reverse order) */
+   LIST *in_reply_to;		/* in-reply-to header content */
+   LIST *userhdrs;		/* user defined headers */
++  LIST *labels;
++  int kwtypes;
+ 
+   unsigned int irt_changed : 1; /* In-Reply-To changed to link/break threads */
+   unsigned int refs_changed : 1; /* References changed to break thread */
+@@ -755,6 +765,7 @@ typedef struct header
+ 					 * This flag is used by the maildir_trash
+ 					 * option.
+ 					 */
++  unsigned int label_changed : 1;	/* editable - used for syncing */
+   
+   /* timezone of the sender of this message */
+   unsigned int zhours : 5;
+diff --git a/muttlib.c b/muttlib.c
+index 2e9efad..fd025b8 100644
+--- a/muttlib.c
++++ b/muttlib.c
+@@ -713,13 +713,14 @@ void mutt_free_envelope (ENVELOPE **p)
+   FREE (&(*p)->message_id);
+   FREE (&(*p)->supersedes);
+   FREE (&(*p)->date);
+-  FREE (&(*p)->x_label);
+ 
+   mutt_buffer_free (&(*p)->spam);
+ 
+   mutt_free_list (&(*p)->references);
+   mutt_free_list (&(*p)->in_reply_to);
+   mutt_free_list (&(*p)->userhdrs);
++  mutt_label_ref_dec ((*p));
++  mutt_free_list (&(*p)->labels);
+   FREE (p);		/* __FREE_CHECKED__ */
+ }
+ 
+@@ -742,7 +743,7 @@ void mutt_merge_envelopes(ENVELOPE* base, ENVELOPE** extra)
+   MOVE_ELEM(message_id);
+   MOVE_ELEM(supersedes);
+   MOVE_ELEM(date);
+-  MOVE_ELEM(x_label);
++  MOVE_ELEM(labels);
+   if (!base->refs_changed)
+   {
+     MOVE_ELEM(references);
+diff --git a/pager.c b/pager.c
+index 5865eb3..9b63316 100644
+--- a/pager.c
++++ b/pager.c
+@@ -2797,6 +2797,18 @@ search_next:
+ 	redraw = REDRAW_FULL;
+ 	break;
+ 
++     case OP_EDIT_LABEL:
++        CHECK_MODE(IsHeader (extra));
++        rc = mutt_label_message(extra->hdr);
++        if (rc > 0) {
++          Context->changed = 1;
++          redraw = REDRAW_FULL;
++          mutt_message ("%d label%s changed.", rc, rc == 1 ? "" : "s");
++        }
++        else {
++          mutt_message _("No labels changed.");
++        }
++        break;
+ 
+       case OP_MAIL_KEY:
+         if (!(WithCrypto & APPLICATION_PGP))
+diff --git a/parse.c b/parse.c
+index 6a802ba..b02a044 100644
+--- a/parse.c
++++ b/parse.c
+@@ -981,6 +981,7 @@ int mutt_parse_rfc822_line (ENVELOPE *e, HEADER *hdr, char *line, char *p, short
+ {
+   int matched = 0;
+   LIST *last = NULL;
++  int kwtype = 0;
+   
+   if (lastp)
+     last = *lastp;
+@@ -1087,7 +1088,14 @@ int mutt_parse_rfc822_line (ENVELOPE *e, HEADER *hdr, char *line, char *p, short
+       matched = 1;
+     }
+     break;
+-    
++
++    case 'k':
++    if (!ascii_strcasecmp (line+1, "eywords"))
++    {
++      kwtype = M_KEYWORDS;
++    }
++    break;
++
+     case 'l':
+     if (!ascii_strcasecmp (line + 1, "ines"))
+     {
+@@ -1267,15 +1275,21 @@ int mutt_parse_rfc822_line (ENVELOPE *e, HEADER *hdr, char *line, char *p, short
+     }
+     else if (ascii_strcasecmp (line+1, "-label") == 0)
+     {
+-      FREE(&e->x_label);
+-      e->x_label = safe_strdup(p);
+-      matched = 1;
++      kwtype = M_X_LABEL;
+     }
+-    
++    else if (!ascii_strcasecmp (line+1, "-keywords"))
++    {
++      kwtype = M_X_KEYWORDS;
++    }
++    else if (!ascii_strcasecmp (line+1, "-mozilla-keys"))
++    {
++      kwtype = M_X_MOZILLA_KEYS;
++    }
++
+     default:
+     break;
+   }
+-  
++
+   /* Keep track of the user-defined headers */
+   if (!matched && user_hdrs)
+   {
+@@ -1298,12 +1312,59 @@ int mutt_parse_rfc822_line (ENVELOPE *e, HEADER *hdr, char *line, char *p, short
+       rfc2047_decode (&last->data);
+   }
+ 
++  if (kwtype)
++  {
++    char *last, *label;
++    char *text = strdup(p);
++    char *sep;
++
++    if (kwtype == M_KEYWORDS)
++      sep = ",";
++    else if (kwtype == M_X_LABEL)
++      sep = XlabelDelim;
++    else
++      sep = " ";
++
++    rfc2047_decode(&text);
++    if (sep == NULL || *sep == '\0')
++    {
++      SKIPWS(text);
++      if (!mutt_find_list(e->labels, text))
++      {
++        if (e->labels)
++          mutt_add_list(e->labels, text);
++        else
++        {
++          e->labels = mutt_new_list();
++          e->labels->data = safe_strdup(text);
++        }
++      }
++    }
++    else for (label = strtok_r(text, sep, &last); label;
++              label = strtok_r(NULL, sep, &last))
++    {
++      SKIPWS(label);
++      if (mutt_find_list(e->labels, label))
++        continue;
++      if (e->labels)
++        mutt_add_list(e->labels, label);
++      else
++      {
++        e->labels = mutt_new_list();
++        e->labels->data = safe_strdup(label);
++      }
++    }
++    e->kwtypes |= kwtype;
++    kwtype = 0;
++    matched = 1;
++  }
++
+   done:
+   
+   *lastp = last;
+   return matched;
+ }
+-  
++
+   
+ /* mutt_read_rfc822_header() -- parses a RFC822 header
+  *
+@@ -1441,7 +1502,6 @@ ENVELOPE *mutt_read_rfc822_header (FILE *f, HEADER *hdr, short user_hdrs,
+     rfc2047_decode_adrlist (e->mail_followup_to);
+     rfc2047_decode_adrlist (e->return_path);
+     rfc2047_decode_adrlist (e->sender);
+-    rfc2047_decode (&e->x_label);
+ 
+     if (e->subject)
+     {
+diff --git a/pattern.c b/pattern.c
+index 57be53e..8c296ce 100644
+--- a/pattern.c
++++ b/pattern.c
+@@ -1250,7 +1250,19 @@ mutt_pattern_exec (struct pattern_t *pat, pattern_exec_flag flags, CONTEXT *ctx,
+        break;
+      return (pat->not ^ ((h->security & APPLICATION_PGP) && (h->security & PGPKEY)));
+     case M_XLABEL:
+-      return (pat->not ^ (h->env->x_label && patmatch (pat, h->env->x_label) == 0));
++      {
++        LIST *label;
++        int result = 0;
++        for (label = h->env->labels; label; label = label->next)
++        {
++          if (label->data == NULL)
++            continue;
++          result = patmatch (pat, label->data) == 0;
++          if (result)
++            break;
++        }
++        return pat->not ^ result;
++      }
+     case M_HORMEL:
+       return (pat->not ^ (h->env->spam && h->env->spam->data && patmatch (pat, h->env->spam->data) == 0));
+     case M_DUPLICATED:
+diff --git a/protos.h b/protos.h
+index e4c9283..3102509 100644
+--- a/protos.h
++++ b/protos.h
+@@ -185,6 +185,12 @@ void mutt_edit_content_type (HEADER *, BODY *, FILE *);
+ void mutt_edit_file (const char *, const char *);
+ void mutt_edit_headers (const char *, const char *, HEADER *, char *, size_t);
+ int mutt_filter_unprintable (char **);
++void mutt_label_ref_dec(ENVELOPE *);
++void mutt_label_ref_inc(ENVELOPE *);
++int mutt_label_message (HEADER *);
++void mutt_scan_labels (CONTEXT *);
++int mutt_label_complete (char *, size_t, int, int);
++char *mutt_labels(char *, int, ENVELOPE *, char *);
+ void mutt_curses_error (const char *, ...);
+ void mutt_curses_message (const char *, ...);
+ void mutt_encode_descriptions (BODY *, short);
+diff --git a/sendlib.c b/sendlib.c
+index e6b6a79..f91c334 100644
+--- a/sendlib.c
++++ b/sendlib.c
+@@ -2489,7 +2489,6 @@ void mutt_prepare_envelope (ENVELOPE *env, int final)
+   rfc2047_encode_adrlist (env->from, "From");
+   rfc2047_encode_adrlist (env->mail_followup_to, "Mail-Followup-To");
+   rfc2047_encode_adrlist (env->reply_to, "Reply-To");
+-  rfc2047_encode_string (&env->x_label);
+ 
+   if (env->subject)
+   {
+@@ -2514,7 +2513,6 @@ void mutt_unprepare_envelope (ENVELOPE *env)
+   rfc2047_decode_adrlist (env->from);
+   rfc2047_decode_adrlist (env->reply_to);
+   rfc2047_decode (&env->subject);
+-  rfc2047_decode (&env->x_label);
+ }
+ 
+ static int _mutt_bounce_message (FILE *fp, HEADER *h, ADDRESS *to, const char *resent_from,
+diff --git a/sort.c b/sort.c
+index 76e9e79..4136545 100644
+--- a/sort.c
++++ b/sort.c
+@@ -210,6 +210,46 @@ static int compare_spam (const void *a, const void *b)
+   return (SORTCODE(result));
+ }
+ 
++int compare_label (const void *a, const void *b)
++{
++  HEADER **ppa = (HEADER **) a;
++  HEADER **ppb = (HEADER **) b;
++  int     ahas, bhas, result = 0;
++  LIST *la, *lb;
++
++  /* As with compare_spam, not all messages will have the x-label
++   * property.  Blank X-Labels are treated as null in the index
++   * display, so we'll consider them as null for sort, too.       */
++  ahas = (*ppa)->env && (*ppa)->env->labels;
++  bhas = (*ppb)->env && (*ppb)->env->labels;
++
++  /* First we bias toward a message with a label, if the other does not. */
++  if (ahas && !bhas)
++    return (SORTCODE(-1));
++  if (!ahas && bhas)
++    return (SORTCODE(1));
++
++  /* If neither has a label, use aux sort. */
++  if (!ahas && !bhas)
++  {
++    AUXSORT(result, a, b);
++    return (SORTCODE(result));
++  }
++
++  /* If both have a label, we just do a lexical compare. */
++  for (la = (*ppa)->env->labels, lb = (*ppb)->env->labels;
++       la && la->data && lb && lb->data && result == 0;
++       la = la->next, lb = lb->next)
++  {
++    result = mutt_strcasecmp(la->data, lb->data);
++  }
++  if (result == 0 && la == NULL)
++    return (SORTCODE(-1));
++  if (result == 0 && lb == NULL)
++    return (SORTCODE(1));
++  return (SORTCODE(result));
++}
++
+ sort_t *mutt_get_sort_func (int method)
+ {
+   switch (method & SORT_MASK)
+@@ -232,6 +272,8 @@ sort_t *mutt_get_sort_func (int method)
+       return (compare_score);
+     case SORT_SPAM:
+       return (compare_spam);
++    case SORT_LABEL:
++      return (compare_label);
+     default:
+       return (NULL);
+   }
+diff --git a/sort.h b/sort.h
+index f24491b..609677e 100644
+--- a/sort.h
++++ b/sort.h
+@@ -36,6 +36,7 @@
+ #define SORT_DESC	17
+ #define SORT_FLAGGED	18
+ #define SORT_PATH	19
++#define SORT_LABEL	20
+ 
+ /* dgc: Sort & SortAux are shorts, so I'm bumping these bitflags up from
+  * bits 4 & 5 to bits 8 & 9 to make room for more sort keys in the future. */
+-- 
+2.8.2
+

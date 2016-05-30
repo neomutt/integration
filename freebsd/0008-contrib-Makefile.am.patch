@@ -1,0 +1,25 @@
+From b0d32bdced05c63f034ebdb6f51c6ebc2edd853a Mon Sep 17 00:00:00 2001
+From: Richard Russon <rich@flatcap.org>
+Date: Fri, 27 May 2016 15:19:25 +0100
+Subject: [PATCH 08/21] contrib-Makefile.am
+
+---
+ contrib/Makefile.am | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/contrib/Makefile.am b/contrib/Makefile.am
+index 4abd2c7..34b09e3 100644
+--- a/contrib/Makefile.am
++++ b/contrib/Makefile.am
+@@ -2,7 +2,7 @@
+ 
+ subdir = contrib
+ 
+-SAMPLES = Mush.rc Pine.rc gpg.rc pgp2.rc pgp5.rc pgp6.rc Tin.rc \
++SAMPLES = Mush.rc Pine.rc gpg.rc pgp2.rc pgp6.rc Tin.rc \
+ 	sample.muttrc  sample.mailcap sample.muttrc-tlr \
+ 	colors.default colors.linux smime.rc \
+ 	ca-bundle.crt smime_keys_test.pl mutt_xtitle
+-- 
+2.8.2
+

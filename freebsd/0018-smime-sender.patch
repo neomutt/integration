@@ -1,0 +1,76 @@
+From dd069d34a8a5373f709fd05b487c4882884f981e Mon Sep 17 00:00:00 2001
+From: Richard Russon <rich@flatcap.org>
+Date: Fri, 27 May 2016 15:23:22 +0100
+Subject: [PATCH 18/21] smime-sender
+
+---
+ commands.c       | 2 +-
+ contrib/smime.rc | 5 ++++-
+ init.h           | 9 +++++++++
+ mutt.h           | 1 +
+ 4 files changed, 15 insertions(+), 2 deletions(-)
+
+diff --git a/commands.c b/commands.c
+index 554efb6..8289b4b 100644
+--- a/commands.c
++++ b/commands.c
+@@ -185,7 +185,7 @@ int mutt_display_message (HEADER *cur)
+     {
+       if (cur->security & GOODSIGN)
+       {
+-	if (!crypt_smime_verify_sender(cur))
++	if (option(OPTSMIMENOSENDER) || !crypt_smime_verify_sender(cur))
+ 	  mutt_message ( _("S/MIME signature successfully verified."));
+ 	else
+ 	  mutt_error ( _("S/MIME certificate owner does not match sender."));
+diff --git a/contrib/smime.rc b/contrib/smime.rc
+index a735c69..1be22bc 100644
+--- a/contrib/smime.rc
++++ b/contrib/smime.rc
+@@ -8,7 +8,10 @@ set smime_is_default
+ 
+ # Uncomment this if you don't want to set labels for certificates you add.
+ # unset smime_ask_cert_label
+-
++ 
++# Uncomment this if you don't want to check for sender's email address
++# set smime_dont_check_sender = yes
++  
+ # Passphrase expiration
+ set smime_timeout=300
+ 
+diff --git a/init.h b/init.h
+index 3fc8cb7..deef594 100644
+--- a/init.h
++++ b/init.h
+@@ -2946,6 +2946,15 @@ struct option_t MuttVars[] = {
+   ** the \fCshare/examples/mutt/\fP subdirectory which has been installed on
+   ** your system. (S/MIME only)
+   */
++  { "smime_dont_check_sender",	DT_BOOL, R_NONE, OPTSMIMENOSENDER, 0 },
++  /*
++  ** .pp
++  ** This flag controls wether you want the skip the check for the sender's
++  ** email address against the email address stored in the certificate. 
++  ** This can be useful if most of your email senders use SMIMEv3 which no
++  ** longer needs email-addresses as part of the certificates.
++  ** It is not set by default.
++  */
+   { "smime_decrypt_use_default_key",	DT_BOOL, R_NONE, OPTSDEFAULTDECRYPTKEY, 1 },
+   /*
+   ** .pp
+diff --git a/mutt.h b/mutt.h
+index 72e1c52..163ef0b 100644
+--- a/mutt.h
++++ b/mutt.h
+@@ -494,6 +494,7 @@ enum
+   OPTCRYPTTIMESTAMP,
+   OPTSMIMEISDEFAULT,
+   OPTASKCERTLABEL,
++  OPTSMIMENOSENDER,
+   OPTSDEFAULTDECRYPTKEY,
+   OPTPGPIGNORESUB,
+   OPTPGPCHECKEXIT,
+-- 
+2.8.2
+

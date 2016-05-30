@@ -1,0 +1,27 @@
+From 083bf4a969365884141d9cd319d6be4e25be1f49 Mon Sep 17 00:00:00 2001
+From: Richard Russon <rich@flatcap.org>
+Date: Fri, 27 May 2016 15:22:12 +0100
+Subject: [PATCH 14/21] Makefile.am
+
+---
+ Makefile.am | 4 ----
+ 1 file changed, 4 deletions(-)
+
+diff --git a/Makefile.am b/Makefile.am
+index 1dd9313..6b7269e 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -175,10 +175,6 @@ install-exec-hook:
+ 
+ install-data-local:
+ 	$(MKDIR_P) $(DESTDIR)$(sysconfdir)
+-	$(INSTALL) -m 644 $(srcdir)/mime.types $(DESTDIR)$(sysconfdir)/mime.types.dist
+-	-if [ ! -f $(DESTDIR)$(sysconfdir)/mime.types ]; then \
+-		$(INSTALL) -m 644 $(srcdir)/mime.types $(DESTDIR)$(sysconfdir); \
+-	fi
+ 
+ uninstall-local:
+ 	for i in mime.types ; do \
+-- 
+2.8.2
+

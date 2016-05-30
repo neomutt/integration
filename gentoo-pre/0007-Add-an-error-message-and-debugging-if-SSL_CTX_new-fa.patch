@@ -1,0 +1,63 @@
+From 235bce0365ba5550971a216bc638c4e7deb48002 Mon Sep 17 00:00:00 2001
+From: Kevin McCarthy <kevin@8t8.us>
+Date: Mon, 11 Apr 2016 11:55:50 -0700
+Subject: [PATCH 07/31] Add an error message and debugging if SSL_CTX_new()
+ fails.  (closes #3831)
+
+Generate a mutt_error().  Add a debugging function
+ssl_dprint_err_stack() to dprint the ssl error stack.
+---
+ mutt_ssl.c | 23 +++++++++++++++++++++++
+ 1 file changed, 23 insertions(+)
+
+diff --git a/mutt_ssl.c b/mutt_ssl.c
+index a8964d6..89bd6de 100644
+--- a/mutt_ssl.c
++++ b/mutt_ssl.c
+@@ -82,6 +82,7 @@ static int ssl_socket_open (CONNECTION * conn);
+ static int ssl_socket_close (CONNECTION * conn);
+ static int tls_close (CONNECTION* conn);
+ static void ssl_err (sslsockdata *data, int err);
++static void ssl_dprint_err_stack (void);
+ static int ssl_cache_trusted_cert (X509 *cert);
+ static int ssl_check_certificate (CONNECTION *conn, sslsockdata * data);
+ static int interactive_check_cert (X509 *cert, int idx, int len);
+@@ -336,6 +337,12 @@ static int ssl_socket_open (CONNECTION * conn)
+ 
+   if (! (data->ctx = SSL_CTX_new (SSLv23_client_method ())))
+   {
++    /* L10N: an SSL context is a data structure returned by the OpenSSL
++     *       function SSL_CTX_new().  In this case it returned NULL: an
++     *       error condition.
++     */
++    mutt_error (_("Unable to create SSL context"));
++    ssl_dprint_err_stack ();
+     mutt_socket_close (conn);
+     return -1;
+   }
+@@ -541,6 +548,22 @@ static void ssl_err (sslsockdata *data, int err)
+   dprint (1, (debugfile, "SSL error: %s\n", errmsg));
+ }
+ 
++static void ssl_dprint_err_stack (void)
++{
++#ifdef DEBUG
++  BIO *bio;
++  char *buf = NULL;
++
++  if (! (bio = BIO_new (BIO_s_mem ())))
++    return;
++  ERR_print_errors (bio);
++  if (BIO_get_mem_data (bio, &buf))
++    dprint (1, (debugfile, "SSL error stack: %s\n", buf));
++  BIO_free (bio);
++#endif
++}
++
++
+ static char *x509_get_part (char *line, const char *ndx)
+ {
+   static char ret[SHORT_STRING];
+-- 
+2.8.2
+

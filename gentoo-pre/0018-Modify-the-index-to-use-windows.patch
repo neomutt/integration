@@ -1,0 +1,105 @@
+From d6ee638adedb5380167a17cee266946e231087e4 Mon Sep 17 00:00:00 2001
+From: Kevin McCarthy <kevin@8t8.us>
+Date: Wed, 27 Apr 2016 17:56:54 -0700
+Subject: [PATCH 18/31] Modify the index to use windows.
+
+Change the index screen to use MuttIndexWindow and MuttStatusWindow.
+---
+ curs_main.c | 30 +++++++++++++-----------------
+ 1 file changed, 13 insertions(+), 17 deletions(-)
+
+diff --git a/curs_main.c b/curs_main.c
+index 4c70d55..e98d913 100644
+--- a/curs_main.c
++++ b/curs_main.c
+@@ -727,8 +727,6 @@ int mutt_index_menu (void)
+   int attach_msg = option(OPTATTACHMSG);
+ 
+   menu = mutt_new_menu (MENU_MAIN);
+-  menu->offset = 1;
+-  menu->pagelen = LINES - 3;
+   menu->make_entry = index_make_entry;
+   menu->color = index_color;
+   menu->current = ci_first_message ();
+@@ -875,15 +873,12 @@ int mutt_index_menu (void)
+ 	SidebarWidth = 0;
+ #endif
+ 	menu_status_line (buf, sizeof (buf), menu, NONULL (Status));
+-#ifdef USE_SIDEBAR
+-        SidebarWidth = sw; /* Restore the sidebar width */
+-#endif
+-	move (option (OPTSTATUSONTOP) ? 0 : LINES-2, 0);
++        mutt_window_move (MuttStatusWindow, 0, 0);
+ 	SETCOLOR (MT_COLOR_STATUS);
+ #ifdef USE_SIDEBAR
+ 	sb_set_buffystats (Context);
+ #endif
+-	mutt_draw_statusline (COLS, buf);
++	mutt_draw_statusline (MuttStatusWindow->cols, buf);
+ 	NORMAL_COLOR;
+ 	menu->redraw &= ~REDRAW_STATUS;
+ 	if (option(OPTTSENABLED) && TSSupported)
+@@ -902,11 +897,12 @@ int mutt_index_menu (void)
+ 	menu->oldcurrent = -1;
+ 
+       if (option (OPTARROWCURSOR))
+-	move (menu->current - menu->top + menu->offset, SidebarWidth + 2);
++	mutt_window_move (MuttIndexWindow, menu->current - menu->top + menu->offset, 2);
+       else if (option (OPTBRAILLEFRIENDLY))
+-	move (menu->current - menu->top + menu->offset, 0);
++	mutt_window_move (MuttIndexWindow, menu->current - menu->top + menu->offset, 0);
+       else
+-	move (menu->current - menu->top + menu->offset, COLS - 1);
++	mutt_window_move (MuttIndexWindow, menu->current - menu->top + menu->offset,
++                          MuttIndexWindow->cols - 1);
+       mutt_refresh ();
+ 
+ #if defined (USE_SLANG_CURSES) || defined (HAVE_RESIZETERM)
+@@ -953,14 +949,14 @@ int mutt_index_menu (void)
+ 	tag = 1;
+ 
+ 	/* give visual indication that the next command is a tag- command */
+-	mvaddstr (LINES - 1, 0, "tag-");
+-	clrtoeol ();
++	mutt_window_mvaddstr (MuttMessageWindow, 0, 0, "tag-");
++	mutt_window_clrtoeol (MuttMessageWindow);
+ 
+ 	/* get the real command */
+ 	if ((op = km_dokey (MENU_MAIN)) == OP_TAG_PREFIX)
+ 	{
+ 	  /* abort tag sequence */
+-	  CLEARLINE (LINES-1);
++          mutt_window_clearline (MuttMessageWindow, 0);
+ 	  continue;
+ 	}
+       }
+@@ -984,14 +980,14 @@ int mutt_index_menu (void)
+ 	tag = 1;
+ 
+ 	/* give visual indication that the next command is a tag- command */
+-	mvaddstr (LINES - 1, 0, "tag-");
+-	clrtoeol ();
++	mutt_window_mvaddstr (MuttMessageWindow, 0, 0, "tag-");
++	mutt_window_clrtoeol (MuttMessageWindow);
+ 
+ 	/* get the real command */
+ 	if ((op = km_dokey (MENU_MAIN)) == OP_TAG_PREFIX)
+ 	{
+ 	  /* abort tag sequence */
+-	  CLEARLINE (LINES-1);
++	  mutt_window_clearline (MuttMessageWindow, 0);
+ 	  continue;
+ 	}
+       }
+@@ -1823,7 +1819,7 @@ int mutt_index_menu (void)
+ 	  }
+ 	  if (!buf[0])
+ 	  {
+-	    CLEARLINE (LINES-1);
++            mutt_window_clearline (MuttMessageWindow, 0);
+ 	    break;
+ 	  }
+ 	}
+-- 
+2.8.2
+

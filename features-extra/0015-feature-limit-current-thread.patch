@@ -1,0 +1,358 @@
+From 13838fd3c32af1dae94773a6f4d195f575b56355 Mon Sep 17 00:00:00 2001
+From: Richard Russon <rich@flatcap.org>
+Date: Tue, 24 May 2016 17:29:47 +0100
+Subject: [PATCH 15/18] feature: limit-current-thread
+
+---
+ OPS                             |   1 +
+ PATCHES                         |   1 +
+ README.limit-current-thread     |  45 +++++++++++++++
+ curs_main.c                     |   4 +-
+ doc/manual.xml.head             | 119 ++++++++++++++++++++++++++++++++++++++++
+ doc/muttrc.limit-current-thread |   6 ++
+ functions.h                     |   1 +
+ mutt_menu.h                     |   2 +
+ pattern.c                       |  68 +++++++++++++++++++++++
+ 9 files changed, 246 insertions(+), 1 deletion(-)
+ create mode 100644 README.limit-current-thread
+ create mode 100644 doc/muttrc.limit-current-thread
+
+diff --git a/OPS b/OPS
+index 8ccc188..f14ff39 100644
+--- a/OPS
++++ b/OPS
+@@ -178,6 +178,7 @@ OP_VERSION "show the Mutt version number and date"
+ OP_VIEW_ATTACH "view attachment using mailcap entry if necessary"
+ OP_VIEW_ATTACHMENTS "show MIME attachments"
+ OP_WHAT_KEY "display the keycode for a key press"
++OP_LIMIT_CURRENT_THREAD "limit view to current thread"
+ OP_MAIN_SHOW_LIMIT "show currently active limit pattern"
+ OP_MAIN_COLLAPSE_THREAD "collapse/uncollapse current thread"
+ OP_MAIN_COLLAPSE_ALL "collapse/uncollapse all threads"
+diff --git a/PATCHES b/PATCHES
+index 4fad8c6..1021dc0 100644
+--- a/PATCHES
++++ b/PATCHES
+@@ -12,3 +12,4 @@ patch-index-color-neo-UNKNOWN
+ patch-tls-sni-neo-UNKNOWN
+ patch-quasi-delete-neo-UNKNOWN
+ patch-fmemopen-neo-UNKNOWN
++patch-limit-current-thread-neo-UNKNOWN
+diff --git a/README.limit-current-thread b/README.limit-current-thread
+new file mode 100644
+index 0000000..072413e
+--- /dev/null
++++ b/README.limit-current-thread
+@@ -0,0 +1,45 @@
++Limit-Current-Thread Patch
++==========================
++
++    Focus on one Email Thread
++
++Patch
++-----
++
++    To check if Mutt supports "limit-current-thread", look for
++    "patch-limit-current-thread" in the mutt version.
++
++    Dependencies
++    * mutt-1.6.1
++
++Introduction
++------------
++
++    This patch adds a new way of using the Limit Command. The
++    '<limit-current-thread>' function restricts the view to just the current
++    thread.
++    Setting the limit (the 'l' key) to "all" will restore the full email list.
++
++Functions
++---------
++
++    | Menus | Default Key | Function                 | Description                  |
++    |-------|-------------|--------------------------|------------------------------|
++    | index | '<Esc> L'   | '<limit-current-thread>' | Limit view to current thread |
++
++See Also
++--------
++
++    * NeoMutt project
++
++Known Bugs
++----------
++
++    None
++
++Credits
++-------
++
++    * David Sterba <dsterba@suse.cz>
++    * Richard Russon <rich@flatcap.org>
++
+diff --git a/curs_main.c b/curs_main.c
+index 1d5d8c1..8b84c48 100644
+--- a/curs_main.c
++++ b/curs_main.c
+@@ -1044,12 +1044,14 @@ int mutt_index_menu (void)
+ 	}
+         break;
+ 
++      case OP_LIMIT_CURRENT_THREAD:
+       case OP_MAIN_LIMIT:
+ 
+ 	CHECK_IN_MAILBOX;
+ 	menu->oldcurrent = (Context->vcount && menu->current >= 0 && menu->current < Context->vcount) ?
+ 		CURHDR->index : -1;
+-	if (mutt_pattern_func (M_LIMIT, _("Limit to messages matching: ")) == 0)
++	if (((op == OP_LIMIT_CURRENT_THREAD) && mutt_limit_current_thread(CURHDR))
++	    || ((op == OP_MAIN_LIMIT) && (mutt_pattern_func (M_LIMIT, _("Limit to messages matching: ")) == 0)))
+ 	{
+ 	  if (menu->oldcurrent >= 0)
+ 	  {
+diff --git a/doc/manual.xml.head b/doc/manual.xml.head
+index 4c4936d..6eba963 100644
+--- a/doc/manual.xml.head
++++ b/doc/manual.xml.head
+@@ -10197,6 +10197,125 @@ <sect1 id="initials">
+ 	</sect2>
+ </sect1>
+ 
++<sect1 id="limit-current-thread">
++	<title>Limit-Current-Thread Patch</title>
++	<subtitle>Focus on one Email Thread</subtitle>
++
++	<sect2 id="limit-current-thread-patch">
++		<title>Patch</title>
++
++		<para>
++			To check if Mutt supports <quote>limit-current-thread</quote>, look for
++			<quote>patch-limit-current-thread</quote> in the mutt version.
++			See: <xref linkend="mutt-patches"/>.
++		</para>
++
++		<itemizedlist>
++			<title>Dependencies:</title>
++			<listitem><para>mutt-1.6.1</para></listitem>
++		</itemizedlist>
++
++		<para>This patch is part of the <ulink url="http://www.neomutt.org/">NeoMutt Project</ulink>.</para>
++	</sect2>
++
++	<sect2 id="limit-current-thread-intro">
++		<title>Introduction</title>
++
++		<para>
++			This patch adds a new way of using the
++			<link linkend="tuning-search">Limit Command</link>.
++                        The <literal>&lt;limit-current-thread&gt;</literal>
++                        function restricts the view to just the current thread.
++                        Setting the limit (the <literal>l</literal> key) to
++                        <quote>all</quote> will restore the full email list.
++		</para>
++
++	</sect2>
++
++<!--
++	<sect2 id="limit-current-thread-variables">
++		<title>Variables</title>
++		<para>None</para>
++	</sect2>
++-->
++	<sect2 id="limit-current-thread-functions">
++		<title>Functions</title>
++
++		<table id="table-limit-current-thread-functions">
++			<title>Limit-Current-Thread Functions</title>
++			<tgroup cols="4">
++				<thead>
++					<row>
++						<entry>Menus</entry>
++						<entry>Default Key</entry>
++						<entry>Function</entry>
++						<entry>Description</entry>
++					</row>
++				</thead>
++				<tbody>
++					<row>
++						<entry>index</entry>
++                                                <entry><literal>&lt;Esc&gt; L</literal></entry>
++						<entry><literal>&lt;limit-current-thread&gt;</literal></entry>
++						<entry>Limit view to current thread</entry>
++					</row>
++				</tbody>
++			</tgroup>
++		</table>
++
++	</sect2>
++<!--
++	<sect2 id="limit-current-thread-commands">
++		<title>Commands</title>
++		<para>None</para>
++	</sect2>
++
++	<sect2 id="limit-current-thread-colors">
++		<title>Colors</title>
++		<para>None</para>
++	</sect2>
++
++	<sect2 id="limit-current-thread-sort">
++		<title>Sort</title>
++		<para>None</para>
++	</sect2>
++-->
++
++	<sect2 id="limit-current-thread-muttrc">
++		<title>Muttrc</title>
++
++<screen>
++<emphasis role="comment"># Example Mutt config file for the 'limit-current-thread' patch.
++ 
++# Limit view to current thread</emphasis>
++bind index &lt;esc&gt;L limit-current-thread
++ 
++<emphasis role="comment"># vim: syntax=muttrc</emphasis>
++</screen>
++	</sect2>
++
++	<sect2 id="limit-current-thread-see-also">
++		<title>See Also</title>
++
++		<itemizedlist>
++			<listitem><para><ulink url="http://www.neomutt.org/">NeoMutt Project</ulink></para></listitem>
++		</itemizedlist>
++	</sect2>
++
++	<sect2 id="limit-current-thread-known-bugs">
++		<title>Known Bugs</title>
++		<para>None</para>
++	</sect2>
++
++	<sect2 id="limit-current-thread-credits">
++		<title>Credits</title>
++		<itemizedlist>
++		<listitem><para>David Sterba <email>dsterba@suse.cz</email></para></listitem>
++		<listitem><para>Richard Russon <email>rich@flatcap.org</email></para></listitem>
++		</itemizedlist>
++	</sect2>
++</sect1>
++
+ <sect1 id="nested-if">
+ 	<title>Nested If Patch</title>
+ 	<subtitle>Allow complex nested conditions in format strings</subtitle>
+diff --git a/doc/muttrc.limit-current-thread b/doc/muttrc.limit-current-thread
+new file mode 100644
+index 0000000..5d32cf5
+--- /dev/null
++++ b/doc/muttrc.limit-current-thread
+@@ -0,0 +1,6 @@
++# Example Mutt config file for the 'limit-current-thread' patch.
++ 
++# Limit view to current thread
++bind index <esc>L limit-current-thread
++ 
++# vim: syntax=muttrc
+diff --git a/functions.h b/functions.h
+index fae2ef5..9b00208 100644
+--- a/functions.h
++++ b/functions.h
+@@ -114,6 +114,7 @@ const struct binding_t OpMain[] = { /* map: index */
+   { "next-undeleted",		OP_MAIN_NEXT_UNDELETED,		"j" },
+   { "previous-undeleted",	OP_MAIN_PREV_UNDELETED,		"k" },
+   { "limit",			OP_MAIN_LIMIT,			"l" },
++  { "limit-current-thread",	OP_LIMIT_CURRENT_THREAD,	"\033L" },
+   { "link-threads",		OP_MAIN_LINK_THREADS,		"&" },
+   { "list-reply",		OP_LIST_REPLY,			"L" },
+   { "mail",			OP_MAIL,			"m" },
+diff --git a/mutt_menu.h b/mutt_menu.h
+index 8cb49db..3a7ae08 100644
+--- a/mutt_menu.h
++++ b/mutt_menu.h
+@@ -118,4 +118,6 @@ int mutt_menuLoop (MUTTMENU *);
+ void index_make_entry (char *, size_t, struct menu_t *, int);
+ int index_color (int);
+ 
++int mutt_limit_current_thread (HEADER *h);
++
+ #endif /* _MUTT_MENU_H_ */
+diff --git a/pattern.c b/pattern.c
+index b3f517d..57be53e 100644
+--- a/pattern.c
++++ b/pattern.c
+@@ -1335,6 +1335,74 @@ void mutt_check_simple (char *s, size_t len, const char *simple)
+   }
+ }
+ 
++/**
++ * top_of_thread - Find the first email in the current thread
++ * @h: Header of current email
++ *
++ * Returns:
++ *	THREAD*: success, email found
++ *	NULL:    on error
++ */
++static THREAD *
++top_of_thread (HEADER *h)
++{
++	THREAD *t;
++
++	if (!h)
++		return NULL;
++
++	t = h->thread;
++
++	while (t && t->parent)
++		t = t->parent;
++
++	return t;
++}
++
++/**
++ * mutt_limit_current_thread - Limit the email view to the current thread
++ * @h: Header of current email
++ *
++ * Returns:
++ *	1: Success
++ *	0: Failure
++ */
++int
++mutt_limit_current_thread (HEADER *h)
++{
++	int i;
++	THREAD *me;
++
++	if (!h)
++		return 0;
++
++	me = top_of_thread (h);
++	if (!me)
++		return 0;
++
++	Context->vcount    = 0;
++	Context->vsize     = 0;
++	Context->collapsed = 0;
++
++	for (i = 0; i < Context->msgcount; i++) {
++		Context->hdrs[i]->virtual    = -1;
++		Context->hdrs[i]->limited    = 0;
++		Context->hdrs[i]->collapsed  = 0;
++		Context->hdrs[i]->num_hidden = 0;
++
++		if (top_of_thread (Context->hdrs[i]) == me) {
++			BODY *body = Context->hdrs[i]->content;
++
++			Context->hdrs[i]->virtual = Context->vcount;
++			Context->hdrs[i]->limited = 1;
++			Context->v2r[Context->vcount] = i;
++			Context->vcount++;
++			Context->vsize += (body->length + body->offset - body->hdr_offset);
++		}
++	}
++	return 1;
++}
++
+ int mutt_pattern_func (int op, char *prompt)
+ {
+   pattern_t *pat;
+-- 
+2.8.2
+

@@ -1,0 +1,206 @@
+From fe8ba816b2ad31efdd9a3780bd709b69e7a4896b Mon Sep 17 00:00:00 2001
+From: Kevin McCarthy <kevin@8t8.us>
+Date: Wed, 27 Apr 2016 17:56:56 -0700
+Subject: [PATCH 20/31] Modify the compose screen to use windows.
+
+The header field positions enum is now started at 0: the windows
+compute the relative positioning as needed.  A small improvement from
+this is that the headers now align with the top: there isn't a gap if
+$help is turned off.
+---
+ compose.c | 50 +++++++++++++++++++++++++-------------------------
+ 1 file changed, 25 insertions(+), 25 deletions(-)
+
+diff --git a/compose.c b/compose.c
+index 30a5e92..6eeb8e8 100644
+--- a/compose.c
++++ b/compose.c
+@@ -60,7 +60,7 @@ static const char* There_are_no_attachments = N_("There are no attachments.");
+ 
+ enum
+ {
+-  HDR_FROM  = 1,
++  HDR_FROM  = 0,
+   HDR_TO,
+   HDR_CC,
+   HDR_BCC,
+@@ -86,7 +86,7 @@ enum
+ 
+ #define HDR_XOFFSET 14
+ #define TITLE_FMT "%14s" /* Used for Prompts, which are ASCII */
+-#define W (COLS - HDR_XOFFSET - SidebarWidth)
++#define W (MuttIndexWindow->cols - HDR_XOFFSET)
+ 
+ static const char * const Prompts[] =
+ {
+@@ -147,7 +147,7 @@ static void snd_entry (char *b, size_t blen, MUTTMENU *menu, int num)
+ 
+ static void redraw_crypt_lines (HEADER *msg)
+ {
+-  mvprintw (HDR_CRYPT, SidebarWidth, TITLE_FMT, "Security: ");
++  mutt_window_mvaddstr (MuttIndexWindow, HDR_CRYPT, 0, "Security: ");
+ 
+   if ((WithCrypto & (APPLICATION_PGP | APPLICATION_SMIME)) == 0)
+   {
+@@ -181,9 +181,9 @@ static void redraw_crypt_lines (HEADER *msg)
+   if (option (OPTCRYPTOPPORTUNISTICENCRYPT) && (msg->security & OPPENCRYPT))
+       addstr (_(" (OppEnc mode)"));
+ 
+-  clrtoeol ();
+-  move (HDR_CRYPTINFO, SidebarWidth);
+-  clrtoeol ();
++  mutt_window_clrtoeol (MuttIndexWindow);
++  mutt_window_move (MuttIndexWindow, HDR_CRYPTINFO, 0);
++  mutt_window_clrtoeol (MuttIndexWindow);
+ 
+   if ((WithCrypto & APPLICATION_PGP)
+       && (msg->security & APPLICATION_PGP) && (msg->security & SIGN))
+@@ -207,7 +207,7 @@ static void redraw_crypt_lines (HEADER *msg)
+       && (msg->security & ENCRYPT)
+       && SmimeCryptAlg
+       && *SmimeCryptAlg) {
+-      mvprintw (HDR_CRYPTINFO, SidebarWidth + 40, "%s%s", _("Encrypt with: "),
++    mutt_window_mvprintw (MuttIndexWindow, HDR_CRYPTINFO, 40, "%s%s", _("Encrypt with: "),
+ 		NONULL(SmimeCryptAlg));
+   }
+ }
+@@ -220,12 +220,12 @@ static void redraw_mix_line (LIST *chain)
+   int c;
+   char *t;
+ 
+-  mvprintw (HDR_MIX, SidebarWidth, TITLE_FMT, "Mix: ");
++  mutt_window_mvaddstr (MuttIndexWindow, HDR_MIX, 0,     "     Mix: ");
+ 
+   if (!chain)
+   {
+     addstr ("<no chain defined>");
+-    clrtoeol ();
++    mutt_window_clrtoeol (MuttIndexWindow);
+     return;
+   }
+   
+@@ -235,7 +235,7 @@ static void redraw_mix_line (LIST *chain)
+     if (t && t[0] == '0' && t[1] == '\0')
+       t = "<random>";
+     
+-    if (c + mutt_strlen (t) + 2 >= COLS - SidebarWidth)
++    if (c + mutt_strlen (t) + 2 >= MuttIndexWindow->cols)
+       break;
+ 
+     addstr (NONULL(t));
+@@ -287,7 +287,7 @@ static void draw_envelope_addr (int line, ADDRESS *addr)
+ 
+   buf[0] = 0;
+   rfc822_write_address (buf, sizeof (buf), addr, 1);
+-  mvprintw (line, SidebarWidth, TITLE_FMT, Prompts[line - 1]);
++  mutt_window_mvprintw (MuttIndexWindow, line, 0, TITLE_FMT, Prompts[line]);
+   mutt_paddstr (W, buf);
+ }
+ 
+@@ -319,10 +319,10 @@ static void draw_envelope (HEADER *msg, char *fcc)
+     }
+   }
+ #endif
+-  mvprintw (HDR_SUBJECT, SidebarWidth, TITLE_FMT, Prompts[HDR_SUBJECT - 1]);
++  mutt_window_mvprintw (MuttIndexWindow, HDR_SUBJECT, 0, TITLE_FMT, Prompts[HDR_SUBJECT]);
+   mutt_paddstr (W, NONULL (msg->env->subject));
+   draw_envelope_addr (HDR_REPLYTO, msg->env->reply_to);
+-  mvprintw (HDR_FCC, SidebarWidth, TITLE_FMT, Prompts[HDR_FCC - 1]);
++  mutt_window_mvprintw (MuttIndexWindow, HDR_FCC, 0, TITLE_FMT, Prompts[HDR_FCC]);
+   mutt_paddstr (W, fcc);
+ 
+   if (WithCrypto)
+@@ -333,8 +333,8 @@ static void draw_envelope (HEADER *msg, char *fcc)
+ #endif
+ 
+   SETCOLOR (MT_COLOR_STATUS);
+-  mvaddstr (HDR_ATTACH - 1, SidebarWidth, _("-- Attachments"));
+-  clrtoeol ();
++  mutt_window_mvaddstr (MuttIndexWindow, HDR_ATTACH - 1, 0, _("-- Attachments"));
++  mutt_window_clrtoeol (MuttIndexWindow);
+ 
+   NORMAL_COLOR;
+ }
+@@ -346,7 +346,7 @@ static int edit_address_list (int line, ADDRESS **addr)
+   
+   mutt_addrlist_to_local (*addr);
+   rfc822_write_address (buf, sizeof (buf), *addr, 0);
+-  if (mutt_get_field (Prompts[line - 1], buf, sizeof (buf), M_ALIAS) == 0)
++  if (mutt_get_field (Prompts[line], buf, sizeof (buf), M_ALIAS) == 0)
+   {
+     rfc822_free_address (addr);
+     *addr = mutt_parse_adrlist (*addr, buf);
+@@ -369,7 +369,7 @@ static int edit_address_list (int line, ADDRESS **addr)
+   /* redraw the expanded list so the user can see the result */
+   buf[0] = 0;
+   rfc822_write_address (buf, sizeof (buf), *addr, 1);
+-  move (line, HDR_XOFFSET + SidebarWidth);
++  mutt_window_move (MuttIndexWindow, line, HDR_XOFFSET);
+   mutt_paddstr (W, buf);
+   
+   return 0;
+@@ -593,7 +593,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
+   else
+ #endif
+   menu->help = mutt_compile_help (helpstr, sizeof (helpstr), MENU_COMPOSE, ComposeHelp);
+-  
++
+   while (loop)
+   {
+ #ifdef USE_NNTP
+@@ -604,7 +604,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
+       case OP_REDRAW:
+ 	draw_envelope (msg, fcc);
+ 	menu->offset = HDR_ATTACH;
+-	menu->pagelen = LINES - HDR_ATTACH - 2;
++	menu->pagelen = MuttIndexWindow->rows - HDR_ATTACH;
+ 	break;
+       case OP_COMPOSE_EDIT_FROM:
+ 	menu->redraw = edit_address_list (HDR_FROM, &msg->env->from);
+@@ -713,11 +713,11 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
+ 	if (mutt_get_field ("Subject: ", buf, sizeof (buf), 0) == 0)
+ 	{
+ 	  mutt_str_replace (&msg->env->subject, buf);
+-	  move (HDR_SUBJECT, HDR_XOFFSET + SidebarWidth);
++	  mutt_window_move (MuttIndexWindow, HDR_SUBJECT, HDR_XOFFSET);
+ 	  if (msg->env->subject)
+ 	    mutt_paddstr (W, msg->env->subject);
+ 	  else
+-	    clrtoeol();
++	    mutt_window_clrtoeol(MuttIndexWindow);
+ 	}
+         mutt_message_hook (NULL, msg, M_SEND2HOOK);
+         break;
+@@ -731,7 +731,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
+ 	{
+ 	  strfcpy (fcc, buf, fcclen);
+ 	  mutt_pretty_mailbox (fcc, fcclen);
+-	  move (HDR_FCC, HDR_XOFFSET + SidebarWidth);
++	  mutt_window_move (MuttIndexWindow, HDR_FCC, HDR_XOFFSET);
+ 	  mutt_paddstr (W, fcc);
+ 	  fccSet = 1;
+ 	}
+@@ -1231,7 +1231,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
+ 	  int itype;
+ 	  FILE *fp;
+ 
+-	  CLEARLINE (LINES-1);
++          mutt_window_clearline (MuttMessageWindow, 0);
+ 	  fname[0] = 0;
+ 	  if (mutt_get_field (_("New file: "), fname, sizeof (fname), M_FILE)
+ 	      != 0 || !fname[0])
+@@ -1490,9 +1490,9 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
+     if (menu->redraw & REDRAW_STATUS) 
+     {
+ 	compose_status_line (buf, sizeof (buf), 0, menu, NONULL(ComposeFormat));
+-	move(option (OPTSTATUSONTOP) ? 0 : LINES-2, 0);
++	mutt_window_move (MuttStatusWindow, 0, 0);
+ 	SETCOLOR (MT_COLOR_STATUS);
+-	mutt_paddstr (COLS, buf);
++	mutt_paddstr (MuttStatusWindow->cols, buf);
+ 	NORMAL_COLOR;
+ 	menu->redraw &= ~REDRAW_STATUS;
+     }
+-- 
+2.8.2
+

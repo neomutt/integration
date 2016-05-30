@@ -1,0 +1,92 @@
+From e5a58056ac9d026a938b186b92e4249eb2782cf4 Mon Sep 17 00:00:00 2001
+From: Kevin McCarthy <kevin@8t8.us>
+Date: Fri, 8 Apr 2016 15:27:17 -0700
+Subject: [PATCH 02/31] Fix pager.c format_line() to use size_t for mbrtowc()
+ retvals.
+
+While fixing up the error checking for mbrtowc(), I noticed the uses
+in pager.c format_line() were assigning the retval to an int.
+
+The cleanup for this was a little tricky, because it was making use of
+possible negative values for (k1 - k).  The backspace detection loop
+condition was a bit heavy, so this patch first pulled the
+initialization and first call above, and put the second call inside
+the loop.
+
+Note that k1 previously included k, but this patch changes it to be
+just the retval of mbrtowc.  This means the second mbrtowc() arguments
+are changed to include k, as is the ch increment at the bottom of the
+loop.
+---
+ pager.c | 30 ++++++++++++++++++------------
+ 1 file changed, 18 insertions(+), 12 deletions(-)
+
+diff --git a/pager.c b/pager.c
+index d18495e..0063b70 100644
+--- a/pager.c
++++ b/pager.c
+@@ -1104,7 +1104,8 @@ static int format_line (struct line_t **lineInfo, int n, unsigned char *buf,
+ {
+   int space = -1; /* index of the last space or TAB */
+   int col = option (OPTMARKERS) ? (*lineInfo)[n].continuation : 0;
+-  int ch, vch, k, last_special = -1, special = 0, t;
++  size_t k;
++  int ch, vch, last_special = -1, special = 0, t;
+   wchar_t wc;
+   mbstate_t mbstate;
+   int wrap_cols = mutt_term_width ((flags & M_PAGER_NOWRAP) ? 0 : Wrap);
+@@ -1138,9 +1139,9 @@ static int format_line (struct line_t **lineInfo, int n, unsigned char *buf,
+       break;
+     
+     k = mbrtowc (&wc, (char *)buf+ch, cnt-ch, &mbstate);
+-    if (k == -2 || k == -1)
++    if (k == (size_t)(-2) || k == (size_t)(-1))
+     {
+-      if (k == -1)
++      if (k == (size_t)(-1))
+         memset(&mbstate, 0, sizeof(mbstate));
+       dprint (1, (debugfile, "%s:%d: mbrtowc returned %d; errno = %d.\n",
+ 		  __FILE__, __LINE__, k, errno));
+@@ -1167,15 +1168,18 @@ static int format_line (struct line_t **lineInfo, int n, unsigned char *buf,
+     {
+       wchar_t wc1;
+       mbstate_t mbstate1;
+-      int k1, k2;
+-
+-      while ((wc1 = 0, mbstate1 = mbstate,
+-	      k1 = k + mbrtowc (&wc1, (char *)buf+ch+k, cnt-ch-k, &mbstate1),
+-	      k1 - k > 0 && wc1 == '\b') &&
+-	     (wc1 = 0,
+-	      k2 = mbrtowc (&wc1, (char *)buf+ch+k1, cnt-ch-k1, &mbstate1),
+-	      k2 > 0 && IsWPrint (wc1)))
++      size_t k1, k2;
++
++      mbstate1 = mbstate;
++      k1 = mbrtowc (&wc1, (char *)buf+ch+k, cnt-ch-k, &mbstate1);
++      while ((k1 != (size_t)(-2)) && (k1 != (size_t)(-1)) &&
++             (k1 > 0) && (wc1 == '\b'))
+       {
++        k2 = mbrtowc (&wc1, (char *)buf+ch+k+k1, cnt-ch-k-k1, &mbstate1);
++        if ((k2 == (size_t)(-2)) || (k2 == (size_t)(-1)) ||
++            (k2 == 0) || (!IsWPrint (wc1)))
++          break;
++
+ 	if (wc == wc1)
+ 	{
+ 	  special |= (wc == '_' && special & A_UNDERLINE)
+@@ -1191,9 +1195,11 @@ static int format_line (struct line_t **lineInfo, int n, unsigned char *buf,
+ 	  /* special = 0; / * overstrike: nothing to do! */
+ 	  wc = wc1;
+ 	}
+-	ch += k1;
++
++	ch += k + k1;
+ 	k = k2;
+ 	mbstate = mbstate1;
++        k1 = mbrtowc (&wc1, (char *)buf+ch+k, cnt-ch-k, &mbstate1);
+       }
+     }
+ 
+-- 
+2.8.2
+

@@ -1,0 +1,57 @@
+From 63e37126698a1a348a76cb632cb6319223176866 Mon Sep 17 00:00:00 2001
+From: Richard Russon <rich@flatcap.org>
+Date: Fri, 27 May 2016 03:05:02 +0100
+Subject: [PATCH 06/13] bug-676388-largefile
+
+---
+ crypt-gpgme.c | 2 +-
+ mh.c          | 6 +++---
+ mutt.h        | 2 +-
+ 3 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/crypt-gpgme.c b/crypt-gpgme.c
+index 479b58a..d93866b 100644
+--- a/crypt-gpgme.c
++++ b/crypt-gpgme.c
+@@ -496,7 +496,7 @@ static gpgme_data_t body_to_data_object (BODY *a, int convert)
+ /* Create a GPGME data object from the stream FP but limit the object
+    to LENGTH bytes starting at OFFSET bytes from the beginning of the
+    file. */
+-static gpgme_data_t file_to_data_object (FILE *fp, long offset, long length)
++static gpgme_data_t file_to_data_object (FILE *fp, LOFF_T offset, long length)
+ {
+   int err = 0;
+   gpgme_data_t data;
+diff --git a/mh.c b/mh.c
+index 38e3ed8..632e6de 100644
+--- a/mh.c
++++ b/mh.c
+@@ -1620,9 +1620,9 @@ static int mh_rewrite_message (CONTEXT * ctx, int msgno)
+   char newpath[_POSIX_PATH_MAX];
+   char partpath[_POSIX_PATH_MAX];
+ 
+-  long old_body_offset = h->content->offset;
+-  long old_body_length = h->content->length;
+-  long old_hdr_lines = h->lines;
++  LOFF_T old_body_offset = h->content->offset;
++  LOFF_T old_body_length = h->content->length;
++  LOFF_T old_hdr_lines = h->lines;
+ 
+   if ((dest = mx_open_new_message (ctx, h, 0)) == NULL)
+     return -1;
+diff --git a/mutt.h b/mutt.h
+index 3cb3df1..ef98bac 100644
+--- a/mutt.h
++++ b/mutt.h
+@@ -730,7 +730,7 @@ typedef struct body
+   PARAMETER *parameter;         /* parameters of the content-type */
+   char *description;            /* content-description */
+   char *form_name;		/* Content-Disposition form-data name param */
+-  long hdr_offset;              /* offset in stream where the headers begin.
++  LOFF_T hdr_offset;		/* offset in stream where the headers begin.
+ 				 * this info is used when invoking metamail,
+ 				 * where we need to send the headers of the
+ 				 * attachment
+-- 
+2.8.2
+

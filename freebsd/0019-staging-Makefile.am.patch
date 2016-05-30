@@ -1,0 +1,32 @@
+From 4f54ca4c1fc37bee24535b63c1580c83633c2e14 Mon Sep 17 00:00:00 2001
+From: Richard Russon <rich@flatcap.org>
+Date: Fri, 27 May 2016 15:24:02 +0100
+Subject: [PATCH 19/21] staging-Makefile.am
+
+---
+ Makefile.am | 9 ---------
+ 1 file changed, 9 deletions(-)
+
+diff --git a/Makefile.am b/Makefile.am
+index 92c4f6a..9c0b330 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -163,15 +163,6 @@ patchlist.c: $(srcdir)/PATCHES $(srcdir)/patchlist.sh
+ 	$(srcdir)/patchlist.sh < $(srcdir)/PATCHES > patchlist.c
+ 
+ install-exec-hook:
+-	if test -f $(DESTDIR)$(bindir)/mutt.dotlock && test -f $(DESTDIR)$(bindir)/mutt_dotlock ; then	\
+-		rm -f $(DESTDIR)$(bindir)/mutt.dotlock ;		\
+-		ln -sf $(DESTDIR)$(bindir)/mutt_dotlock $(DESTDIR)$(bindir)/mutt.dotlock ; \
+-	fi
+-	if test -f $(DESTDIR)$(bindir)/mutt_dotlock && test x$(DOTLOCK_GROUP) != x ; then \
+-		chgrp $(DOTLOCK_GROUP) $(DESTDIR)$(bindir)/mutt_dotlock && \
+-		chmod $(DOTLOCK_PERMISSION) $(DESTDIR)$(bindir)/mutt_dotlock || \
+-		{ echo "Can't fix mutt_dotlock's permissions!  This is required to lock mailboxes in the mail spool directory." >&2 ; exit 1 ; } \
+-	fi
+ 
+ install-data-local:
+ 	$(MKDIR_P) $(DESTDIR)$(sysconfdir)
+-- 
+2.8.2
+

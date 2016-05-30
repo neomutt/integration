@@ -1,0 +1,134 @@
+From 6b06244f6b11a11d3a8ec316049ee5b70d5e2f89 Mon Sep 17 00:00:00 2001
+From: Richard Russon <rich@flatcap.org>
+Date: Fri, 27 May 2016 03:01:54 +0100
+Subject: [PATCH 01/13] mutt-1.6.1
+
+---
+ configure.ac    | 10 +++++++++-
+ doc/Muttrc.head |  2 +-
+ imap/auth.c     | 20 ++++++++++++++++++++
+ init.h          |  3 +++
+ mx.c            |  3 +++
+ 5 files changed, 36 insertions(+), 2 deletions(-)
+
+diff --git a/configure.ac b/configure.ac
+index d47933b..d81ce88 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -282,7 +282,7 @@ main ()
+                         mutt_cv_slang=$withval
+                         if test -d $withval/include/slang; then
+                                 CPPFLAGS="$CPPFLAGS -I${withval}/include/slang"
+-                        elif test -d $withval/include; then
++                        elif test -d $withval/include && test $withval != /usr ; then
+                                 CPPFLAGS="$CPPFLAGS -I${withval}/include"
+                         fi
+                         LDFLAGS="$LDFLAGS -L${withval}/lib"
+@@ -721,8 +721,12 @@ AC_ARG_WITH(ssl, AS_HELP_STRING([--with-ssl@<:@=PFX@:>@],[Enable TLS support usi
+ 	  else
+             if test "$with_ssl" != "yes"
+             then
++	     case $withval in /usr|/usr/local) ;;
++	     *)
+              LDFLAGS="$LDFLAGS -L$withval/lib"
+              CPPFLAGS="$CPPFLAGS -I$withval/include"
++	     ;;
++	     esac
+             fi
+             saved_LIBS="$LIBS"
+ 
+@@ -801,8 +805,12 @@ AC_ARG_WITH(sasl, AS_HELP_STRING([--with-sasl@<:@=PFX@:>@],[Use SASL network sec
+ 
+           if test "$with_sasl" != "yes"
+           then
++	    case $with_sasl in /usr|/usr/local) ;;
++	    *)
+             CPPFLAGS="$CPPFLAGS -I$with_sasl/include"
+             LDFLAGS="$LDFLAGS -L$with_sasl/lib"
++	    ;;
++	    esac
+           fi
+ 
+           saved_LIBS="$LIBS"
+diff --git a/doc/Muttrc.head b/doc/Muttrc.head
+index 69e27ca..7833cf6 100644
+--- a/doc/Muttrc.head
++++ b/doc/Muttrc.head
+@@ -23,7 +23,7 @@ macro index,pager,attach,compose \cb "\
+ "call urlview to extract URLs out of a message"
+ 
+ # Show documentation when pressing F1
+-macro generic,pager <F1> "<shell-escape> less @docdir@/manual.txt<Enter>" "show Mutt documentation"
++macro generic,index,pager <F1> "<shell-escape> less -iM @docdir@/manual.txt<Enter>" "show Mutt documentation"
+ 
+ # show the incoming mailboxes list (just like "mutt -y") and back when pressing "y"
+ macro index,pager y "<change-folder>?<toggle-mailboxes>" "show incoming mailboxes list"
+diff --git a/imap/auth.c b/imap/auth.c
+index 047531a..f125b8f 100644
+--- a/imap/auth.c
++++ b/imap/auth.c
+@@ -72,6 +72,23 @@ int imap_authenticate (IMAP_DATA* idata)
+       dprint (2, (debugfile, "imap_authenticate: Trying method %s\n", method));
+       authenticator = imap_authenticators;
+ 
++#ifdef USE_SASL
++      /* "login" not supported by SASL */
++      if (!ascii_strcasecmp ("login", method))
++      {
++	while (authenticator->authenticate)
++	{
++	  char* identify = authenticator->method;
++	  if (identify && !ascii_strcasecmp(identify, method))
++	    if ((r = authenticator->authenticate(idata, method)) != IMAP_AUTH_UNAVAIL)
++	    {
++	      FREE(&methods);
++	      return r;
++	    }
++	  authenticator++;
++	}
++      } else {
++#endif
+       while (authenticator->authenticate)
+       {
+ 	if (!authenticator->method ||
+@@ -85,6 +102,9 @@ int imap_authenticate (IMAP_DATA* idata)
+ 	
+ 	authenticator++;
+       }
++#ifdef USE_SASL
++      }
++#endif
+     }
+ 
+     FREE (&methods);
+diff --git a/init.h b/init.h
+index 1b57aa2..1a28c02 100644
+--- a/init.h
++++ b/init.h
+@@ -3569,6 +3569,9 @@ struct option_t MuttVars[] = {
+   ** the default from the GNUTLS library.
+   */
+ # endif /* USE_SSL_GNUTLS */
++#if defined(USE_IMAP) && defined(SUSE_IMAP_FORCE_SSL)
++  { "imap_force_ssl",	DT_SYN,	R_NONE, UL "ssl_force_tls", 0 },
++#endif
+   { "ssl_starttls", DT_QUAD, R_NONE, OPT_SSLSTARTTLS, M_YES },
+   /*
+   ** .pp
+diff --git a/mx.c b/mx.c
+index 670a27c..ff11d74 100644
+--- a/mx.c
++++ b/mx.c
+@@ -1833,6 +1833,9 @@ void mx_update_context (CONTEXT *ctx, int new_messages)
+   {
+     h = ctx->hdrs[msgno];
+ 
++    if (!h)
++      continue;
++
+     if (WithCrypto)
+     {
+       /* NOTE: this _must_ be done before the check for mailcap! */
+-- 
+2.8.2
+

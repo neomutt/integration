@@ -1,0 +1,107 @@
+From f0a731c938168c77e42a9aaa661ba1cf01bc5259 Mon Sep 17 00:00:00 2001
+From: Richard Russon <rich@flatcap.org>
+Date: Mon, 30 May 2016 03:46:08 +0100
+Subject: [PATCH 08/13] quote
+
+---
+ PATCHES   |  1 +
+ handler.c | 28 ++++++++++++++++++++++++++--
+ init.h    | 13 +++++++++++++
+ mutt.h    |  2 ++
+ 4 files changed, 42 insertions(+), 2 deletions(-)
+
+diff --git a/PATCHES b/PATCHES
+index 6cd1dcf..e709cae 100644
+--- a/PATCHES
++++ b/PATCHES
+@@ -1,3 +1,4 @@
++vvv.quote
+ patch-1.5.4.lpr.collapse_flagged Lukas P. Ruf <lukas.ruf@lpr.ch>
+ patch-ifdef-neo-UNKNOWN
+ patch-initials-neo-UNKNOWN
+diff --git a/handler.c b/handler.c
+index d4490fd..adb281b 100644
+--- a/handler.c
++++ b/handler.c
+@@ -1582,7 +1582,31 @@ static int text_plain_handler (BODY *b, STATE *s)
+ 	buf[--l] = 0;
+     }
+     if (s->prefix)
+-      state_puts (s->prefix, s);
++    {
++      int i;
++      int offset = 0;
++      regmatch_t pmatch[1];
++
++      if (regexec ((regex_t *) QuoteRegexp.rx, &buf[offset], 1, pmatch, 0) == 0)
++	offset += pmatch->rm_eo;
++
++      if (option (OPTQUOTEQUOTED) && offset)
++      {
++	for (i = 0; i < offset; i++)
++	{
++	  state_putc (buf[i], s);
++	  if (buf[i] == ' ')
++	    break;
++	}
++      }
++      else
++      {
++	for (i = 0; buf[i] != '\0' && iswspace (buf[i]); i++)
++	  ;
++	if (option (OPTQUOTEEMPTY) || buf[i])
++	  state_puts (s->prefix, s);
++      }
++    }
+     state_puts (buf, s);
+     state_putc ('\n', s);
+   }
+@@ -1769,7 +1793,7 @@ int mutt_body_handler (BODY *b, STATE *s)
+        */
+       if ((WithCrypto & APPLICATION_PGP) && mutt_is_application_pgp (b))
+ 	handler = crypt_pgp_application_pgp_handler;
+-      else if (option(OPTREFLOWTEXT) && ascii_strcasecmp ("flowed", mutt_get_parameter ("format", b->parameter)) == 0)
++      else if (option(OPTREFLOWTEXT) && ascii_strcasecmp ("flowed", mutt_get_parameter ("format", b->parameter)) == 0 && !s->prefix)
+ 	handler = rfc3676_handler;
+       else
+ 	handler = text_plain_handler;
+diff --git a/init.h b/init.h
+index 519b46b..b426fdf 100644
+--- a/init.h
++++ b/init.h
+@@ -2609,6 +2609,19 @@ struct option_t MuttVars[] = {
+   ** have no effect, and if it is set to \fIask-yes\fP or \fIask-no\fP, you are
+   ** prompted for confirmation when you try to quit.
+   */
++  { "quote_empty",	DT_BOOL, R_NONE, OPTQUOTEEMPTY, 1 },
++  /*
++  ** .pp
++  ** Controls whether or not empty lines will be quoted using
++  ** ``$indent_string''.
++  */
++  { "quote_quoted",	DT_BOOL, R_NONE, OPTQUOTEQUOTED, 0 },
++  /*
++  ** .pp
++  ** Controls how quoted lines will be quoted. If set, one quote
++  ** character will be prepended to the existing prefix.  Otherwise,
++  ** quoted lines will be prepended by ``$indent_string''.
++  */
+   { "quote_regexp",	DT_RX,	 R_PAGER, UL &QuoteRegexp, UL "^([ \t]*[|>:}#])+" },
+   /*
+   ** .pp
+diff --git a/mutt.h b/mutt.h
+index 54cf777..db86be3 100644
+--- a/mutt.h
++++ b/mutt.h
+@@ -468,6 +468,8 @@ enum
+   OPTPRINTDECODE,
+   OPTPRINTSPLIT,
+   OPTPROMPTAFTER,
++  OPTQUOTEEMPTY,
++  OPTQUOTEQUOTED,
+   OPTREADONLY,
+   OPTREFLOWSPACEQUOTES,
+   OPTREFLOWTEXT,
+-- 
+2.8.2
+

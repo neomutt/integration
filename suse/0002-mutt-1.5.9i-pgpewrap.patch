@@ -1,0 +1,27 @@
+From 03e6f2518464294761e822a40aba75be702faf0d Mon Sep 17 00:00:00 2001
+From: Richard Russon <rich@flatcap.org>
+Date: Fri, 27 May 2016 03:02:20 +0100
+Subject: [PATCH 02/13] mutt-1.5.9i-pgpewrap
+
+---
+ pgpewrap.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/pgpewrap.c b/pgpewrap.c
+index 14b2e0a..a63a87e 100644
+--- a/pgpewrap.c
++++ b/pgpewrap.c
+@@ -58,6 +58,10 @@ int main(int argc, char **argv) {
+ 	}
+ 	*opt = NULL;
+ 
++	if (opts[0] == NULL) {
++		fprintf(stderr, "Command line usage: %s [flags] -- prefix [recipients]\n", argv[0]);
++		return 1;
++	}
+ 	execvp(opts[0], opts);
+ 	perror(argv[0]);
+ 	return 2;
+-- 
+2.8.2
+

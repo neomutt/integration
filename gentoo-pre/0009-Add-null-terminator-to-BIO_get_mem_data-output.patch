@@ -1,0 +1,40 @@
+From 687385d1bfdd4944fa9e8c815e3b97e26b67914a Mon Sep 17 00:00:00 2001
+From: Kevin McCarthy <kevin@8t8.us>
+Date: Mon, 11 Apr 2016 12:45:25 -0700
+Subject: [PATCH 09/31] Add null-terminator to BIO_get_mem_data() output.
+
+It turns out the output isn't necessarily null-terminated.
+---
+ mutt_ssl.c | 12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
+
+diff --git a/mutt_ssl.c b/mutt_ssl.c
+index 89bd6de..d63670f 100644
+--- a/mutt_ssl.c
++++ b/mutt_ssl.c
+@@ -553,12 +553,20 @@ static void ssl_dprint_err_stack (void)
+ #ifdef DEBUG
+   BIO *bio;
+   char *buf = NULL;
++  long buflen;
++  char *output;
+ 
+   if (! (bio = BIO_new (BIO_s_mem ())))
+     return;
+   ERR_print_errors (bio);
+-  if (BIO_get_mem_data (bio, &buf))
+-    dprint (1, (debugfile, "SSL error stack: %s\n", buf));
++  if ((buflen = BIO_get_mem_data (bio, &buf)) > 0)
++  {
++    output = safe_malloc (buflen + 1);
++    memcpy (output, buf, buflen);
++    output[buflen] = '\0';
++    dprint (1, (debugfile, "SSL error stack: %s\n", output));
++    FREE (&output);
++  }
+   BIO_free (bio);
+ #endif
+ }
+-- 
+2.8.2
+

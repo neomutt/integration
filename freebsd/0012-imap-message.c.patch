@@ -1,0 +1,25 @@
+From 50db63dec3ee723ee968577c473f0fd5f14f1a7d Mon Sep 17 00:00:00 2001
+From: Richard Russon <rich@flatcap.org>
+Date: Fri, 27 May 2016 15:21:35 +0100
+Subject: [PATCH 12/21] imap-message.c
+
+---
+ imap/message.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/imap/message.c b/imap/message.c
+index 7a79f44..d6ef7fc 100644
+--- a/imap/message.c
++++ b/imap/message.c
+@@ -290,7 +290,7 @@ int imap_read_headers (IMAP_DATA* idata, int msgbegin, int msgend)
+         continue;
+       }
+       /* May receive FLAGS updates in a separate untagged response (#2935) */
+-      if (idx < ctx->msgcount)
++      if (ctx->hdrs[idx] != NULL)
+       {
+ 	dprint (2, (debugfile, "imap_read_headers: message %d is not new\n",
+ 		    h.sid));
+-- 
+2.8.2
+

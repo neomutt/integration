@@ -1,0 +1,26 @@
+From 8165d4ce35bb1b746518dff7ac0512fbc1635503 Mon Sep 17 00:00:00 2001
+From: Richard Russon <rich@flatcap.org>
+Date: Fri, 27 May 2016 15:17:31 +0100
+Subject: [PATCH 04/21] doc-ref
+
+---
+ doc/mutt.man | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/doc/mutt.man b/doc/mutt.man
+index d29294f..64ac7b7 100644
+--- a/doc/mutt.man
++++ b/doc/mutt.man
+@@ -67,7 +67,8 @@ mutt \- The Mutt Mail User Agent
+ .PP
+ Mutt is a small but very powerful text based program for reading and sending electronic
+ mail under unix operating systems, including support for color terminals, MIME,
+-OpenPGP, and a threaded sorting mode.
++OpenPGP, and a threaded sorting mode. Details of how to use all of this is
++available in @docdir@.
+ .PP
+ .I Note:
+ .IR
+-- 
+2.8.2
+

@@ -1,0 +1,44 @@
+From 719e02e7ecfd78f45a5543d21405f7b5a183184d Mon Sep 17 00:00:00 2001
+From: Richard Russon <rich@flatcap.org>
+Date: Fri, 6 May 2016 00:24:03 +0100
+Subject: [PATCH 17/22] upstream/228671-pipe-mime
+
+---
+ imap/message.c | 14 ++++++++++----
+ 1 file changed, 10 insertions(+), 4 deletions(-)
+
+diff --git a/imap/message.c b/imap/message.c
+index 3280f5d..7933a1e 100644
+--- a/imap/message.c
++++ b/imap/message.c
+@@ -400,7 +400,7 @@ int imap_fetch_message (MESSAGE *msg, CONTEXT *ctx, int msgno)
+   char path[_POSIX_PATH_MAX];
+   char *pc;
+   long bytes;
+-  progress_t progressbar;
++  progress_t progressbar, *pbar;
+   int uid;
+   int cacheno;
+   IMAP_CACHE *cache;
+@@ -498,9 +498,15 @@ int imap_fetch_message (MESSAGE *msg, CONTEXT *ctx, int msgno)
+ 	    imap_error ("imap_fetch_message()", buf);
+ 	    goto bail;
+ 	  }
+-	  mutt_progress_init (&progressbar, _("Fetching message..."),
+-			      M_PROGRESS_SIZE, NetInc, bytes);
+-	  if (imap_read_literal (msg->fp, idata, bytes, &progressbar) < 0)
++	  if (!isendwin())
++	  {
++	    mutt_progress_init (&progressbar, _("Fetching message..."),
++                               M_PROGRESS_SIZE, NetInc, bytes);
++	    pbar = &progressbar;
++	  }
++	  else
++	    pbar = NULL;
++	  if (imap_read_literal (msg->fp, idata, bytes, pbar) < 0)
+ 	    goto bail;
+ 	  /* pick up trailing line */
+ 	  if ((rc = imap_cmd_step (idata)) != IMAP_CMD_CONTINUE)
+-- 
+2.8.2
+

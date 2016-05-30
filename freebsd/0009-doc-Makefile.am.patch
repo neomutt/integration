@@ -1,0 +1,43 @@
+From 84d70f493ceb5dd6f391a5ffc800409e55db009b Mon Sep 17 00:00:00 2001
+From: Richard Russon <rich@flatcap.org>
+Date: Fri, 27 May 2016 15:19:44 +0100
+Subject: [PATCH 09/21] doc-Makefile.am
+
+---
+ doc/Makefile.am | 13 ++-----------
+ 1 file changed, 2 insertions(+), 11 deletions(-)
+
+diff --git a/doc/Makefile.am b/doc/Makefile.am
+index 6021626..3a23105 100644
+--- a/doc/Makefile.am
++++ b/doc/Makefile.am
+@@ -80,14 +80,7 @@ install-data-local: makedoc-all instdoc
+ 	-for f in $(HTML_DOCFILES) ; do \
+ 		$(INSTALL) -m 644 $$f $(DESTDIR)$(docdir) ; \
+ 	done
+-	$(INSTALL) -m 644 Muttrc $(DESTDIR)$(sysconfdir)/Muttrc.dist
+-	-if [ -f $(DESTDIR)$(pkgdatadir)/Muttrc ] ; then \
+-		mv $(DESTDIR)$(pkgdatadir)/Muttrc* $(DESTDIR)$(sysconfdir) ; \
+-	elif [ -f $(DESTDIR)$(pkgdatadir)/../Muttrc ] ; then \
+-	 	mv $(DESTDIR)$(pkgdatadir)/../Muttrc* $(DESTDIR)$(sysconfdir) ; \
+-	elif [ ! -f $(DESTDIR)$(sysconfdir)/Muttrc ] ; then \
+-		$(INSTALL) -m 644 Muttrc $(DESTDIR)$(sysconfdir) ; \
+-	fi
++	$(INSTALL) -m 644 Muttrc $(DESTDIR)$(sysconfdir)/Muttrc.sample
+ 
+ uninstall-local:
+ 	for f in mutt.1 mutt_dotlock.1 flea.1 muttbug.1 smime_keys.1 pgpewrap.1 pgpring.1; do \
+@@ -110,9 +103,7 @@ uninstall-local:
+ 
+ check:
+ manual.txt: manual.html
+-	-LC_ALL=C lynx -dump -nolist -with_backspaces -display_charset=us-ascii manual.html > $@ || \
+-	LC_ALL=C w3m -dump manual.html > $@ || \
+-	LC_ALL=C elinks -dump -no-numbering -no-references manual.html | sed -e 's,\\001, ,g' > $@
++	-LC_ALL=C lynx -dump -nolist -with_backspaces -display_charset=us-ascii manual.html > $@
+ 
+ Muttrc: stamp-doc-rc
+ 
+-- 
+2.8.2
+

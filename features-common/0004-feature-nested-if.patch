@@ -1,0 +1,528 @@
+From b0dbf8064ec2b774546e6f5194cec602d3fcc9ae Mon Sep 17 00:00:00 2001
+From: Richard Russon <rich@flatcap.org>
+Date: Tue, 24 May 2016 17:04:53 +0100
+Subject: [PATCH 04/18] feature: nested-if
+
+---
+ PATCHES              |   1 +
+ README.nested-if     | 125 ++++++++++++++++++++++++++++
+ doc/manual.xml.head  | 228 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ doc/muttrc.nested-if |  24 ++++++
+ muttlib.c            |  55 +++++++++++--
+ 5 files changed, 427 insertions(+), 6 deletions(-)
+ create mode 100644 README.nested-if
+ create mode 100644 doc/muttrc.nested-if
+
+diff --git a/PATCHES b/PATCHES
+index 0646e88..3b10a9b 100644
+--- a/PATCHES
++++ b/PATCHES
+@@ -1,3 +1,4 @@
+ patch-ifdef-neo-UNKNOWN
+ patch-initials-neo-UNKNOWN
+ patch-trash-neo-UNKNOWN
++patch-nested-if-neo-UNKNOWN
+diff --git a/README.nested-if b/README.nested-if
+new file mode 100644
+index 0000000..3eb00af
+--- /dev/null
++++ b/README.nested-if
+@@ -0,0 +1,125 @@
++Nested If Patch
++===============
++
++    Allow complex nested conditions in format strings
++
++Patch
++-----
++
++    To check if Mutt supports "Nested If", look for "patch-nested-if" in the
++    mutt version.
++
++    Dependencies
++    * mutt-1.6.1
++
++Introduction
++------------
++
++    Mutt's format strings can contain embedded if-then-else conditions. They
++    are of the form:
++
++        %?VAR?TRUE&FALSE?
++
++    If the variable "VAR" has a value greater than zero, print the "TRUE"
++    string, otherwise print the "FALSE" string.
++
++    e.g. '%?S?Size: %S&Empty?'
++
++    Which can be read as:
++
++        if (%S > 0) {
++            print "Size: %S"
++        } else {
++            print "Empty"
++        }
++
++
++    These conditions are useful, but in Mutt they cannot be nested within one
++    another. This patch uses the notation '%<VAR?TRUE&FALSE>' and allows them
++    to be nested.
++
++    The '%<...>' notation was used to format the current local time. but that's
++    not really very useful since mutt has no means of refreshing the screen
++    periodically.
++
++    A simple nested condition might be: (Some whitespace has been introduced
++    for clarity)
++
++        %<x? %<y? XY & X > & %<y? Y & NONE > >  Conditions
++             %<y? XY & X >                      x>0
++                  XY                            x>0,y>0
++                       X                        x>0,y=0
++
++
++        %<x? %<y? XY & X > & %<y? Y & NONE > >  Conditions
++                             %<y? Y & NONE >    x=0
++                                  Y             x=0,y>0
++                                      NONE      x=0,y=0
++
++
++    Equivalent to:
++
++        if (x > 0) {
++            if (y > 0) {
++                print 'XY'
++            } else {
++                print 'X'
++            }
++        } else {
++            if (y > 0) {
++                print 'Y'
++            } else {
++                print 'NONE'
++            }
++        }
++
++
++    Examples:
++
++        set index_format='%4C %Z %{%b %d} %-25.25n %s%> %<M?%M Msgs &%<l?%l Lines&%c Bytes>>'
++
++        if a thread is folded
++            display the number of messages (%M)
++        else if we know how many lines in the message
++            display lines in message (%l)
++        else
++            display the size of the message in bytes (%c)
++
++
++        set index_format='%4C %Z %{%b %d} %-25.25n %<M?[%M] %s&%s%* %<l?%l&%c>>'
++
++        if a thread is folded
++            display the number of messages (%M)
++            display the subject (%s)
++        else if we know how many lines in the message
++            display lines in message (%l)
++        else
++            display the size of the message in bytes (%c)
++
++
++Variables
++---------
++
++    The nested-if patch doesn't have any config of its own. It modifies the behavior of the
++    format strings.
++
++See Also
++--------
++
++    * NeoMutt project
++    * cond-date patch
++    * $index_format
++    * $status_format
++
++Known Bugs
++----------
++
++    Patch overwrites $<fmt> handler in
++    $index_format
++
++Credits
++-------
++
++    * David Champion <dgc@uchicago.edu>
++    * Richard Russon <rich@flatcap.org>
++
+diff --git a/doc/manual.xml.head b/doc/manual.xml.head
+index 01de46a..a8cac31 100644
+--- a/doc/manual.xml.head
++++ b/doc/manual.xml.head
+@@ -4595,6 +4595,18 @@ <sect2 id="formatstrings-conditionals">
+ <emphasis>else_string</emphasis> will be expanded.
+ </para>
+ 
++<para>
++The conditional sequences can also be nested by using the %&lt; and &gt;
++operators. The %? notation can still be used but requires quoting. For example:
++</para>
++
++<screen>
++%&lt;x?true&amp;false&gt;
++%&lt;x?%&lt;y?%&lt;z?xyz&amp;xy&gt;&amp;x&gt;&amp;none&gt;
++</screen>
++
++<para>For more examples, see <xref linkend="nested-if"/></para>
++
+ </sect2>
+ 
+ <sect2 id="formatstrings-filters">
+@@ -8378,6 +8390,222 @@ <sect1 id="initials">
+ 	</sect2>
+ </sect1>
+ 
++<sect1 id="nested-if">
++	<title>Nested If Patch</title>
++	<subtitle>Allow complex nested conditions in format strings</subtitle>
++
++	<sect2 id="nested-if-patch">
++		<title>Patch</title>
++
++		<para>
++			To check if Mutt supports <quote>Nested If</quote>, look for
++			<quote>patch-nested-if</quote> in the mutt version.
++			See: <xref linkend="mutt-patches"/>.
++		</para>
++
++		<itemizedlist>
++			<title>Dependencies:</title>
++			<listitem><para>mutt-1.6.1</para></listitem>
++		</itemizedlist>
++
++		<para>This patch is part of the <ulink url="http://www.neomutt.org/">NeoMutt Project</ulink>.</para>
++	</sect2>
++
++	<sect2 id="nested-if-intro">
++		<title>Introduction</title>
++
++		<para>
++			Mutt's format strings can contain embedded if-then-else conditions.
++			They are of the form:
++		</para>
++
++<screen>
++%?VAR?TRUE&amp;FALSE?
++</screen>
++
++		<para>
++			If the variable <quote>VAR</quote> has a value greater than zero,
++			print the <quote>TRUE</quote> string, otherwise print the
++			<quote>FALSE</quote> string.
++		</para>
++
++		<para>
++			e.g.  <literal>%?S?Size: %S&amp;Empty?</literal>
++		</para>
++
++		<para>Which can be read as:</para>
++
++		<literallayout>
++		    if (%S &gt; 0) {
++		        print &quot;Size: %S&quot;
++		    } else {
++		        print &quot;Empty&quot;
++		    }
++		</literallayout>
++
++		<para>
++			These conditions are useful, but in Mutt they cannot be nested
++			within one another.  This patch uses the notation
++			<literal>%&lt;VAR?TRUE&amp;FALSE&gt;</literal> and allows them to be nested.
++		</para>
++
++		<para>
++			The <literal>%&lt;...&gt;</literal> notation was used to format the
++			current local time.  but that's not really very useful since mutt
++			has no means of refreshing the screen periodically.
++		</para>
++
++		<para>
++			A simple nested condition might be:
++			(Some whitespace has been introduced for clarity)
++		</para>
++
++		<literallayout>
++		    %&lt;x? %&lt;y? XY &amp; X &gt; &amp; %&lt;y? Y &amp; NONE &gt; &gt;  Conditions
++		         %&lt;y? XY &amp; X &gt;                      x&gt;0
++		              XY                            x&gt;0,y&gt;0
++		                   X                        x&gt;0,y=0
++		</literallayout>
++
++		<literallayout>
++		    %&lt;x? %&lt;y? XY &amp; X &gt; &amp; %&lt;y? Y &amp; NONE &gt; &gt;  Conditions
++		                         %&lt;y? Y &amp; NONE &gt;    x=0
++		                              Y             x=0,y&gt;0
++		                                  NONE      x=0,y=0
++		</literallayout>
++
++		<para>Equivalent to:</para>
++
++		<literallayout>
++		    if (x &gt; 0) {
++		        if (y &gt; 0) {
++		            print 'XY'
++		        } else {
++		            print 'X'
++		        }
++		    } else {
++		        if (y &gt; 0) {
++		            print 'Y'
++		        } else {
++		            print 'NONE'
++		        }
++		    }
++		</literallayout>
++
++		<para>Examples:</para>
++
++<screen>
++set index_format='%4C %Z %{%b %d} %-25.25n %s%&gt; %&lt;M?%M Msgs &amp;%&lt;l?%l Lines&amp;%c Bytes&gt;&gt;'
++</screen>
++
++		<literallayout>
++		    if a thread is folded
++		        display the number of messages (%M)
++		    else if we know how many lines in the message
++		        display lines in message (%l)
++		    else
++		        display the size of the message in bytes (%c)
++		</literallayout>
++
++<screen>
++set index_format='%4C %Z %{%b %d} %-25.25n %&lt;M?[%M] %s&amp;%s%* %&lt;l?%l&amp;%c&gt;&gt;'
++</screen>
++
++		<literallayout>
++		    if a thread is folded
++		        display the number of messages (%M)
++		        display the subject (%s)
++		    else if we know how many lines in the message
++		        display lines in message (%l)
++		    else
++		        display the size of the message in bytes (%c)
++		</literallayout>
++
++	</sect2>
++
++	<sect2 id="nested-if-variables">
++		<title>Variables</title>
++		The <quote>nested-if</quote> patch doesn't have any config of its own.
++		It modifies the behavior of the format strings.
++	</sect2>
++
++<!--
++	<sect2 id="nested-if-functions">
++		<title>Functions</title>
++		<para>None</para>
++	</sect2>
++
++	<sect2 id="nested-if-commands">
++		<title>Commands</title>
++		<para>None</para>
++	</sect2>
++
++	<sect2 id="nested-if-colors">
++		<title>Colors</title>
++		<para>None</para>
++	</sect2>
++
++	<sect2 id="nested-if-sort">
++		<title>Sort</title>
++		<para>None</para>
++	</sect2>
++-->
++
++	<sect2 id="nested-if-muttrc">
++		<title>Muttrc</title>
++<screen>
++<emphasis role="comment"># Example Mutt config file for the 'nested-if' feature.
++ 
++# This patch uses the format: '%&lt;VAR?TRUE&amp;FALSE&gt;' for conditional
++# format strings that can be nested.
++ 
++# Example 1
++# if a thread is folded
++#       display the number of messages (%M)
++# else if we know how many lines in the message
++#       display lines in message (%l)
++# else display the size of the message in bytes (%c)</emphasis>
++set index_format='%4C %Z %{%b %d} %-25.25n %s%&gt; %&lt;M?%M Msgs &amp;%&lt;l?%l Lines&amp;%c Bytes&gt;&gt;'
++ 
++<emphasis role="comment"># Example 2
++# if a thread is folded
++#       display the number of messages (%M)
++#       display the subject (%s)
++# else if we know how many lines in the message
++#       display lines in message (%l)
++# else
++#       display the size of the message in bytes (%c)</emphasis>
++set index_format='%4C %Z %{%b %d} %-25.25n %&lt;M?[%M] %s&amp;%s%* %&lt;l?%l&amp;%c&gt;&gt;'
++ 
++<emphasis role="comment"># vim: syntax=muttrc</emphasis>
++</screen>
++	</sect2>
++
++	<sect2 id="nested-if-see-also">
++		<title>See Also</title>
++
++		<itemizedlist>
++			<listitem><para><ulink url="http://www.neomutt.org/">NeoMutt Project</ulink></para></listitem>
++			<listitem><para><link linkend="cond-date">cond-date patch</link></para></listitem>
++			<listitem><para><link linkend="index-format">$index_format</link></para></listitem>
++			<listitem><para><link linkend="status-format">$status_format</link></para></listitem>
++		</itemizedlist>
++	</sect2>
++
++	<sect2 id="nested-if-known-bugs">
++		<title>Known Bugs</title>
++		Patch overwrites $&lt;fmt&gt; handler in <literal>$index_format</literal>
++	</sect2>
++
++	<sect2 id="nested-if-credits">
++		<title>Credits</title>
++		<itemizedlist>
++		<listitem><para>David Champion <email>dgc@uchicago.edu</email></para></listitem>
++		<listitem><para>Richard Russon <email>rich@flatcap.org</email></para></listitem>
++		</itemizedlist>
++	</sect2>
++</sect1>
++
+ <sect1 id="trash-folder">
+ 	<title>Trash Folder Patch</title>
+ 	<subtitle>Automatically move "deleted" emails to a trash bin</subtitle>
+diff --git a/doc/muttrc.nested-if b/doc/muttrc.nested-if
+new file mode 100644
+index 0000000..aee76eb
+--- /dev/null
++++ b/doc/muttrc.nested-if
+@@ -0,0 +1,24 @@
++# Example Mutt config file for the 'nested-if' feature.
++
++# This patch uses the format: '%<VAR?TRUE&FALSE>' for conditional
++# format strings that can be nested.
++
++# Example 1
++# if a thread is folded
++#       display the number of messages (%M)
++# else if we know how many lines in the message
++#       display lines in message (%l)
++# else display the size of the message in bytes (%c)
++set index_format='%4C %Z %{%b %d} %-25.25n %s%> %<M?%M Msgs &%<l?%l Lines&%c Bytes>>'
++
++# Example 2
++# if a thread is folded
++#       display the number of messages (%M)
++#       display the subject (%s)
++# else if we know how many lines in the message
++#       display lines in message (%l)
++# else
++#       display the size of the message in bytes (%c)
++set index_format='%4C %Z %{%b %d} %-25.25n %<M?[%M] %s&%s%* %<l?%l&%c>>'
++
++# vim: syntax=muttrc
+diff --git a/muttlib.c b/muttlib.c
+index 7a2d849..7029e95 100644
+--- a/muttlib.c
++++ b/muttlib.c
+@@ -1213,6 +1213,24 @@ void mutt_FormatString (char *dest,		/* output buffer */
+ 
+       if (*src == '?')
+       {
++	/* change original %? to new %< notation */
++	/* %?x?y&z? to %<x?y&z> where y and z are nestable */
++	char *p = (char *) src;
++	*p = '<';
++	for ( ; *p && *p != '?'; p++);
++	  /* nothing */
++	if (*p == '?') {
++	  p++;
++	}
++	for ( ; *p && *p != '?'; p++);
++	  /* nothing */
++	if (*p == '?') {
++	  *p = '>';
++	}
++      }
++
++      if (*src == '<')
++      {
+ 	flags |= M_FORMAT_OPTIONAL;
+ 	src++;
+       }
+@@ -1239,6 +1257,8 @@ void mutt_FormatString (char *dest,		/* output buffer */
+ 
+       if (flags & M_FORMAT_OPTIONAL)
+       {
++	int lrbalance;
++
+         if (*src != '?')
+           break; /* bad format */
+         src++;
+@@ -1246,8 +1266,20 @@ void mutt_FormatString (char *dest,		/* output buffer */
+         /* eat the `if' part of the string */
+         cp = ifstring;
+ 	count = 0;
+-        while (count < sizeof (ifstring) && *src && *src != '?' && *src != '&')
+-	{
++	lrbalance = 1;
++        while ((lrbalance > 0) && (count < sizeof (ifstring)) && *src) {
++	  if (*src == '\\') {
++	    src++;
++	    *cp++ = *src++;
++	  } else if ((src[0] == '%') && (src[1] == '<')) {
++	    lrbalance++;
++	  } else if (src[0] == '>') {
++	    lrbalance--;
++	  }
++	  if (lrbalance == 0)
++	    break;
++	  if ((lrbalance == 1) && (src[0] == '&'))
++	    break;
+           *cp++ = *src++;
+ 	  count++;
+ 	}
+@@ -1258,9 +1290,20 @@ void mutt_FormatString (char *dest,		/* output buffer */
+ 	  src++; /* skip the & */
+ 	cp = elsestring;
+ 	count = 0;
+-	while (count < sizeof (elsestring) && *src && *src != '?')
+-	{
+-	  *cp++ = *src++;
++	while ((lrbalance > 0) && (count < sizeof (elsestring)) && *src) {
++	  if (*src == '\\') {
++	    src++;
++	    *cp++ = *src++;
++	  } else if ((src[0] == '%') && (src[1] == '<')) {
++	    lrbalance++;
++	  } else if (src[0] == '>') {
++	    lrbalance--;
++	  }
++	  if (lrbalance == 0)
++	    break;
++	  if ((lrbalance == 1) && (src[0] == '&'))
++	    break;
++          *cp++ = *src++;
+ 	  count++;
+ 	}
+ 	*cp = 0;
+@@ -1268,7 +1311,7 @@ void mutt_FormatString (char *dest,		/* output buffer */
+ 	if (!*src)
+ 	  break; /* bad format */
+ 
+-        src++; /* move past the trailing `?' */
++        src++; /* move past the trailing `>' (formerly '?') */
+       }
+ 
+       /* handle generic cases first */
+-- 
+2.8.2
+

@@ -1,0 +1,27 @@
+From 009d0f97c5925aa5da9e9e84bdf824ecc6c418da Mon Sep 17 00:00:00 2001
+From: Richard Russon <rich@flatcap.org>
+Date: Mon, 30 May 2016 03:41:49 +0100
+Subject: [PATCH 01/13] ncurses-tinfo
+
+---
+ configure.ac | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/configure.ac b/configure.ac
+index d47933b..23d0cb5 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -332,6 +332,10 @@ main ()
+ 		fi],
+ 
+                 [CF_CURSES_LIBS])
++		  for lib in ncurses ncursesw tinfo
++		  do
++		      AC_CHECK_LIB($lib, stdscr,MUTTLIBS="$MUTTLIBS -l$lib")
++		  done
+ 		])
+ 
+         old_LIBS="$LIBS"
+-- 
+2.8.2
+

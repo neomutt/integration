@@ -1,0 +1,25 @@
+From 42ae4b1463b66c1465f022390087e521bc852a71 Mon Sep 17 00:00:00 2001
+From: Richard Russon <rich@flatcap.org>
+Date: Fri, 27 May 2016 15:22:31 +0100
+Subject: [PATCH 15/21] Makefile.am.doc
+
+---
+ Makefile.am | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Makefile.am b/Makefile.am
+index 6b7269e..92c4f6a 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -10,7 +10,7 @@ IMAP_SUBDIR = imap
+ IMAP_INCLUDES = -I$(top_srcdir)/imap
+ endif
+ 
+-SUBDIRS = m4 po intl doc contrib $(IMAP_SUBDIR)
++SUBDIRS = m4 po intl contrib $(IMAP_SUBDIR) . doc
+ 
+ bin_SCRIPTS = muttbug flea $(SMIMEAUX_TARGET)
+ 
+-- 
+2.8.2
+

@@ -1,0 +1,33 @@
+From 85a835bb421d0f7f47f2593dd27699a16bb985ba Mon Sep 17 00:00:00 2001
+From: Richard Russon <rich@flatcap.org>
+Date: Fri, 27 May 2016 03:05:42 +0100
+Subject: [PATCH 07/13] mutt-1.5.21-tinfo
+
+---
+ configure.ac | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/configure.ac b/configure.ac
+index d81ce88..dd8550b 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -321,9 +321,14 @@ main ()
+ 	do
+ 		AC_CHECK_LIB($lib, waddnwstr, [cf_ncurses="$lib"; break])
+ 	done
++	cf_tinfo=""
++	AC_CHECK_LIB(tinfo, tgetent, [cf_tinfo="tinfo"])
+         AC_CHECK_LIB($cf_ncurses, initscr,
+-                [MUTTLIBS="$MUTTLIBS -l$cf_ncurses"
+-		
++                [if test x$cf_tinfo = x ; then
++			MUTTLIBS="$MUTTLIBS -l$cf_ncurses"
++		else
++			MUTTLIBS="$MUTTLIBS -l$cf_ncurses -l$cf_tinfo"
++		fi
+                 if test "$cf_ncurses" = ncursesw; then
+ 			AC_CHECK_HEADERS(ncursesw/ncurses.h,[cf_cv_ncurses_header="ncursesw/ncurses.h"])
+ 		else
+-- 
+2.8.2
+

@@ -1,0 +1,25 @@
+From 341021f05106b4d7ab171cf2a492e31e630f50b5 Mon Sep 17 00:00:00 2001
+From: Richard Russon <rich@flatcap.org>
+Date: Fri, 6 May 2016 00:23:44 +0100
+Subject: [PATCH 01/22] misc/am-maintainer-mode
+
+---
+ configure.ac | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/configure.ac b/configure.ac
+index d47933b..c7fe538 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -7,7 +7,7 @@ AC_INIT([mutt],[m4_esyscmd(tr -d \\n <VERSION)])
+ AC_CONFIG_SRCDIR(mutt.h)
+ AM_INIT_AUTOMAKE
+ AC_CONFIG_HEADERS([config.h])
+-
++AM_MAINTAINER_MODE
+ AC_SUBST([CONFIG_STATUS_DEPENDENCIES], ['$(top_srcdir)/VERSION'])
+ 
+ MUTT_VERSION=`env sh "$srcdir/version.sh"`
+-- 
+2.8.2
+
