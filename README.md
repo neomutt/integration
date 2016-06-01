@@ -14,6 +14,7 @@ https://github.com/neomutt/neomutt/issues/new
 The patchsets apply to the following distros:
 
 - Arch (AUR)
+- COPR (Fedora)
 - Debian
 - Fedora
 - FreeBSD
@@ -71,6 +72,13 @@ The instructions, below, show the order in which they should be applied.
 - features-common/*
 - features-extra/*
 - bugs-neomutt/*
+
+### COPR (Fedora)
+
+- features-common/*
+- features-extra/*
+- bugs-neomutt/*
+- copr/*
 
 ### Debian
 
