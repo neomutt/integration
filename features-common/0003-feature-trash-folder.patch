@@ -1,7 +1,7 @@
-From 3e6899040ae2d3d7fccef0811bc36e205a236652 Mon Sep 17 00:00:00 2001
+From 437b9a5bdfef7437fed2d0497e89de15fc1dec11 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Tue, 24 May 2016 17:03:10 +0100
-Subject: [PATCH 03/18] feature: trash folder
+Subject: [PATCH 3/7] feature: trash folder
 
 ---
  OPS                 |   1 +

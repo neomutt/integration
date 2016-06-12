@@ -1,4 +1,4 @@
-From 0a355cac6ac9349ee2cdf389bf67408967f3399f Mon Sep 17 00:00:00 2001
+From ce2e5f37f4b3b7625cf87be7773cd366d2211027 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 18 Mar 2016 22:38:18 +0000
 Subject: [PATCH 08/10] fix: quieten two compiler warnings
@@ -9,7 +9,7 @@ Subject: [PATCH 08/10] fix: quieten two compiler warnings
  2 files changed, 5 insertions(+), 3 deletions(-)
 
 diff --git a/curs_main.c b/curs_main.c
-index 6d3904f..4c70d55 100644
+index 67d7723..4e8208b 100644
 --- a/curs_main.c
 +++ b/curs_main.c
 @@ -132,7 +132,9 @@ short mutt_ts_capability(void)

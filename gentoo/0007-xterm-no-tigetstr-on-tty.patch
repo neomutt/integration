@@ -1,4 +1,4 @@
-From 94a4e1a867c68039e41d98aa071218df5c005e2c Mon Sep 17 00:00:00 2001
+From 6e6aa8f7c4cc65104878afb806f4c9201af8654f Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Mon, 30 May 2016 03:45:25 +0100
 Subject: [PATCH 07/13] xterm-no-tigetstr-on-tty
@@ -8,7 +8,7 @@ Subject: [PATCH 07/13] xterm-no-tigetstr-on-tty
  1 file changed, 5 insertions(+)
 
 diff --git a/curs_main.c b/curs_main.c
-index ba9cca4..6762af2 100644
+index 6258de0..9e48f7a 100644
 --- a/curs_main.c
 +++ b/curs_main.c
 @@ -154,6 +154,11 @@ short mutt_ts_capability(void)

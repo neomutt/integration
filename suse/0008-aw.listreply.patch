@@ -1,4 +1,4 @@
-From babcdf0ac342faecbb8c4936e06cc8d3c9de8d8b Mon Sep 17 00:00:00 2001
+From 9caf797afe09975d92a78d54b29424054bc7cee2 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 03:07:24 +0100
 Subject: [PATCH 08/13] aw.listreply
@@ -20,7 +20,7 @@ index f77d115..dda8123 100644
  patch-nntp-neo-UNKNOWN
 +patch-1.5.9.aw.listreply.1
 diff --git a/init.h b/init.h
-index 04ca4d8..1b16e4a 100644
+index b54d000..83a7788 100644
 --- a/init.h
 +++ b/init.h
 @@ -1492,6 +1492,13 @@ struct option_t MuttVars[] = {

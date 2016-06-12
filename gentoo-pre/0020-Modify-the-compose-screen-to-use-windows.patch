@@ -1,4 +1,4 @@
-From fe8ba816b2ad31efdd9a3780bd709b69e7a4896b Mon Sep 17 00:00:00 2001
+From a4ea22cec66be1aa505062e1e42f933b0299ffe6 Mon Sep 17 00:00:00 2001
 From: Kevin McCarthy <kevin@8t8.us>
 Date: Wed, 27 Apr 2016 17:56:56 -0700
 Subject: [PATCH 20/31] Modify the compose screen to use windows.
@@ -8,11 +8,11 @@ compute the relative positioning as needed.  A small improvement from
 this is that the headers now align with the top: there isn't a gap if
 $help is turned off.
 ---
- compose.c | 50 +++++++++++++++++++++++++-------------------------
- 1 file changed, 25 insertions(+), 25 deletions(-)
+ compose.c | 48 ++++++++++++++++++++++++------------------------
+ 1 file changed, 24 insertions(+), 24 deletions(-)
 
 diff --git a/compose.c b/compose.c
-index 30a5e92..6eeb8e8 100644
+index 63d68ac..46606a3 100644
 --- a/compose.c
 +++ b/compose.c
 @@ -60,7 +60,7 @@ static const char* There_are_no_attachments = N_("There are no attachments.");
@@ -64,11 +64,11 @@ index 30a5e92..6eeb8e8 100644
  		NONULL(SmimeCryptAlg));
    }
  }
-@@ -220,12 +220,12 @@ static void redraw_mix_line (LIST *chain)
-   int c;
+@@ -221,12 +221,12 @@ static void redraw_mix_line (LIST *chain)
    char *t;
  
--  mvprintw (HDR_MIX, SidebarWidth, TITLE_FMT, "Mix: ");
+   /* L10N: "Mix" refers to the MixMaster chain for anonymous email */
+-  mvprintw (HDR_MIX, SidebarWidth, TITLE_FMT, _("Mix: "));
 +  mutt_window_mvaddstr (MuttIndexWindow, HDR_MIX, 0,     "     Mix: ");
  
    if (!chain)
@@ -79,7 +79,7 @@ index 30a5e92..6eeb8e8 100644
      return;
    }
    
-@@ -235,7 +235,7 @@ static void redraw_mix_line (LIST *chain)
+@@ -236,7 +236,7 @@ static void redraw_mix_line (LIST *chain)
      if (t && t[0] == '0' && t[1] == '\0')
        t = "<random>";
      
@@ -88,7 +88,7 @@ index 30a5e92..6eeb8e8 100644
        break;
  
      addstr (NONULL(t));
-@@ -287,7 +287,7 @@ static void draw_envelope_addr (int line, ADDRESS *addr)
+@@ -288,7 +288,7 @@ static void draw_envelope_addr (int line, ADDRESS *addr)
  
    buf[0] = 0;
    rfc822_write_address (buf, sizeof (buf), addr, 1);
@@ -97,7 +97,7 @@ index 30a5e92..6eeb8e8 100644
    mutt_paddstr (W, buf);
  }
  
-@@ -319,10 +319,10 @@ static void draw_envelope (HEADER *msg, char *fcc)
+@@ -320,10 +320,10 @@ static void draw_envelope (HEADER *msg, char *fcc)
      }
    }
  #endif
@@ -110,7 +110,7 @@ index 30a5e92..6eeb8e8 100644
    mutt_paddstr (W, fcc);
  
    if (WithCrypto)
-@@ -333,8 +333,8 @@ static void draw_envelope (HEADER *msg, char *fcc)
+@@ -334,8 +334,8 @@ static void draw_envelope (HEADER *msg, char *fcc)
  #endif
  
    SETCOLOR (MT_COLOR_STATUS);
@@ -121,7 +121,7 @@ index 30a5e92..6eeb8e8 100644
  
    NORMAL_COLOR;
  }
-@@ -346,7 +346,7 @@ static int edit_address_list (int line, ADDRESS **addr)
+@@ -347,7 +347,7 @@ static int edit_address_list (int line, ADDRESS **addr)
    
    mutt_addrlist_to_local (*addr);
    rfc822_write_address (buf, sizeof (buf), *addr, 0);
@@ -130,7 +130,7 @@ index 30a5e92..6eeb8e8 100644
    {
      rfc822_free_address (addr);
      *addr = mutt_parse_adrlist (*addr, buf);
-@@ -369,7 +369,7 @@ static int edit_address_list (int line, ADDRESS **addr)
+@@ -370,7 +370,7 @@ static int edit_address_list (int line, ADDRESS **addr)
    /* redraw the expanded list so the user can see the result */
    buf[0] = 0;
    rfc822_write_address (buf, sizeof (buf), *addr, 1);
@@ -139,16 +139,7 @@ index 30a5e92..6eeb8e8 100644
    mutt_paddstr (W, buf);
    
    return 0;
-@@ -593,7 +593,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
-   else
- #endif
-   menu->help = mutt_compile_help (helpstr, sizeof (helpstr), MENU_COMPOSE, ComposeHelp);
--  
-+
-   while (loop)
-   {
- #ifdef USE_NNTP
-@@ -604,7 +604,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
+@@ -605,7 +605,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
        case OP_REDRAW:
  	draw_envelope (msg, fcc);
  	menu->offset = HDR_ATTACH;
@@ -157,7 +148,7 @@ index 30a5e92..6eeb8e8 100644
  	break;
        case OP_COMPOSE_EDIT_FROM:
  	menu->redraw = edit_address_list (HDR_FROM, &msg->env->from);
-@@ -713,11 +713,11 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
+@@ -714,11 +714,11 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
  	if (mutt_get_field ("Subject: ", buf, sizeof (buf), 0) == 0)
  	{
  	  mutt_str_replace (&msg->env->subject, buf);
@@ -171,7 +162,7 @@ index 30a5e92..6eeb8e8 100644
  	}
          mutt_message_hook (NULL, msg, M_SEND2HOOK);
          break;
-@@ -731,7 +731,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
+@@ -732,7 +732,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
  	{
  	  strfcpy (fcc, buf, fcclen);
  	  mutt_pretty_mailbox (fcc, fcclen);
@@ -180,7 +171,7 @@ index 30a5e92..6eeb8e8 100644
  	  mutt_paddstr (W, fcc);
  	  fccSet = 1;
  	}
-@@ -1231,7 +1231,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
+@@ -1232,7 +1232,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
  	  int itype;
  	  FILE *fp;
  
@@ -189,7 +180,7 @@ index 30a5e92..6eeb8e8 100644
  	  fname[0] = 0;
  	  if (mutt_get_field (_("New file: "), fname, sizeof (fname), M_FILE)
  	      != 0 || !fname[0])
-@@ -1490,9 +1490,9 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
+@@ -1491,9 +1491,9 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
      if (menu->redraw & REDRAW_STATUS) 
      {
  	compose_status_line (buf, sizeof (buf), 0, menu, NONULL(ComposeFormat));

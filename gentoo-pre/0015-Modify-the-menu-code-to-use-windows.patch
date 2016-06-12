@@ -1,4 +1,4 @@
-From 4bd2cc1d36765787b88d543db66afe06d232956a Mon Sep 17 00:00:00 2001
+From ce4670261a518393e2463b9290142a3db26415ec Mon Sep 17 00:00:00 2001
 From: Kevin McCarthy <kevin@8t8.us>
 Date: Wed, 27 Apr 2016 17:56:51 -0700
 Subject: [PATCH 15/31] Modify the menu code to use windows.
@@ -14,7 +14,7 @@ mini-index.
  3 files changed, 46 insertions(+), 43 deletions(-)
 
 diff --git a/menu.c b/menu.c
-index 9e4632a..8215bd2 100644
+index 554f990..9e10b01 100644
 --- a/menu.c
 +++ b/menu.c
 @@ -242,11 +242,11 @@ static void menu_make_entry (char *s, int l, MUTTMENU *menu, int i)
@@ -225,10 +225,10 @@ index 9e4632a..8215bd2 100644
        else if (i == OP_TAG_PREFIX)
        {
 diff --git a/mutt_curses.h b/mutt_curses.h
-index 38c4573..e8c776f 100644
+index 7ee1eae..4abb8a3 100644
 --- a/mutt_curses.h
 +++ b/mutt_curses.h
-@@ -80,7 +80,6 @@ void mutt_curs_set (int);
+@@ -70,7 +70,6 @@ void mutt_curs_set (int);
  #else
  #define mutt_curs_set(x)
  #endif

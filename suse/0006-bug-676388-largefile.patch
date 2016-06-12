@@ -1,4 +1,4 @@
-From 63e37126698a1a348a76cb632cb6319223176866 Mon Sep 17 00:00:00 2001
+From 6c1e1225458db8ab3461f0730e573f9e529ee7f4 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 03:05:02 +0100
 Subject: [PATCH 06/13] bug-676388-largefile
@@ -23,10 +23,10 @@ index 479b58a..d93866b 100644
    int err = 0;
    gpgme_data_t data;
 diff --git a/mh.c b/mh.c
-index 38e3ed8..632e6de 100644
+index ab4f512..29aae16 100644
 --- a/mh.c
 +++ b/mh.c
-@@ -1620,9 +1620,9 @@ static int mh_rewrite_message (CONTEXT * ctx, int msgno)
+@@ -1619,9 +1619,9 @@ static int mh_rewrite_message (CONTEXT * ctx, int msgno)
    char newpath[_POSIX_PATH_MAX];
    char partpath[_POSIX_PATH_MAX];
  

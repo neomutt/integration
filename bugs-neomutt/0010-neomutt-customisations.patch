@@ -1,17 +1,17 @@
-From 8f15c3569e528d57350ae4854ae5d68cb9db9269 Mon Sep 17 00:00:00 2001
+From ee875263dddf72023e3f1843e4c65a084fd0cb0f Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 25 Mar 2016 18:30:01 +0000
 Subject: [PATCH 10/10] neomutt customisations
 
 ---
- ChangeLog.neomutt | 73 ++++++++++++++++++++++++++++++++++++++++++++++++++
- Makefile.am       |  6 +++--
- README.neomutt    | 79 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ ChangeLog.neomutt | 97 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ Makefile.am       |  5 +--
+ README.neomutt    | 79 ++++++++++++++++++++++++++++++++++++++++++++
  VERSION.neo       |  1 +
- doc/Makefile.am   |  3 ++-
- version.c         | 12 ++++++---
+ doc/Makefile.am   |  4 +--
+ version.c         | 12 ++++---
  version.sh        |  2 +-
- 7 files changed, 168 insertions(+), 8 deletions(-)
+ 7 files changed, 191 insertions(+), 9 deletions(-)
  create mode 100644 ChangeLog.neomutt
  create mode 100644 README.neomutt
  create mode 100644 VERSION.neo
@@ -19,27 +19,51 @@ Subject: [PATCH 10/10] neomutt customisations
 
 diff --git a/ChangeLog.neomutt b/ChangeLog.neomutt
 new file mode 100644
-index 0000000..1e96692
+index 0000000..41c2f40
 --- /dev/null
 +++ b/ChangeLog.neomutt
-@@ -0,0 +1,73 @@
-+* Mon May 23 2016 Richard Russon <rich@flatcap.org> - NeoMutt-20160523
-+- New Features:
+@@ -0,0 +1,97 @@
++2016-06-11  Richard Russon  <rich@flatcap.org>
++* Change in behaviour
++  - Temporarily disable $sidebar_refresh_time
++    Unfortunately, this was causing too many problems.
++    It will be fixed and re-enabled as soon as possible.
++* Bug Fixes
++  - Fix several crashes, on startup, in Keywords
++  - Reflow text now works as it should
++  - Lots of typos fixed
++  - Compress config bug prevented it working
++  - Some minor bug-fixes from mutt/default
++  - Single quote at line beginning misinterpreted by groff
++  - Setting $sidebar_width to more than 128 would cause bad things to happen.
++  - Fix alignment in the compose menu.
++  - Fix sidebar buffy stats updating on mailbox close.
++* Build Changes
++  - Sync whitespace to mutt/default
++  - Alter ChangeLog date format to simplify Makefiles
++  - Use the new notmuch functions that return a status
++  - Rename sidebar functions sb_* -> mutt_sb_*
++
++2016-05-23  Richard Russon  <rich@flatcap.org>
++* New Features:
 +  - Keywords: Email Label/Keywords/Tagging
 +  - Compress: Compressed mailboxes support
 +  - NNTP: Talk to a usenet news server
++  - Separate mappings for <enter> and <return>
++  - New configure option: --enable-quick-build
++  - Various build fixes
 +
-+* Mon May 02 2016 Richard Russon <rich@flatcap.org> - NeoMutt-20160502
-+- Update for Mutt-1.6.0
-+- Bug Fixes:
++2016-05-02  Richard Russon  <rich@flatcap.org>
++* Update for Mutt-1.6.0
++* Bug Fixes:
 +  - Build for Notmuch works if Sidebar is disabled
 +  - Sidebar functions work even if the Sidebar is hidden
 +  - sidebar-next-new, etc, only find *new* mail, as documented
 +  - Notmuch supports *very* long queries
 +
-+* Sat Apr 16 2016 Richard Russon <rich@flatcap.org> - NeoMutt-20160416
-+- Big Bugfix Release
-+- Bug Fixes:
++2016-04-16  Richard Russon  <rich@flatcap.org>
++* Big Bugfix Release
++* Bug Fixes:
 +  - Fix crash caused by sidebar_folder_indent
 +  - Allow the user to change mailboxes again
 +  - Correct sidebar's messages counts
@@ -49,39 +73,39 @@ index 0000000..1e96692
 +  - Conditional include if sys/syscall.h
 +  - Build fix for old compilers
 +  - Try harder to keep track of the open mailbox
-+- Changes to Features
++* Changes to Features
 +  - Allow sidebar_divider_char to be longer
 +    (it was limited to one character)
 +  - Ignore case when sorting the sidebar alphabetically
-+- Other Changes
++* Other Changes
 +  - Numerous small tweaks to the docs
 +  - Lots of minor code tidy-ups
 +  - Enabling NotMuch now forcibly enables Sidebar
 +    (it is dependent on it, for now)
 +  - A couple of bug fixes from mutt/stable
 +
-+* Mon Apr 04 2016 Richard Russon <rich@flatcap.org> - NeoMutt-20160404
-+- Update for Mutt-1.6.0
-+- No other changes in this release
++2016-04-04  Richard Russon  <rich@flatcap.org>
++* Update for Mutt-1.6.0
++* No other changes in this release
 +
-+* Mon Mar 28 2016 Richard Russon <rich@flatcap.org> - NeoMutt-20160328
-+- New Features
++2016-03-28  Richard Russon  <rich@flatcap.org>
++* New Features
 +  - skip-quoted          - skip quoted text
 +  - limit-current-thread - limit index view to current thread
-+- Sidebar Intro - A Gentle Introduction to the Sidebar (with pictures).
++* Sidebar Intro - A Gentle Introduction to the Sidebar (with pictures).
 +
-+* Sun Mar 20 2016 Richard Russon <rich@flatcap.org> - NeoMutt-20160320
-+- Numerous small bugfixes
-+- TravisCI integration
++2016-03-20  Richard Russon  <rich@flatcap.org>
++* Numerous small bugfixes
++* TravisCI integration
 +
-+* Thu Mar 17 2016 Richard Russon <rich@flatcap.org> - NeoMutt-20160317
-+- New Features
++2016-03-17  Richard Russon  <rich@flatcap.org>
++* New Features
 +  - notmuch - email search support
 +  - ifdef   - improvements
 +
-+* Mon Mar 07 2016 Richard Russon <rich@flatcap.org> - NeoMutt-20160307
-+- First NeoMutt release
-+- List of Features:
++2016-03-07  Richard Russon  <rich@flatcap.org>
++* First NeoMutt release
++* List of Features:
 +  - bug-fixes    - various bug fixes
 +  - cond-date    - use rules to choose date format
 +  - fmemopen     - use memory buffers instead of files
@@ -97,18 +121,17 @@ index 0000000..1e96692
 +  - trash        - move 'deleted' emails to a trash bin
 +
 diff --git a/Makefile.am b/Makefile.am
-index 4e9e239..c32440b 100644
+index 857f018..1a03bbb 100644
 --- a/Makefile.am
 +++ b/Makefile.am
-@@ -157,8 +157,10 @@ keymap_alldefs.h: $(srcdir)/OPS $(srcdir)/OPS.SIDEBAR $(srcdir)/OPS.NOTMUCH $(sr
- 		$(srcdir)/OPS.SIDEBAR $(srcdir)/OPS.MIX $(srcdir)/OPS.CRYPT $(srcdir)/OPS.SMIME \
+@@ -147,8 +147,9 @@ keymap_alldefs.h: $(srcdir)/OPS $(srcdir)/OPS.SIDEBAR $(srcdir)/OPS.NOTMUCH $(sr
+ 		$(srcdir)/OPS.MIX $(srcdir)/OPS.CRYPT $(srcdir)/OPS.SMIME \
  			> keymap_alldefs.h
  
 -reldate.h: $(srcdir)/ChangeLog
 -	echo 'const char *ReleaseDate = "'`head -n 1 $(srcdir)/ChangeLog | LC_ALL=C cut -d ' ' -f 1`'";' > reldate.h.tmp; \
-+reldate.h: ChangeLog.neomutt
-+	date=`head -n 1 $(top_srcdir)/ChangeLog.neomutt | LC_ALL=C cut -d ' ' -f 3-5` && \
-+	date=`date -d "$$date" "+%Y-%m-%d"` && \
++reldate.h: $(top_srcdir)/ChangeLog.neomutt
++	date=`head -n 1 $(top_srcdir)/ChangeLog.neomutt | LC_ALL=C cut -b 1-10` && \
 +	echo 'const char *ReleaseDate = "'$$date'";' > reldate.h.tmp; \
  	cmp -s reldate.h.tmp reldate.h || cp reldate.h.tmp reldate.h; \
  	rm reldate.h.tmp
@@ -206,16 +229,17 @@ index 0000000..9fcb455
 @@ -0,0 +1 @@
 +-neo
 diff --git a/doc/Makefile.am b/doc/Makefile.am
-index 6021626..e502d47 100644
+index 6021626..cd633dc 100644
 --- a/doc/Makefile.am
 +++ b/doc/Makefile.am
-@@ -191,7 +191,8 @@ smime_keys.1: $(srcdir)/smime_keys.man
+@@ -190,8 +190,8 @@ smime_keys.1: $(srcdir)/smime_keys.man
+ 
  stamp-doc-xml: makedoc$(EXEEXT) $(top_srcdir)/init.h \
                 manual.xml.head $(top_srcdir)/functions.h $(top_srcdir)/OPS* manual.xml.tail \
-                $(srcdir)/gen-map-doc $(top_srcdir)/VERSION $(top_srcdir)/ChangeLog
+-               $(srcdir)/gen-map-doc $(top_srcdir)/VERSION $(top_srcdir)/ChangeLog
 -	( date=`head -n 1 $(top_srcdir)/ChangeLog | LC_ALL=C cut -d ' ' -f 1` && \
-+	( date=`head -n 1 $(top_srcdir)/ChangeLog.neomutt | LC_ALL=C cut -d ' ' -f 3-5` && \
-+	  date=`date -d "$$date" "+%Y-%m-%d"` && \
++               $(srcdir)/gen-map-doc $(top_srcdir)/VERSION $(top_srcdir)/ChangeLog.neomutt
++	( date=`head -n 1 $(top_srcdir)/ChangeLog.neomutt | LC_ALL=C cut -b 1-10` && \
  	  sed -e "s/@VERSION\@/`cat $(top_srcdir)/VERSION` ($$date)/" $(srcdir)/manual.xml.head && \
  	  $(MAKEDOC_CPP) $(top_srcdir)/init.h | ./makedoc$(EXEEXT) -s && \
  	  $(MAKEDOC_CPP) $(top_srcdir)/functions.h | \

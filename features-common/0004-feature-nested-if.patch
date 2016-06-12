@@ -1,7 +1,7 @@
-From b0dbf8064ec2b774546e6f5194cec602d3fcc9ae Mon Sep 17 00:00:00 2001
+From 4b2b8f542ac7544aa06126b2c990bcc1d3c35863 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Tue, 24 May 2016 17:04:53 +0100
-Subject: [PATCH 04/18] feature: nested-if
+Subject: [PATCH 4/7] feature: nested-if
 
 ---
  PATCHES              |   1 +

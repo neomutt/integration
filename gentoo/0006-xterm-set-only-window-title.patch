@@ -1,4 +1,4 @@
-From b0beb24bde2708514c27b51b2bf750169e4e7f64 Mon Sep 17 00:00:00 2001
+From 71027b521ca5ecd28cc0da9539f4f355f961cb97 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Mon, 30 May 2016 03:44:08 +0100
 Subject: [PATCH 06/13] xterm-set-only-window-title
@@ -8,7 +8,7 @@ Subject: [PATCH 06/13] xterm-set-only-window-title
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/curs_main.c b/curs_main.c
-index 374e48f..ba9cca4 100644
+index 96b3a3e..6258de0 100644
 --- a/curs_main.c
 +++ b/curs_main.c
 @@ -129,7 +129,7 @@ static const char *No_visible = N_("No visible messages.");

@@ -1,4 +1,4 @@
-From 1e4909abf2b4dbbc093b4a4ffdf870457b65a5fb Mon Sep 17 00:00:00 2001
+From 5d8631ac22164151da34e0f3980485e7c05ec54e Mon Sep 17 00:00:00 2001
 From: Kevin McCarthy <kevin@8t8.us>
 Date: Mon, 9 May 2016 14:06:59 -0700
 Subject: [PATCH 31/31] Back out wrapper sys_socket.h workaround (23334e967dd7)
@@ -16,13 +16,13 @@ sys_socket.h workaround is no longer necessary.
  delete mode 100644 sys_socket.h
 
 diff --git a/Makefile.am b/Makefile.am
-index c32440b..b39c053 100644
+index 1a03bbb..457984a 100644
 --- a/Makefile.am
 +++ b/Makefile.am
 @@ -74,7 +74,7 @@ EXTRA_DIST = COPYRIGHT GPL OPS OPS.PGP OPS.CRYPT OPS.SMIME TODO UPDATING \
  	README.SSL smime.h group.h \
  	muttbug pgppacket.h depcomp ascii.h BEWARE PATCHES patchlist.sh \
- 	ChangeLog mkchangelog.sh mutt_idna.h \
+ 	ChangeLog mkchangelog.sh mutt_idna.h sidebar.h OPS.sidebar \
 -	snprintf.c regex.c crypt-gpgme.h hcachever.sh.in sys_socket.h \
 +	snprintf.c regex.c crypt-gpgme.h hcachever.sh.in \
  	txt2c.c txt2c.sh version.sh check_sec.sh version.h

@@ -1,4 +1,4 @@
-From 009d0f97c5925aa5da9e9e84bdf824ecc6c418da Mon Sep 17 00:00:00 2001
+From 6cebc4c4dc9ff9d8462d65402bcb66bdf5adb1d6 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Mon, 30 May 2016 03:41:49 +0100
 Subject: [PATCH 01/13] ncurses-tinfo
@@ -8,10 +8,10 @@ Subject: [PATCH 01/13] ncurses-tinfo
  1 file changed, 4 insertions(+)
 
 diff --git a/configure.ac b/configure.ac
-index d47933b..23d0cb5 100644
+index 87018df..75714b6 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -332,6 +332,10 @@ main ()
+@@ -331,6 +331,10 @@ main ()
  		fi],
  
                  [CF_CURSES_LIBS])

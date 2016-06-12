@@ -1,4 +1,4 @@
-From f95d1b02f4dfcaf1fb9c352beb7a40e22c94f634 Mon Sep 17 00:00:00 2001
+From 7fb62e49387dd5c5a59a4e2c9d4d147a565051df Mon Sep 17 00:00:00 2001
 From: Karel Zak <kzak@redhat.com>
 Date: Thu, 6 Sep 2012 09:31:54 +0200
 Subject: [PATCH 01/10] fix: add strndup.c strnlen.c
@@ -15,10 +15,10 @@ Signed-off-by: Karel Zak <kzak@redhat.com>
  create mode 100644 strnlen.c
 
 diff --git a/configure.ac b/configure.ac
-index 8b6eaec..76ae485 100644
+index 14b6021..e125f1f 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -396,7 +396,7 @@ AC_CHECK_TYPE(ssize_t, int)
+@@ -395,7 +395,7 @@ AC_CHECK_TYPE(ssize_t, int)
  
  AC_CHECK_FUNCS(fgetpos memmove setegid srand48 strerror)
  

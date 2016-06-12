@@ -1,4 +1,4 @@
-From 6b06244f6b11a11d3a8ec316049ee5b70d5e2f89 Mon Sep 17 00:00:00 2001
+From 54fd845364baa66b2c97246c94c2a776735bc734 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 03:01:54 +0100
 Subject: [PATCH 01/13] mutt-1.6.1
@@ -12,10 +12,10 @@ Subject: [PATCH 01/13] mutt-1.6.1
  5 files changed, 36 insertions(+), 2 deletions(-)
 
 diff --git a/configure.ac b/configure.ac
-index d47933b..d81ce88 100644
+index 87018df..0653bc6 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -282,7 +282,7 @@ main ()
+@@ -281,7 +281,7 @@ main ()
                          mutt_cv_slang=$withval
                          if test -d $withval/include/slang; then
                                  CPPFLAGS="$CPPFLAGS -I${withval}/include/slang"
@@ -24,7 +24,7 @@ index d47933b..d81ce88 100644
                                  CPPFLAGS="$CPPFLAGS -I${withval}/include"
                          fi
                          LDFLAGS="$LDFLAGS -L${withval}/lib"
-@@ -721,8 +721,12 @@ AC_ARG_WITH(ssl, AS_HELP_STRING([--with-ssl@<:@=PFX@:>@],[Enable TLS support usi
+@@ -720,8 +720,12 @@ AC_ARG_WITH(ssl, AS_HELP_STRING([--with-ssl@<:@=PFX@:>@],[Enable TLS support usi
  	  else
              if test "$with_ssl" != "yes"
              then
@@ -37,7 +37,7 @@ index d47933b..d81ce88 100644
              fi
              saved_LIBS="$LIBS"
  
-@@ -801,8 +805,12 @@ AC_ARG_WITH(sasl, AS_HELP_STRING([--with-sasl@<:@=PFX@:>@],[Use SASL network sec
+@@ -800,8 +804,12 @@ AC_ARG_WITH(sasl, AS_HELP_STRING([--with-sasl@<:@=PFX@:>@],[Use SASL network sec
  
            if test "$with_sasl" != "yes"
            then
@@ -102,10 +102,10 @@ index 047531a..f125b8f 100644
  
      FREE (&methods);
 diff --git a/init.h b/init.h
-index 1b57aa2..1a28c02 100644
+index 47811cd..69194f2 100644
 --- a/init.h
 +++ b/init.h
-@@ -3569,6 +3569,9 @@ struct option_t MuttVars[] = {
+@@ -3570,6 +3570,9 @@ struct option_t MuttVars[] = {
    ** the default from the GNUTLS library.
    */
  # endif /* USE_SSL_GNUTLS */
@@ -116,10 +116,10 @@ index 1b57aa2..1a28c02 100644
    /*
    ** .pp
 diff --git a/mx.c b/mx.c
-index 670a27c..ff11d74 100644
+index 5af78c4..dc04430 100644
 --- a/mx.c
 +++ b/mx.c
-@@ -1833,6 +1833,9 @@ void mx_update_context (CONTEXT *ctx, int new_messages)
+@@ -1834,6 +1834,9 @@ void mx_update_context (CONTEXT *ctx, int new_messages)
    {
      h = ctx->hdrs[msgno];
  

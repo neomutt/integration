@@ -1,4 +1,4 @@
-From 965cd2b728807052c8b260af36da7bd5497af7ef Mon Sep 17 00:00:00 2001
+From 349dd4f9eb2ed19e948eae4759487f65b580bc6e Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Mon, 30 May 2016 03:55:55 +0100
 Subject: [PATCH 10/13] change_subject
@@ -26,7 +26,7 @@ index 2d95814..fedec29 100644
  vvv.quote
  patch-1.5.4.lpr.collapse_flagged Lukas P. Ruf <lukas.ruf@lpr.ch>
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index 1418bd9..56bb896 100644
+index a2b5ef8..4888499 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
 @@ -4664,6 +4664,58 @@ <example id="ex-spam">
@@ -496,10 +496,10 @@ index 7ed4f7b..5a68b6a 100644
  
      /* Otherwise, add it to the nospam list. */
 diff --git a/init.h b/init.h
-index 8d7bf9b..8945f9d 100644
+index 9a6320c..e292e6d 100644
 --- a/init.h
 +++ b/init.h
-@@ -4224,6 +4224,10 @@ static int parse_subscribe (BUFFER *, BUFFER *, unsigned long, BUFFER *);
+@@ -4225,6 +4225,10 @@ static int parse_subscribe (BUFFER *, BUFFER *, unsigned long, BUFFER *);
  static int parse_unsubscribe (BUFFER *, BUFFER *, unsigned long, BUFFER *);
  static int parse_attachments (BUFFER *, BUFFER *, unsigned long, BUFFER *);
  static int parse_unattachments (BUFFER *, BUFFER *, unsigned long, BUFFER *);
@@ -510,7 +510,7 @@ index 8d7bf9b..8945f9d 100644
  
  static int parse_alternates (BUFFER *, BUFFER *, unsigned long, BUFFER *);
  static int parse_unalternates (BUFFER *, BUFFER *, unsigned long, BUFFER *);
-@@ -4313,6 +4317,8 @@ const struct command_t Commands[] = {
+@@ -4314,6 +4318,8 @@ const struct command_t Commands[] = {
    { "spam",		parse_spam_list,	MUTT_SPAM },
    { "nospam",		parse_spam_list,	MUTT_NOSPAM },
    { "subscribe",	parse_subscribe,	0 },

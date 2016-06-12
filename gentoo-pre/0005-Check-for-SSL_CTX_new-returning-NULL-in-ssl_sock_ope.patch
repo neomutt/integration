@@ -1,8 +1,8 @@
-From b7767ab3c33edf449406639bd60ef3f4fad92737 Mon Sep 17 00:00:00 2001
+From 874872f506a253afdfda5086771c3de86dfa69ec Mon Sep 17 00:00:00 2001
 From: Kevin McCarthy <kevin@8t8.us>
 Date: Sun, 10 Apr 2016 19:10:17 -0700
 Subject: [PATCH 05/31] Check for SSL_CTX_new returning NULL in
- ssl_sock_open().  (closes #3831)
+ ssl_sock_open(). (closes #3831)
 
 Thanks to Yuan Kang and the security researchers at Columbia
 University and the University of Virginia for reporting the bug.

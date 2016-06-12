@@ -1,4 +1,4 @@
-From f49a5761e28fad3ad41fc901369b76659c0d9b9e Mon Sep 17 00:00:00 2001
+From 1d063412b5ad56cf20266b5a26c0a61648de1cce Mon Sep 17 00:00:00 2001
 From: Kevin McCarthy <kevin@8t8.us>
 Date: Wed, 27 Apr 2016 17:56:55 -0700
 Subject: [PATCH 19/31] Modify the pager to use windows.
@@ -18,51 +18,54 @@ mutt_window_move() added to move to the beginning of the next line
 each time.  This is in case the pager_window isn't flush with the left
 side of the terminal.
 ---
- copy.c        |   3 +-
- mutt_curses.h |   8 +--
- pager.c       | 167 ++++++++++++++++++++++++++++++++++------------------------
- rfc3676.c     |   5 +-
- 4 files changed, 105 insertions(+), 78 deletions(-)
+ copy.c        |   2 +-
+ mutt_curses.h |  12 ++---
+ pager.c       | 164 +++++++++++++++++++++++++++++++++++-----------------------
+ rfc3676.c     |   2 +-
+ 4 files changed, 104 insertions(+), 76 deletions(-)
 
 diff --git a/copy.c b/copy.c
-index cd13581..7eb5c50 100644
+index be027cc..7eb5c50 100644
 --- a/copy.c
 +++ b/copy.c
-@@ -301,7 +301,8 @@ mutt_copy_hdr (FILE *in, FILE *out, LOFF_T off_start, LOFF_T off_end, int flags,
-       if (flags & (CH_DECODE|CH_PREFIX))
+@@ -302,7 +302,7 @@ mutt_copy_hdr (FILE *in, FILE *out, LOFF_T off_start, LOFF_T off_end, int flags,
        {
  	if (mutt_write_one_header (out, 0, headers[x], 
--				   flags & CH_PREFIX ? prefix : 0, mutt_term_width (Wrap) - SidebarWidth, flags) == -1)
-+				   flags & CH_PREFIX ? prefix : 0,
+ 				   flags & CH_PREFIX ? prefix : 0,
+-                                   mutt_term_width (Wrap), flags) == -1)
 +                                   mutt_window_wrap_cols (MuttIndexWindow, Wrap), flags) == -1)
  	{
  	  error = TRUE;
  	  break;
 diff --git a/mutt_curses.h b/mutt_curses.h
-index e8c776f..7d1ff40 100644
+index 4abb8a3..dc941d6 100644
 --- a/mutt_curses.h
 +++ b/mutt_curses.h
-@@ -218,14 +218,14 @@ void mutt_window_clearline (mutt_window_t *, int row);
+@@ -208,18 +208,14 @@ void mutt_window_clearline (mutt_window_t *, int row);
  void mutt_window_getyx (mutt_window_t *, int *y, int *x);
  
  
 -static inline int mutt_term_width(short wrap)
 +static inline int mutt_window_wrap_cols(mutt_window_t *win, short wrap)
  {
+-  int cols = COLS;
+-#ifdef USE_SIDEBAR
+-  cols -= SidebarWidth;
+-#endif
    if (wrap < 0)
--    return COLS > -wrap ? COLS + wrap : COLS;
+-    return cols > -wrap ? cols + wrap : cols;
 +    return win->cols > -wrap ? win->cols + wrap : win->cols;
    else if (wrap)
--    return wrap < COLS ? wrap : COLS;
+-    return wrap < cols ? wrap : cols;
 +    return wrap < win->cols ? wrap : win->cols;
    else
--    return COLS;
+-    return cols;
 +    return win->cols;
  }
  
  extern int *ColorQuote;
 diff --git a/pager.c b/pager.c
-index 0063b70..4b46bae 100644
+index bdddfde..d53ffd1 100644
 --- a/pager.c
 +++ b/pager.c
 @@ -1100,7 +1100,8 @@ fill_buffer (FILE *f, LOFF_T *last_pos, LOFF_T offset, unsigned char **buf,
@@ -75,14 +78,11 @@ index 0063b70..4b46bae 100644
  {
    int space = -1; /* index of the last space or TAB */
    int col = option (OPTMARKERS) ? (*lineInfo)[n].continuation : 0;
-@@ -1108,13 +1109,10 @@ static int format_line (struct line_t **lineInfo, int n, unsigned char *buf,
+@@ -1108,10 +1109,10 @@ static int format_line (struct line_t **lineInfo, int n, unsigned char *buf,
    int ch, vch, last_special = -1, special = 0, t;
    wchar_t wc;
    mbstate_t mbstate;
 -  int wrap_cols = mutt_term_width ((flags & M_PAGER_NOWRAP) ? 0 : Wrap);
--#ifdef USE_SIDEBAR
--  wrap_cols -= SidebarWidth;
--#endif
 +  int wrap_cols = mutt_window_wrap_cols (pager_window, (flags & M_PAGER_NOWRAP) ? 0 : Wrap);
  
    if (check_attachment_marker ((char *)buf) == 0)
@@ -91,7 +91,7 @@ index 0063b70..4b46bae 100644
  
    /* FIXME: this should come from lineInfo */
    memset(&mbstate, 0, sizeof(mbstate));
-@@ -1295,7 +1293,8 @@ static int format_line (struct line_t **lineInfo, int n, unsigned char *buf,
+@@ -1292,7 +1293,8 @@ static int format_line (struct line_t **lineInfo, int n, unsigned char *buf,
  static int
  display_line (FILE *f, LOFF_T *last_pos, struct line_t **lineInfo, int n, 
  	      int *last, int *max, int flags, struct q_class_t **QuoteList,
@@ -101,7 +101,7 @@ index 0063b70..4b46bae 100644
  {
    unsigned char *buf = NULL, *fmt = NULL;
    size_t buflen = 0;
-@@ -1431,7 +1430,8 @@ display_line (FILE *f, LOFF_T *last_pos, struct line_t **lineInfo, int n,
+@@ -1428,7 +1430,8 @@ display_line (FILE *f, LOFF_T *last_pos, struct line_t **lineInfo, int n,
    }
  
    /* now chose a good place to break the line */
@@ -111,7 +111,7 @@ index 0063b70..4b46bae 100644
    buf_ptr = buf + cnt;
  
    /* move the break point only if smart_wrap is set */
-@@ -1478,7 +1478,8 @@ display_line (FILE *f, LOFF_T *last_pos, struct line_t **lineInfo, int n,
+@@ -1475,7 +1478,8 @@ display_line (FILE *f, LOFF_T *last_pos, struct line_t **lineInfo, int n,
    }
  
    /* display the line */
@@ -121,7 +121,7 @@ index 0063b70..4b46bae 100644
  
    /* avoid a bug in ncurses... */
  #ifndef USE_SLANG_CURSES
-@@ -1490,7 +1491,7 @@ display_line (FILE *f, LOFF_T *last_pos, struct line_t **lineInfo, int n,
+@@ -1487,7 +1491,7 @@ display_line (FILE *f, LOFF_T *last_pos, struct line_t **lineInfo, int n,
  #endif
  
    /* end the last color pattern (needed by S-Lang) */
@@ -130,7 +130,7 @@ index 0063b70..4b46bae 100644
      resolve_color (*lineInfo, n, vch, flags, 0, &a);
            
    /*
-@@ -1514,7 +1515,7 @@ display_line (FILE *f, LOFF_T *last_pos, struct line_t **lineInfo, int n,
+@@ -1511,7 +1515,7 @@ display_line (FILE *f, LOFF_T *last_pos, struct line_t **lineInfo, int n,
     * a newline (grr!).
     */
  #ifndef USE_SLANG_CURSES
@@ -139,7 +139,7 @@ index 0063b70..4b46bae 100644
  #endif
        addch ('\n');
  
-@@ -1604,14 +1605,12 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
+@@ -1601,14 +1605,12 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
    int SearchCompiled = 0, SearchFlag = 0, SearchBack = 0;
    int has_types = (IsHeader(extra) || (flags & M_SHOWCOLOR)) ? M_TYPES : 0; /* main message or rfc822 attachment */
  
@@ -158,7 +158,7 @@ index 0063b70..4b46bae 100644
    int indexlen = PagerIndexLines;	/* indexlen not always == PIL */
    int indicator = indexlen / 3; 	/* the indicator line of the PI */
    int old_PagerIndexLines;		/* some people want to resize it
-@@ -1674,12 +1673,20 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
+@@ -1671,12 +1673,20 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
      snprintf (helpstr, sizeof (helpstr), "%s %s", tmphelp, buffer);
    }
  
@@ -179,7 +179,7 @@ index 0063b70..4b46bae 100644
        NORMAL_COLOR;
        /* clear() doesn't optimize screen redraws */
        move (0, 0);
-@@ -1692,32 +1699,52 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
+@@ -1689,32 +1699,52 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
  
        indicator = indexlen / 3;
  
@@ -248,7 +248,7 @@ index 0063b70..4b46bae 100644
  	NORMAL_COLOR;
        }
  
-@@ -1749,12 +1776,11 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
+@@ -1746,12 +1776,11 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
  	  index->color = index_color;
  	  index->max = Context->vcount;
  	  index->current = extra->hdr->virtual;
@@ -263,7 +263,7 @@ index 0063b70..4b46bae 100644
  
  	/* some fudge to work out where abouts the indicator should go */
  	if (index->current - indicator < 0)
-@@ -1777,7 +1803,7 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
+@@ -1774,7 +1803,7 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
        j = -1;
        while (display_line (fp, &last_pos, &lineInfo, ++i, &lastLine, &maxLine,
  	     has_types | SearchFlag | (flags & M_PAGER_NOWRAP), &QuoteList, &q_level, &force_redraw,
@@ -272,7 +272,7 @@ index 0063b70..4b46bae 100644
  	if (!lineInfo[i].continuation && ++j == lines)
  	{
  	  topline = i;
-@@ -1789,37 +1815,34 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
+@@ -1786,37 +1815,34 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
      if ((redraw & REDRAW_BODY) || topline != oldtopline)
      {
        do {
@@ -318,7 +318,7 @@ index 0063b70..4b46bae 100644
        }
        NORMAL_COLOR;
  
-@@ -1849,7 +1872,7 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
+@@ -1846,7 +1872,7 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
  	strfcpy(pager_progress_str, (topline == 0) ? "all" : "end", sizeof(pager_progress_str));
  
        /* print out the pager status bar */
@@ -327,7 +327,7 @@ index 0063b70..4b46bae 100644
        SETCOLOR (MT_COLOR_STATUS);
  #ifdef USE_SIDEBAR
        short sw = SidebarWidth;
-@@ -1864,17 +1887,17 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
+@@ -1861,17 +1887,17 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
  
        if (IsHeader (extra) || IsMsgAttach (extra))
        {
@@ -348,7 +348,7 @@ index 0063b70..4b46bae 100644
        }
  #ifdef USE_SIDEBAR
        if (!option (OPTSTATUSONTOP) || PagerIndexLines == 0)
-@@ -1902,10 +1925,9 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
+@@ -1899,10 +1925,9 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
        /* print out the index status bar */
        menu_status_line (buffer, sizeof (buffer), index, NONULL(Status));
   
@@ -361,7 +361,7 @@ index 0063b70..4b46bae 100644
        NORMAL_COLOR;
      }
  
-@@ -1922,7 +1944,8 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
+@@ -1919,7 +1944,8 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
          move(brailleLine+1, 0);
          brailleLine = -1;
        }
@@ -371,7 +371,7 @@ index 0063b70..4b46bae 100644
      mutt_refresh ();
  
      if (IsHeader (extra) && OldHdr == extra->hdr && TopLine != topline
-@@ -2043,7 +2066,7 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
+@@ -2040,7 +2066,7 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
        case OP_PREV_PAGE:
  	if (topline != 0)
  	{
@@ -380,7 +380,7 @@ index 0063b70..4b46bae 100644
  	}
  	else
  	  mutt_error _("Top of message is shown.");
-@@ -2080,7 +2103,7 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
+@@ -2077,7 +2103,7 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
  
        case OP_HALF_UP:
  	if (topline)
@@ -389,7 +389,7 @@ index 0063b70..4b46bae 100644
  	else
  	  mutt_error _("Top of message is shown.");
  	break;
-@@ -2088,7 +2111,7 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
+@@ -2085,7 +2111,7 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
        case OP_HALF_DOWN:
  	if (lineInfo[curline].offset < sb.st_size-1)
  	{
@@ -398,7 +398,7 @@ index 0063b70..4b46bae 100644
  	}
  	else if (option (OPTPAGERSTOP))
  	{
-@@ -2109,7 +2132,7 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
+@@ -2106,7 +2132,7 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
  	{
  	  wrapped = 0;
  
@@ -407,7 +407,7 @@ index 0063b70..4b46bae 100644
  	    searchctx = SearchContext;
  	  else
  	    searchctx = 0;
-@@ -2240,7 +2263,7 @@ search_next:
+@@ -2237,7 +2263,7 @@ search_next:
  	  while (display_line (fp, &last_pos, &lineInfo, i, &lastLine, 
  				&maxLine, M_SEARCH | (flags & M_PAGER_NSKIP) | (flags & M_PAGER_NOWRAP),
  				&QuoteList, &q_level,
@@ -416,7 +416,7 @@ index 0063b70..4b46bae 100644
  	    i++;
  
  	  if (!SearchBack)
-@@ -2277,7 +2300,7 @@ search_next:
+@@ -2274,7 +2300,7 @@ search_next:
  	  {
  	    SearchFlag = M_SEARCH;
  	    /* give some context for search results */
@@ -425,7 +425,7 @@ index 0063b70..4b46bae 100644
  	      searchctx = SearchContext;
  	    else
  	      searchctx = 0;
-@@ -2330,8 +2353,8 @@ search_next:
+@@ -2327,8 +2353,8 @@ search_next:
  	  while (((new_topline + SkipQuotedOffset) < lastLine ||
  		  (0 == (dretval = display_line (fp, &last_pos, &lineInfo,
  			 new_topline, &lastLine, &maxLine, M_TYPES | (flags & M_PAGER_NOWRAP),
@@ -436,7 +436,7 @@ index 0063b70..4b46bae 100644
  	    new_topline++;
  
  	  if (dretval < 0)
-@@ -2343,8 +2366,8 @@ search_next:
+@@ -2340,8 +2366,8 @@ search_next:
  	  while (((new_topline + SkipQuotedOffset) < lastLine ||
  		  (0 == (dretval = display_line (fp, &last_pos, &lineInfo,
  			 new_topline, &lastLine, &maxLine, M_TYPES | (flags & M_PAGER_NOWRAP),
@@ -447,7 +447,7 @@ index 0063b70..4b46bae 100644
  	    new_topline++;
  
  	  if (dretval < 0)
-@@ -2364,9 +2387,9 @@ search_next:
+@@ -2361,9 +2387,9 @@ search_next:
  	  while (display_line (fp, &last_pos, &lineInfo, i, &lastLine, 
  				&maxLine, has_types | (flags & M_PAGER_NOWRAP),
  				&QuoteList, &q_level, &force_redraw,
@@ -459,7 +459,7 @@ index 0063b70..4b46bae 100644
  	}
  	else
  	  mutt_error _("Bottom of message is shown.");
-@@ -2568,7 +2591,7 @@ search_next:
+@@ -2565,7 +2591,7 @@ search_next:
  					&lastLine, &maxLine,
  					(has_types ? M_TYPES : 0) | (flags & M_PAGER_NOWRAP),
  					&QuoteList, &q_level, &force_redraw,
@@ -468,7 +468,7 @@ index 0063b70..4b46bae 100644
  	  {
  	    if (! lineInfo[topline].continuation)
  	      j--;
-@@ -2982,5 +3005,11 @@ search_next:
+@@ -2979,5 +3005,11 @@ search_next:
    FREE (&lineInfo);
    if (index)
      mutt_menuDestroy(&index);
@@ -481,17 +481,14 @@ index 0063b70..4b46bae 100644
    return (rc != -1 ? rc : 0);
  }
 diff --git a/rfc3676.c b/rfc3676.c
-index 5224bda..5ce9ffd 100644
+index dd67f74..5ce9ffd 100644
 --- a/rfc3676.c
 +++ b/rfc3676.c
-@@ -148,10 +148,7 @@ static void flush_par (STATE *s, flowed_state_t *fst)
+@@ -148,7 +148,7 @@ static void flush_par (STATE *s, flowed_state_t *fst)
   * for the prefix from the terminal width. */
  static int quote_width (STATE *s, int ql)
  {
 -  int width = mutt_term_width (ReflowWrap);
--#ifdef USE_SIDEBAR
--  width -= SidebarWidth;
--#endif
 +  int width = mutt_window_wrap_cols (MuttIndexWindow, ReflowWrap);
    if (option(OPTTEXTFLOWED) && (s->flags & M_REPLYING))
    {

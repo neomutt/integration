@@ -1,4 +1,4 @@
-From e5a58056ac9d026a938b186b92e4249eb2782cf4 Mon Sep 17 00:00:00 2001
+From c1c85ed007fde7b10c40618e3235c583ef008b7a Mon Sep 17 00:00:00 2001
 From: Kevin McCarthy <kevin@8t8.us>
 Date: Fri, 8 Apr 2016 15:27:17 -0700
 Subject: [PATCH 02/31] Fix pager.c format_line() to use size_t for mbrtowc()
@@ -22,7 +22,7 @@ loop.
  1 file changed, 18 insertions(+), 12 deletions(-)
 
 diff --git a/pager.c b/pager.c
-index d18495e..0063b70 100644
+index bce402c..bdddfde 100644
 --- a/pager.c
 +++ b/pager.c
 @@ -1104,7 +1104,8 @@ static int format_line (struct line_t **lineInfo, int n, unsigned char *buf,
@@ -35,7 +35,7 @@ index d18495e..0063b70 100644
    wchar_t wc;
    mbstate_t mbstate;
    int wrap_cols = mutt_term_width ((flags & M_PAGER_NOWRAP) ? 0 : Wrap);
-@@ -1138,9 +1139,9 @@ static int format_line (struct line_t **lineInfo, int n, unsigned char *buf,
+@@ -1135,9 +1136,9 @@ static int format_line (struct line_t **lineInfo, int n, unsigned char *buf,
        break;
      
      k = mbrtowc (&wc, (char *)buf+ch, cnt-ch, &mbstate);
@@ -47,7 +47,7 @@ index d18495e..0063b70 100644
          memset(&mbstate, 0, sizeof(mbstate));
        dprint (1, (debugfile, "%s:%d: mbrtowc returned %d; errno = %d.\n",
  		  __FILE__, __LINE__, k, errno));
-@@ -1167,15 +1168,18 @@ static int format_line (struct line_t **lineInfo, int n, unsigned char *buf,
+@@ -1164,15 +1165,18 @@ static int format_line (struct line_t **lineInfo, int n, unsigned char *buf,
      {
        wchar_t wc1;
        mbstate_t mbstate1;
@@ -74,7 +74,7 @@ index d18495e..0063b70 100644
  	if (wc == wc1)
  	{
  	  special |= (wc == '_' && special & A_UNDERLINE)
-@@ -1191,9 +1195,11 @@ static int format_line (struct line_t **lineInfo, int n, unsigned char *buf,
+@@ -1188,9 +1192,11 @@ static int format_line (struct line_t **lineInfo, int n, unsigned char *buf,
  	  /* special = 0; / * overstrike: nothing to do! */
  	  wc = wc1;
  	}

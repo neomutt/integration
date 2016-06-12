@@ -1,4 +1,4 @@
-From 43c380811ed3f8b1d163fec5d226a1bf2505e8ab Mon Sep 17 00:00:00 2001
+From e515c307ec891292cd2cf1a7ddcfff43afdc6b3e Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 6 May 2016 00:23:59 +0100
 Subject: [PATCH 08/22] debian-specific/dont_document_not_present_features
@@ -9,10 +9,10 @@ Subject: [PATCH 08/22] debian-specific/dont_document_not_present_features
  2 files changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/functions.h b/functions.h
-index 5747425..250cab0 100644
+index 347bcde..4d9d435 100644
 --- a/functions.h
 +++ b/functions.h
-@@ -35,7 +35,7 @@
+@@ -32,7 +32,7 @@
  
  #ifdef _MAKEDOC
  # include "config.h"
@@ -22,7 +22,7 @@ index 5747425..250cab0 100644
  
  const struct binding_t OpGeneric[] = { /* map: generic */
 diff --git a/init.h b/init.h
-index 8a21b9c..d87e31d 100644
+index 9b98068..67d81f8 100644
 --- a/init.h
 +++ b/init.h
 @@ -19,7 +19,7 @@

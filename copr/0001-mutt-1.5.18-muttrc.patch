@@ -1,4 +1,4 @@
-From 5ea633b6884711dbafa92c5a385f68b56668203b Mon Sep 17 00:00:00 2001
+From d34e923fb74a881e75c16efc69991dc19a36e42c Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Wed, 1 Jun 2016 21:37:32 +0100
 Subject: [PATCH 1/5] mutt-1.5.18-muttrc

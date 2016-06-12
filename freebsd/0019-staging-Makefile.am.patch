@@ -1,4 +1,4 @@
-From 4f54ca4c1fc37bee24535b63c1580c83633c2e14 Mon Sep 17 00:00:00 2001
+From 01ef479d7be2a4958ffae98ad7ed9a40530c06d0 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 15:24:02 +0100
 Subject: [PATCH 19/21] staging-Makefile.am
@@ -8,10 +8,10 @@ Subject: [PATCH 19/21] staging-Makefile.am
  1 file changed, 9 deletions(-)
 
 diff --git a/Makefile.am b/Makefile.am
-index 92c4f6a..9c0b330 100644
+index e3dc268..b35acfc 100644
 --- a/Makefile.am
 +++ b/Makefile.am
-@@ -163,15 +163,6 @@ patchlist.c: $(srcdir)/PATCHES $(srcdir)/patchlist.sh
+@@ -153,15 +153,6 @@ patchlist.c: $(srcdir)/PATCHES $(srcdir)/patchlist.sh
  	$(srcdir)/patchlist.sh < $(srcdir)/PATCHES > patchlist.c
  
  install-exec-hook:

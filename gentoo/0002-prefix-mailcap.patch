@@ -1,4 +1,4 @@
-From f77dfb61708c8c745a9c2bf75838a865fd5ea827 Mon Sep 17 00:00:00 2001
+From 6db51833f746086e6efd6c458b973f584a2595cc Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Mon, 30 May 2016 03:42:06 +0100
 Subject: [PATCH 02/13] prefix-mailcap
@@ -9,7 +9,7 @@ Subject: [PATCH 02/13] prefix-mailcap
  2 files changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/Makefile.am b/Makefile.am
-index b39c053..b45e140 100644
+index 457984a..d74e445 100644
 --- a/Makefile.am
 +++ b/Makefile.am
 @@ -46,7 +46,7 @@ mutt_DEPENDENCIES = $(MUTT_LIB_OBJECTS) $(LIBOBJS) $(LIBIMAPDEPS) \

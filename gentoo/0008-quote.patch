@@ -1,4 +1,4 @@
-From f0a731c938168c77e42a9aaa661ba1cf01bc5259 Mon Sep 17 00:00:00 2001
+From 1ed2c19f2fcca7e16d6c3d60f8ea1d2aa93a5eeb Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Mon, 30 May 2016 03:46:08 +0100
 Subject: [PATCH 08/13] quote
@@ -66,7 +66,7 @@ index d4490fd..adb281b 100644
        else
  	handler = text_plain_handler;
 diff --git a/init.h b/init.h
-index 519b46b..b426fdf 100644
+index f013bbb..d3492b1 100644
 --- a/init.h
 +++ b/init.h
 @@ -2609,6 +2609,19 @@ struct option_t MuttVars[] = {

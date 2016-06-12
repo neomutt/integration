@@ -1,4 +1,4 @@
-From 1830c15afa8ab84aab0fadff29de86d5155c495a Mon Sep 17 00:00:00 2001
+From 879fe0c3cfee4b86506a74c0184bbb7b252585a8 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 15:16:58 +0100
 Subject: [PATCH 03/21] vvv.quote
@@ -66,7 +66,7 @@ index 4944d49..dfeb96e 100644
        else
  	handler = text_plain_handler;
 diff --git a/init.h b/init.h
-index 292bdc7..ff01b0d 100644
+index 71d170c..422c430 100644
 --- a/init.h
 +++ b/init.h
 @@ -2332,6 +2332,19 @@ struct option_t MuttVars[] = {

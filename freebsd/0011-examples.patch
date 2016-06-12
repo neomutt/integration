@@ -1,4 +1,4 @@
-From 93e6939e2ccd793f41986c98806fd68ab3146590 Mon Sep 17 00:00:00 2001
+From 6c5c2b68b579bd76216a6cfff9dfdcddf44a4b41 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 15:21:22 +0100
 Subject: [PATCH 11/21] examples
@@ -58,7 +58,7 @@ index 34b09e3..5cfc462 100644
  
  uninstall-local:
 diff --git a/init.h b/init.h
-index 4333e82..3fdfaec 100644
+index aecb750..6f06c59 100644
 --- a/init.h
 +++ b/init.h
 @@ -1792,9 +1792,8 @@ struct option_t MuttVars[] = {
@@ -73,7 +73,7 @@ index 4333e82..3fdfaec 100644
    */
    { "pgp_decrypt_command", 	DT_STR, R_NONE, UL &PgpDecryptCommand, 0},
    /*
-@@ -2944,9 +2943,8 @@ struct option_t MuttVars[] = {
+@@ -2945,9 +2944,8 @@ struct option_t MuttVars[] = {
    ** .de
    ** .pp
    ** For examples on how to configure these formats, see the \fCsmime.rc\fP in

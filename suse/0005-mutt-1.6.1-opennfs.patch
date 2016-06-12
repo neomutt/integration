@@ -1,4 +1,4 @@
-From 31af361e6a09ac4bbfd25d8abed3c717f9cc9a0c Mon Sep 17 00:00:00 2001
+From 7a6cefa662e0d3c3ca7b4f72c824ece77446975f Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 03:04:29 +0100
 Subject: [PATCH 05/13] mutt-1.6.1-opennfs
@@ -15,7 +15,7 @@ Subject: [PATCH 05/13] mutt-1.6.1-opennfs
  create mode 100644 opennfs.c
 
 diff --git a/Makefile.am b/Makefile.am
-index c32440b..03f058d 100644
+index 1a03bbb..5d71892 100644
 --- a/Makefile.am
 +++ b/Makefile.am
 @@ -28,7 +28,7 @@ mutt_SOURCES = \
@@ -27,7 +27,7 @@ index c32440b..03f058d 100644
  	postpone.c query.c recvattach.c recvcmd.c \
  	rfc822.c rfc1524.c rfc2047.c rfc2231.c rfc3676.c \
  	score.c send.c sendlib.c signal.c sort.c \
-@@ -103,7 +103,7 @@ mutt_dotlock_SOURCES = mutt_dotlock.c
+@@ -93,7 +93,7 @@ mutt_dotlock_SOURCES = mutt_dotlock.c
  mutt_dotlock_LDADD = $(LIBOBJS)
  mutt_dotlock_DEPENDENCIES = $(LIBOBJS)
  
@@ -82,10 +82,10 @@ index 1592870..0aca1d1 100644
    {
      if (-1 != i)
 diff --git a/mh.c b/mh.c
-index dd15280..38e3ed8 100644
+index 54c7467..ab4f512 100644
 --- a/mh.c
 +++ b/mh.c
-@@ -353,7 +353,11 @@ static int mh_mkstemp (CONTEXT * dest, FILE ** fp, char **tgt)
+@@ -352,7 +352,11 @@ static int mh_mkstemp (CONTEXT * dest, FILE ** fp, char **tgt)
    {
      snprintf (path, _POSIX_PATH_MAX, "%s/.mutt-%s-%d-%" PRIu64,
  	      dest->path, NONULL (Hostname), (int) getpid (), mutt_rand64());
@@ -97,7 +97,7 @@ index dd15280..38e3ed8 100644
      {
        if (errno != EEXIST)
        {
-@@ -1377,8 +1381,11 @@ int maildir_open_new_message (MESSAGE * msg, CONTEXT * dest, HEADER * hdr)
+@@ -1376,8 +1380,11 @@ int maildir_open_new_message (MESSAGE * msg, CONTEXT * dest, HEADER * hdr)
  
      dprint (2, (debugfile, "maildir_open_new_message (): Trying %s.\n",
  		path));

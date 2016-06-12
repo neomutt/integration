@@ -1,10 +1,10 @@
-From c65dad7aa1774b530eb91b4727abaae30d3d240d Mon Sep 17 00:00:00 2001
+From 395ceb16c04f686196a63d7e801c335fd0cd10b5 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Tue, 24 May 2016 17:09:22 +0100
-Subject: [PATCH 06/18] feature: compress
+Subject: [PATCH 6/7] feature: compress
 
 ---
- Makefile.am         |   5 +
+ Makefile.am         |   4 +-
  PATCHES             |   1 +
  README.compress     | 165 +++++++++++
  compress.c          | 826 ++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -27,7 +27,7 @@ Subject: [PATCH 06/18] feature: compress
  po/de.po            |  42 ++-
  status.c            |   6 +
  version.c           |   5 +
- 23 files changed, 1676 insertions(+), 5 deletions(-)
+ 23 files changed, 1673 insertions(+), 7 deletions(-)
  create mode 100644 README.compress
  create mode 100644 compress.c
  create mode 100644 compress.h
@@ -35,21 +35,27 @@ Subject: [PATCH 06/18] feature: compress
  create mode 100644 doc/vimrc-compress
 
 diff --git a/Makefile.am b/Makefile.am
-index 6b68e25..7a8ca04 100644
+index 6b68e25..218576c 100644
 --- a/Makefile.am
 +++ b/Makefile.am
-@@ -77,6 +77,11 @@ EXTRA_DIST = COPYRIGHT GPL OPS OPS.PGP OPS.CRYPT OPS.SMIME TODO UPDATING \
+@@ -50,7 +50,7 @@ DEFS=-DPKGDATADIR=\"$(pkgdatadir)\" -DSYSCONFDIR=\"$(sysconfdir)\" \
  
- EXTRA_SCRIPTS = smime_keys
+ AM_CPPFLAGS=-I. -I$(top_srcdir) $(IMAP_INCLUDES) $(GPGME_CFLAGS) -Iintl
  
-+if BUILD_COMPRESS
-+mutt_SOURCES += compress.c compress.h
-+endif
-+
-+
- mutt_dotlock_SOURCES = mutt_dotlock.c
- mutt_dotlock_LDADD = $(LIBOBJS)
- mutt_dotlock_DEPENDENCIES = $(LIBOBJS)
+-EXTRA_mutt_SOURCES = account.c bcache.c crypt-gpgme.c crypt-mod-pgp-classic.c \
++EXTRA_mutt_SOURCES = account.c bcache.c compress.c crypt-gpgme.c crypt-mod-pgp-classic.c \
+ 	crypt-mod-pgp-gpgme.c crypt-mod-smime-classic.c \
+ 	crypt-mod-smime-gpgme.c dotlock.c gnupgparse.c hcache.c md5.c \
+ 	mutt_idna.c mutt_sasl.c mutt_socket.c mutt_ssl.c mutt_ssl_gnutls.c \
+@@ -61,7 +61,7 @@ EXTRA_mutt_SOURCES = account.c bcache.c crypt-gpgme.c crypt-mod-pgp-classic.c \
+ 
+ EXTRA_DIST = COPYRIGHT GPL OPS OPS.PGP OPS.CRYPT OPS.SMIME TODO UPDATING \
+ 	configure account.h \
+-	attach.h buffy.h charset.h copy.h crypthash.h dotlock.h functions.h gen_defs \
++	attach.h buffy.h charset.h compress.h copy.h crypthash.h dotlock.h functions.h gen_defs \
+ 	globals.h hash.h history.h init.h keymap.h mutt_crypt.h \
+ 	mailbox.h mapping.h md5.h mime.h mutt.h mutt_curses.h mutt_menu.h \
+ 	mutt_regex.h mutt_sasl.h mutt_socket.h mutt_ssl.h mutt_tunnel.h \
 diff --git a/PATCHES b/PATCHES
 index 43df8bf..b720454 100644
 --- a/PATCHES
@@ -232,7 +238,7 @@ index 0000000..ffddc2c
 +
 diff --git a/compress.c b/compress.c
 new file mode 100644
-index 0000000..641bf1f
+index 0000000..b486755
 --- /dev/null
 +++ b/compress.c
 @@ -0,0 +1,826 @@
@@ -704,7 +710,7 @@ index 0000000..641bf1f
 +	if (!cmd)
 +		return 0;
 +
-+	return (strstr (cmd, "%f") && strstr (cmd, "%t")) ? 0 : -1;
++	return (strstr (cmd, "%f") && strstr (cmd, "%t")) ? 1 : 0;
 +}
 +
 +/**
@@ -1101,7 +1107,7 @@ index 0000000..adf6a3e
 +
 +#endif /* _COMPRESS_H_ */
 diff --git a/configure.ac b/configure.ac
-index 6096dbb..6f2d63c 100644
+index 6096dbb..88700cc 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -175,6 +175,14 @@ if test x$have_smime != xno ; then
@@ -1110,8 +1116,8 @@ index 6096dbb..6f2d63c 100644
  
 +AC_ARG_ENABLE(compressed, AC_HELP_STRING([--enable-compressed], [Enable compressed folders support]),
 +[       if test x$enableval = xyes ; then
-+                AC_DEFINE(USE_COMPRESSED,1, [ Define to enable compressed folders support. ])
-+		need_compress="yes"
++                AC_DEFINE(USE_COMPRESSED, 1, [Define to enable compressed folders support.])
++                MUTT_LIB_OBJECTS="$MUTT_LIB_OBJECTS compress.o"
 +        fi
 +])
 +AM_CONDITIONAL(BUILD_COMPRESS, test x$need_compress = xyes)

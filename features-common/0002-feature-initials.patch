@@ -1,7 +1,7 @@
-From a78243d173363756c6bea4edc48b34b4a9552349 Mon Sep 17 00:00:00 2001
+From 439dd17ed9ddfc71f9df10292e69162e4f783f63 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Tue, 24 May 2016 17:02:13 +0100
-Subject: [PATCH 02/18] feature: initials
+Subject: [PATCH 2/7] feature: initials
 
 ---
  PATCHES             |   1 +

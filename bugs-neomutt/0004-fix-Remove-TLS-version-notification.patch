@@ -1,4 +1,4 @@
-From 7853a753c47ae8c20dd51ce6d71b6d35a59c2c4e Mon Sep 17 00:00:00 2001
+From 434bdbcece02d3749b2c8d5ec5d40244daa98309 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Mantas=20Mikul=C4=97nas?= <grawity@gmail.com>
 Date: Fri, 18 Oct 2013 11:34:57 -0700
 Subject: [PATCH 04/10] fix: Remove TLS version notification

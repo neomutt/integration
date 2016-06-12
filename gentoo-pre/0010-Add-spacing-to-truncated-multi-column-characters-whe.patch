@@ -1,4 +1,4 @@
-From ad1f84c586e64d5a2a33278826a22dd26ddb89c0 Mon Sep 17 00:00:00 2001
+From 471eda4a9db4b3beadd9ef799f8fb46f36877e13 Mon Sep 17 00:00:00 2001
 From: Kevin McCarthy <kevin@8t8.us>
 Date: Thu, 14 Apr 2016 12:35:48 -0700
 Subject: [PATCH 10/31] Add spacing to truncated multi-column characters when

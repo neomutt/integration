@@ -1,4 +1,4 @@
-From 0b9e0bff31ea93360f8d61d6e7daa62bd095db14 Mon Sep 17 00:00:00 2001
+From c97720c761af791683c18fc69f729ba78b780fd7 Mon Sep 17 00:00:00 2001
 From: Kevin McCarthy <kevin@8t8.us>
 Date: Wed, 27 Apr 2016 17:56:58 -0700
 Subject: [PATCH 23/31] Fix remaining direct usages of COLS/LINES to use mutt
@@ -7,30 +7,30 @@ Subject: [PATCH 23/31] Fix remaining direct usages of COLS/LINES to use mutt
 Most of these were just message update/clearing.
 ---
  buffy.c       |   3 +-
- commands.c    |  10 ++---
- curs_main.c   |   8 +---
+ commands.c    |  10 ++--
+ curs_main.c   |   3 +-
  filter.c      |   7 ++-
  flags.c       |   9 ++--
  handler.c     |   3 +-
- help.c        |  10 ++---
+ help.c        |  10 ++--
  init.c        |   2 +-
  init.h        |   4 +-
  keymap.c      |   2 +-
  main.c        |   3 --
  mutt_curses.h |   7 +--
  muttlib.c     |   2 +-
- pager.c       |  21 +--------
+ pager.c       |  21 +-------
  recvattach.c  |   2 +-
  recvcmd.c     |   8 ++--
  sendlib.c     |   4 +-
- sidebar.c     | 139 ++++++++++++----------------------------------------------
- 18 files changed, 69 insertions(+), 175 deletions(-)
+ sidebar.c     | 151 ++++++++++------------------------------------------------
+ 18 files changed, 67 insertions(+), 184 deletions(-)
 
 diff --git a/buffy.c b/buffy.c
-index 6befe68..5bec109 100644
+index 4dc0785..6471b26 100644
 --- a/buffy.c
 +++ b/buffy.c
-@@ -791,7 +791,8 @@ int mutt_buffy_list (void)
+@@ -787,7 +787,8 @@ int mutt_buffy_list (void)
      strfcpy (path, tmp->path, sizeof (path));
      mutt_pretty_mailbox (path, sizeof (path));
      
@@ -82,22 +82,10 @@ index dd067d5..191b4be 100644
        fflush (stdout);
        if (mutt_system (buf) != 0 || option (OPTWAITKEY))
 diff --git a/curs_main.c b/curs_main.c
-index e98d913..fbdfa91 100644
+index 5dd53e8..dc0c175 100644
 --- a/curs_main.c
 +++ b/curs_main.c
-@@ -867,11 +867,6 @@ int mutt_index_menu (void)
- 
-       if (menu->redraw & REDRAW_STATUS)
-       {
--#ifdef USE_SIDEBAR
--        /* Temporarily lie about the sidebar width */
--	short sw = SidebarWidth;
--	SidebarWidth = 0;
--#endif
- 	menu_status_line (buf, sizeof (buf), menu, NONULL (Status));
-         mutt_window_move (MuttStatusWindow, 0, 0);
- 	SETCOLOR (MT_COLOR_STATUS);
-@@ -1774,7 +1769,7 @@ int mutt_index_menu (void)
+@@ -1769,7 +1769,7 @@ int mutt_index_menu (void)
  	  mutt_enter_vfolder (cp, buf, sizeof (buf), &menu->redraw, 1);
  	  if (!buf[0])
  	  {
@@ -106,7 +94,7 @@ index e98d913..fbdfa91 100644
  	    break;
  	  }
  	}
-@@ -2970,6 +2965,7 @@ int mutt_index_menu (void)
+@@ -2966,6 +2966,7 @@ int mutt_index_menu (void)
  
        case OP_SIDEBAR_TOGGLE_VISIBLE:
  	toggle_option (OPTSIDEBAR);
@@ -133,7 +121,7 @@ index a8dc2f5..0e94d24 100644
      execl (EXECSHELL, "sh", "-c", cmd, NULL);
      _exit (127);
 diff --git a/flags.c b/flags.c
-index 9d1f827..f544f51 100644
+index 4b5ae66..6a7e9ca 100644
 --- a/flags.c
 +++ b/flags.c
 @@ -356,18 +356,19 @@ int mutt_change_flag (HEADER *h, int bf)
@@ -230,10 +218,10 @@ index 64d3dcf..90240de 100644
    }
  
 diff --git a/init.h b/init.h
-index fa433d0..4a73af1 100644
+index 0dbaead..113d8ad 100644
 --- a/init.h
 +++ b/init.h
-@@ -3087,7 +3087,7 @@ struct option_t MuttVars[] = {
+@@ -3088,7 +3088,7 @@ struct option_t MuttVars[] = {
    ** You may optionally use the ``reverse-'' prefix to specify reverse sorting
    ** order (example: ``\fCset sort_browser=reverse-date\fP'').
    */
@@ -242,7 +230,7 @@ index fa433d0..4a73af1 100644
    /*
    ** .pp
    ** This specifies whether or not to show sidebar. The sidebar shows a list of
-@@ -3095,7 +3095,7 @@ struct option_t MuttVars[] = {
+@@ -3096,7 +3096,7 @@ struct option_t MuttVars[] = {
    ** .pp
    ** \fBSee also:\fP $$sidebar_format, $$sidebar_width
    */
@@ -265,7 +253,7 @@ index 300b116..e305bcd 100644
      ch = getch();
      if (ch != ERR && ch != ctrl ('G'))
 diff --git a/main.c b/main.c
-index 4a98236..a0e62fc 100644
+index 36854b6..0d1f2a3 100644
 --- a/main.c
 +++ b/main.c
 @@ -468,9 +468,6 @@ int main (int argc, char **argv)
@@ -273,16 +261,16 @@ index 4a98236..a0e62fc 100644
      mutt_error = mutt_curses_error;
      mutt_message = mutt_curses_message;
 -#ifdef USE_SIDEBAR
--    sb_init();
+-    mutt_sb_init();
 -#endif
    }
  
    /* Create the Maildir directory if it doesn't exist. */
 diff --git a/mutt_curses.h b/mutt_curses.h
-index 7d1ff40..19a1086 100644
+index dc941d6..f9eedb0 100644
 --- a/mutt_curses.h
 +++ b/mutt_curses.h
-@@ -64,11 +64,8 @@
+@@ -54,11 +54,8 @@
  #undef lines
  #endif /* lines */
  
@@ -310,7 +298,7 @@ index 714a2b9..6cc1bc2 100644
  }
  
 diff --git a/pager.c b/pager.c
-index 4b46bae..c395343 100644
+index d53ffd1..8830aef 100644
 --- a/pager.c
 +++ b/pager.c
 @@ -1860,12 +1860,6 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
@@ -423,7 +411,7 @@ index ccaea8a..1a2cf89 100644
    if (tag)
    {
 diff --git a/sidebar.c b/sidebar.c
-index b40d53e..4252716 100644
+index 823b939..9500390 100644
 --- a/sidebar.c
 +++ b/sidebar.c
 @@ -30,8 +30,6 @@
@@ -435,7 +423,7 @@ index b40d53e..4252716 100644
  static short  PreviousSort;	/* sidebar_sort_method */
  static time_t LastRefresh;	/* Time of last refresh */
  
-@@ -281,9 +279,7 @@ cb_format_str (char *dest, size_t destlen, size_t col, char op, const char *src,
+@@ -283,9 +281,7 @@ static const char *cb_format_str(char *dest, size_t destlen, size_t col, char op
   * @buflen:  Buffer length
   * @width:   Desired width in screen cells
   * @box:     Mailbox name
@@ -446,36 +434,27 @@ index b40d53e..4252716 100644
   *
   * Take all the relevant mailbox data and the desired screen width and then get
   * mutt_FormatString to do the actual work. mutt_FormatString will callback to
-@@ -304,11 +300,7 @@ make_sidebar_entry (char *buf, unsigned int buflen, int width, char *box,
- 	int box_len = strlen (box);
- 	sbe.box[box_len] = '\0';
+@@ -302,11 +298,7 @@ static void make_sidebar_entry (char *buf, unsigned int buflen, int width, char
+   sbe.buffy = b;
+   strfcpy (sbe.box, box, sizeof (sbe.box));
  
--	/* Temporarily lie about the screen width */
--	int oc = COLS;
--	COLS = width + SidebarWidth;
--	mutt_FormatString (buf, buflen, 0, NONULL(SidebarFormat), cb_format_str, (unsigned long) &sbe, 0);
--	COLS = oc;
-+	mutt_FormatString (buf, buflen, 0, width, NONULL(SidebarFormat), cb_format_str, (unsigned long) &sbe, 0);
+-  /* Temporarily lie about the screen width */
+-  int oc = COLS;
+-  COLS = width + SidebarWidth;
+-  mutt_FormatString (buf, buflen, 0, NONULL(SidebarFormat), cb_format_str, (unsigned long) &sbe, 0);
+-  COLS = oc;
++  mutt_FormatString (buf, buflen, 0, width, NONULL(SidebarFormat), cb_format_str, (unsigned long) &sbe, 0);
  
- 	/* Force string to be exactly the right width */
- 	int w = mutt_strwidth (buf);
-@@ -507,7 +499,7 @@ sort_buffy_array (BUFFY **arr, int arr_len)
-  * can change outside of the sidebar that we don't hear about.
-  *
-  * Returns:
-- *	0:  No, don't draw the sidebar
-+ *	0: No, don't draw the sidebar
-  *	1: Yes, draw the sidebar
-  */
- static int
-@@ -578,55 +570,9 @@ prepare_sidebar (int page_size)
+   /* Force string to be exactly the right width */
+   int w = mutt_strwidth (buf);
+@@ -574,68 +566,9 @@ static int prepare_sidebar (int page_size)
  }
  
  /**
 - * visible - Should we display the sidebar?
 - *
 - * After validating the config options "sidebar_visible" and "sidebar_width",
-- * determine whether we should should display the sidebar.
+- * determine whether we should display the sidebar.
 - *
 - * When not visible, set the global SidebarWidth to 0.
 - *
@@ -485,36 +464,49 @@ index b40d53e..4252716 100644
 -static short
 -visible (void)
 -{
--	short new_visible = option (OPTSIDEBAR);
--	short new_width   = SidebarWidth;
+-  short new_visible = option (OPTSIDEBAR);
+-  short new_width   = SidebarWidth;
 -
--	if (OldWidth != new_width) {
--		if (new_width > 0) {
--			OldWidth = new_width;
--		}
--	}
+-  if (OldWidth != new_width)
+-  {
+-    if (new_width > 0)
+-    {
+-      OldWidth = new_width;
+-    }
+-  }
 -
--	if (OldVisible != new_visible) {
--		if (new_visible) {
--			set_option (OPTSIDEBAR);
--		} else {
--			unset_option (OPTSIDEBAR);
--		}
--		OldVisible = new_visible;
--	} else if (new_width == 0) {
--		unset_option (OPTSIDEBAR);
--		OldVisible = 0;
--	}
+-  if (OldVisible != new_visible)
+-  {
+-    if (new_visible)
+-    {
+-      set_option (OPTSIDEBAR);
+-    }
+-    else
+-    {
+-      unset_option (OPTSIDEBAR);
+-    }
+-    OldVisible = new_visible;
+-  }
+-  else if (new_width == 0)
+-  {
+-    unset_option (OPTSIDEBAR);
+-    OldVisible = 0;
+-  }
 -
--	if (!option (OPTSIDEBAR)) {
--		SidebarWidth = 0;
--	} else if (new_width == 0) {
--		SidebarWidth = OldWidth;
--	} else {
--		SidebarWidth = new_width;
--	}
+-  if (!option (OPTSIDEBAR))
+-  {
+-    SidebarWidth = 0;
+-  }
+-  else if (new_width == 0)
+-  {
+-    SidebarWidth = OldWidth;
+-  }
+-  else
+-  {
+-    SidebarWidth = new_width;
+-  }
 -
--	return new_visible;
+-  return new_visible;
 -}
 -
 -/**
@@ -526,61 +518,57 @@ index b40d53e..4252716 100644
   *
   * Draw a divider using characters from the config option "sidebar_divider_char".
   * This can be an ASCII or Unicode character.  First we calculate this
-@@ -639,7 +585,7 @@ visible (void)
+@@ -647,7 +580,7 @@ visible (void)
+  *	0:  Error: 0 width character
   *	n:  Success: character occupies n screen columns
   */
- static int
--draw_divider (int first_row, int num_rows)
-+draw_divider (int num_rows, int num_cols)
+-static int draw_divider (int first_row, int num_rows)
++static int draw_divider (int num_rows, int num_cols)
  {
- 	/* Calculate the width of the delimiter in screen cells */
- 	int delim_len = mutt_strwidth (SidebarDividerChar);
-@@ -647,17 +593,14 @@ draw_divider (int first_row, int num_rows)
- 	if (delim_len < 1)
- 		return delim_len;
+   /* Calculate the width of the delimiter in screen cells */
+   int delim_len = mutt_strwidth (SidebarDividerChar);
+@@ -655,18 +588,15 @@ static int draw_divider (int first_row, int num_rows)
+   if (delim_len < 1)
+     return delim_len;
  
--	if ((SidebarWidth + delim_len) > (COLS + 1))
-+	if (delim_len > num_cols)
- 		return 0;
+-  if ((SidebarWidth + delim_len) > (COLS + 1))
++  if (delim_len > num_cols)
+     return 0;
  
--	if (delim_len > SidebarWidth)
--		return -1;
+-  if (delim_len > SidebarWidth)
+-    return -1;
 -
- 	SETCOLOR(MT_COLOR_DIVIDER);
+   SETCOLOR(MT_COLOR_DIVIDER);
  
- 	int i;
- 	for (i = 0; i < num_rows; i++) {
--		move (first_row + i, SidebarWidth - delim_len);
-+		mutt_window_move (MuttSidebarWindow, i, SidebarWidth - delim_len);	//RAR 0 for rhs
- 		addstr (NONULL(SidebarDividerChar));
- 	}
+   int i;
+   for (i = 0; i < num_rows; i++)
+   {
+-    move (first_row + i, SidebarWidth - delim_len);
++    mutt_window_move (MuttSidebarWindow, i, SidebarWidth - delim_len);	//RAR 0 for rhs
+     addstr (NONULL(SidebarDividerChar));
+   }
  
-@@ -665,10 +608,10 @@ draw_divider (int first_row, int num_rows)
- }
+@@ -675,7 +605,7 @@ static int draw_divider (int first_row, int num_rows)
  
  /**
-- * fill_empty_space - Wipe the remaining sidebar space
+  * fill_empty_space - Wipe the remaining Sidebar space
 - * @first_row:  Screen line to start (0-based)
-+ * fill_empty_space - Wipe the remaining Sidebar space
 + * @first_row:  Window line to start (0-based)
   * @num_rows:   Number of rows to fill
-- * @width:      Width of the sidebar (minus the divider)
-+ * @width:      Width of the Sidebar (minus the divider)
+  * @width:      Width of the Sidebar (minus the divider)
   *
-  * Write spaces over the area the sidebar isn't using.
-  */
-@@ -680,17 +623,17 @@ fill_empty_space (int first_row, int num_rows, int width)
- 
- 	int r;
- 	for (r = 0; r < num_rows; r++) {
--		int i = 0;
--		move (first_row + r, 0);
--		for (; i < width; i++)
-+		mutt_window_move (MuttSidebarWindow, first_row + r, 0);	//RAR rhs
-+		int i;
-+		for (i = 0; i < width; i++)
- 			addch (' ');
- 	}
+@@ -689,17 +619,17 @@ static void fill_empty_space (int first_row, int num_rows, int width)
+   int r;
+   for (r = 0; r < num_rows; r++)
+   {
+-    int i = 0;
+-    move (first_row + r, 0);
+-    for (; i < width; i++)
++    mutt_window_move (MuttSidebarWindow, first_row + r, 0);	//RAR rhs
++    int i;
++    for (i = 0; i < width; i++)
+       addch (' ');
+   }
  }
  
  /**
@@ -592,103 +580,109 @@ index b40d53e..4252716 100644
   * @div_width:  Width in screen characters taken by the divider
   *
   * Display a list of mailboxes in a panel on the left.  What's displayed will
-@@ -709,13 +652,13 @@ fill_empty_space (int first_row, int num_rows, int width)
+@@ -717,13 +647,13 @@ static void fill_empty_space (int first_row, int num_rows, int width)
+  * "sidebar_indent_string" and sorted: "sidebar_sort_method".  Finally, they're
   * trimmed to fit the available space.
   */
- static void
--draw_sidebar (int first_row, int num_rows, int div_width)
-+draw_sidebar (int num_rows, int num_cols, int div_width)
+-static void draw_sidebar (int first_row, int num_rows, int div_width)
++static void draw_sidebar (int num_rows, int num_cols, int div_width)
  {
- 	BUFFY *b = TopBuffy;
- 	if (!b)
- 		return;
+   BUFFY *b = TopBuffy;
+   if (!b)
+     return;
  
--	int w = MIN(COLS, (SidebarWidth - div_width));
-+	int w = MIN(num_cols, (SidebarWidth - div_width));
- 	int row = 0;
- 	for (b = TopBuffy; b && (row < num_rows); b = b->next) {
- 		if (b->is_hidden) {
-@@ -741,7 +684,7 @@ draw_sidebar (int first_row, int num_rows, int div_width)
- 			SETCOLOR(MT_COLOR_NORMAL);
- 		}
+-  int w = MIN(COLS, (SidebarWidth - div_width));
++  int w = MIN(num_cols, (SidebarWidth - div_width));
+   int row = 0;
+   for (b = TopBuffy; b && (row < num_rows); b = b->next)
+   {
+@@ -749,7 +679,7 @@ static void draw_sidebar (int first_row, int num_rows, int div_width)
+     else
+       SETCOLOR(MT_COLOR_NORMAL);
  
--		move (first_row + row, 0);
-+		mutt_window_move (MuttSidebarWindow, row, 0);
- 		if (Context && Context->path &&
- 			(!strcmp (b->path, Context->path)||
- 			 !strcmp (b->realpath, Context->path))) {
-@@ -813,28 +756,11 @@ draw_sidebar (int first_row, int num_rows, int div_width)
- 		row++;
- 	}
+-    move (first_row + row, 0);
++    mutt_window_move (MuttSidebarWindow, row, 0);
+     if (Context && Context->path &&
+         (!strcmp (b->path, Context->path)||
+          !strcmp (b->realpath, Context->path)))
+@@ -829,32 +759,11 @@ static void draw_sidebar (int first_row, int num_rows, int div_width)
+     row++;
+   }
  
--	fill_empty_space (first_row + row, num_rows - row, w);
-+	fill_empty_space (row, num_rows - row, w);
+-  fill_empty_space (first_row + row, num_rows - row, w);
++  fill_empty_space (row, num_rows - row, w);
  }
  
  
  /**
-- * sb_init - Set some default values for the sidebar.
+- * mutt_sb_init - Set some default values for the sidebar.
 - */
 -void
--sb_init (void)
+-mutt_sb_init (void)
 -{
--	OldVisible = option (OPTSIDEBAR);
--	if (SidebarWidth > 0) {
--		OldWidth = SidebarWidth;
--	} else {
--		OldWidth = 20;
--		if (OldVisible) {
--			SidebarWidth = OldWidth;
--		}
--	}
+-  OldVisible = option (OPTSIDEBAR);
+-  if (SidebarWidth > 0)
+-  {
+-    OldWidth = SidebarWidth;
+-  }
+-  else
+-  {
+-    OldWidth = 20;
+-    if (OldVisible)
+-    {
+-      SidebarWidth = OldWidth;
+-    }
+-  }
 -}
 -
 -/**
-  * sb_draw - Completely redraw the sidebar
+  * mutt_sb_draw - Completely redraw the sidebar
   *
   * Completely refresh the sidebar region.  First draw the divider; then, for
-@@ -843,36 +769,27 @@ sb_init (void)
- void
- sb_draw (void)
+@@ -862,37 +771,29 @@ mutt_sb_init (void)
+  */
+ void mutt_sb_draw (void)
  {
--	if (!visible())
-+	if (!option (OPTSIDEBAR))
- 		return;
+-  if (!visible())
++  if (!option (OPTSIDEBAR))
+     return;
  
--	/* XXX - if transitioning from invisible to visible */
--	/* if (OldVisible == 0) */
--	/* 	mutt_buffy_check (1); we probably have bad or no numbers */
+-  /* XXX - if transitioning from invisible to visible */
+-  /* if (OldVisible == 0) */
+-  /* 	mutt_buffy_check (1); we probably have bad or no numbers */
 -
--	int first_row = 0;
--	int num_rows  = LINES - 2;
+-  int first_row = 0;
+-  int num_rows  = LINES - 2;
 -
--	if (option (OPTHELP) || option (OPTSTATUSONTOP))
--		first_row++;
+-  if (option (OPTHELP) || option (OPTSTATUSONTOP))
+-    first_row++;
 -
--	if (option (OPTHELP))
--		num_rows--;
-+	int num_rows  = MuttSidebarWindow->rows;
-+	int num_cols  = MuttSidebarWindow->cols;
-+	if ((num_rows < 1) || (num_cols < 1))
-+		return;
+-  if (option (OPTHELP))
+-    num_rows--;
+-
+-  int div_width = draw_divider (first_row, num_rows);
++  int num_rows  = MuttSidebarWindow->rows;
++  int num_cols  = MuttSidebarWindow->cols;
++  if ((num_rows < 1) || (num_cols < 1))
++    return;
++ 
++  int div_width = draw_divider (num_rows, num_cols);
+   if (div_width < 0)
+     return;
  
--	int div_width = draw_divider (first_row, num_rows);
-+	int div_width = draw_divider (num_rows, num_cols);
- 	if (div_width < 0)
- 		return;
+   if (!get_incoming())
+   {
+     int w = MIN(COLS, (SidebarWidth - div_width));
+-    fill_empty_space (first_row, num_rows, w);
++    fill_empty_space (0, num_rows, SidebarWidth - div_width);
+     return;
+   }
  
- 	if (!get_incoming()) {
--		int w = MIN(COLS, (SidebarWidth - div_width));
--		fill_empty_space (first_row, num_rows, w);
-+		fill_empty_space (0, num_rows, SidebarWidth - div_width);
- 		return;
- 	}
+   if (!prepare_sidebar (num_rows))
+     return;
  
- 	if (!prepare_sidebar (num_rows))
- 		return;
- 
--	draw_sidebar (first_row, num_rows, div_width);
-+	draw_sidebar (num_rows, num_cols, div_width);
+-  draw_sidebar (first_row, num_rows, div_width);
++  draw_sidebar (num_rows, num_cols, div_width);
  }
  
  /**

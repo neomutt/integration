@@ -1,4 +1,4 @@
-From 85a835bb421d0f7f47f2593dd27699a16bb985ba Mon Sep 17 00:00:00 2001
+From e3ab6982283ca8520ecf2635e45bfa3c661833d9 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 03:05:42 +0100
 Subject: [PATCH 07/13] mutt-1.5.21-tinfo
@@ -8,10 +8,10 @@ Subject: [PATCH 07/13] mutt-1.5.21-tinfo
  1 file changed, 7 insertions(+), 2 deletions(-)
 
 diff --git a/configure.ac b/configure.ac
-index d81ce88..dd8550b 100644
+index 0653bc6..457ff1b 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -321,9 +321,14 @@ main ()
+@@ -320,9 +320,14 @@ main ()
  	do
  		AC_CHECK_LIB($lib, waddnwstr, [cf_ncurses="$lib"; break])
  	done

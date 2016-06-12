@@ -1,4 +1,4 @@
-From b736daecc14fffd6cd169a34bd998a3c18350081 Mon Sep 17 00:00:00 2001
+From 20096d54f2cf6fbd744c0fde658d1934731d0fa8 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 15:18:21 +0100
 Subject: [PATCH 06/21] smime-outlook

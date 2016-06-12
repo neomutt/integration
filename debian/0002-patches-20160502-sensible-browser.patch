@@ -1,4 +1,4 @@
-From 9f5565e0188c1ca489186803b30790017df79f78 Mon Sep 17 00:00:00 2001
+From d5f83e2d40197827affecbf5edae852d7b0157d9 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 6 May 2016 19:53:13 +0100
 Subject: [PATCH 02/22] patches-20160502/sensible-browser
@@ -128,7 +128,7 @@ index 3ffcd13..10cb663 100644
  	    strfcpy (OldLastDir, LastDir, sizeof (OldLastDir));
  
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index 1418bd9..8d0ceae 100644
+index a2b5ef8..ea3be08 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
 @@ -12534,6 +12534,96 @@ <sect1 id="trash-folder">
@@ -229,7 +229,7 @@ index 1418bd9..8d0ceae 100644
  
  <chapter id="security">
 diff --git a/menu.c b/menu.c
-index 9e4632a..f6fc7b7 100644
+index 554f990..cbf1caf 100644
 --- a/menu.c
 +++ b/menu.c
 @@ -919,8 +919,17 @@ int menu_redraw (MUTTMENU *menu)

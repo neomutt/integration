@@ -1,4 +1,4 @@
-From dde9dcf6f4923752ab1bd4d22ccde7386cfa7819 Mon Sep 17 00:00:00 2001
+From 627039cc886446d05dcf415329238f117d22a85c Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 6 May 2016 00:24:00 +0100
 Subject: [PATCH 11/22] debian-specific/467432-write_bcc
@@ -13,7 +13,7 @@ Subject: [PATCH 11/22] debian-specific/467432-write_bcc
  6 files changed, 11 insertions(+), 16 deletions(-)
 
 diff --git a/headers.c b/headers.c
-index b126c23..320200c 100644
+index d1343ad..22f851a 100644
 --- a/headers.c
 +++ b/headers.c
 @@ -52,7 +52,7 @@ void mutt_edit_headers (const char *editor,
@@ -26,10 +26,10 @@ index b126c23..320200c 100644
  
    /* now copy the body of the message. */
 diff --git a/init.h b/init.h
-index 7f715f7..7d1c818 100644
+index 8e42328..1799483 100644
 --- a/init.h
 +++ b/init.h
-@@ -4069,14 +4069,9 @@ struct option_t MuttVars[] = {
+@@ -4070,14 +4070,9 @@ struct option_t MuttVars[] = {
    { "write_bcc",	DT_BOOL, R_NONE, OPTWRITEBCC, 1},
    /*
    ** .pp
@@ -48,7 +48,7 @@ index 7f715f7..7d1c818 100644
    { "write_inc",	DT_NUM,	 R_NONE, UL &WriteInc, 10 },
    /*
 diff --git a/main.c b/main.c
-index 6bb2499..8bb6e75 100644
+index 52afbe9..7273b34 100644
 --- a/main.c
 +++ b/main.c
 @@ -765,7 +765,7 @@ int main (int argc, char **argv)

@@ -1,4 +1,4 @@
-From af5a277d310a3c212c8a8120d65988ee0d0ad556 Mon Sep 17 00:00:00 2001
+From 68794270493eb4346de83ce0acb8e510a7d69830 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 03:08:08 +0100
 Subject: [PATCH 09/13] patch-1.5.24.vk.pgp_verbose_mime
@@ -33,10 +33,10 @@ index b44a08a..950a074 100644
  WHERE char *PgpDecodeCommand;
  WHERE char *PgpVerifyCommand;
 diff --git a/init.h b/init.h
-index 1b16e4a..a2822de 100644
+index 83a7788..395b47c 100644
 --- a/init.h
 +++ b/init.h
-@@ -3184,6 +3184,18 @@ struct option_t MuttVars[] = {
+@@ -3185,6 +3185,18 @@ struct option_t MuttVars[] = {
    ** a line quoted text if it also matches $$smileys. This mostly
    ** happens at the beginning of a line.
    */

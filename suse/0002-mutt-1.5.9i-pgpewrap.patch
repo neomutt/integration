@@ -1,4 +1,4 @@
-From 03e6f2518464294761e822a40aba75be702faf0d Mon Sep 17 00:00:00 2001
+From a87a6f3ce446eff96f853e4825691846bb363442 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 03:02:20 +0100
 Subject: [PATCH 02/13] mutt-1.5.9i-pgpewrap

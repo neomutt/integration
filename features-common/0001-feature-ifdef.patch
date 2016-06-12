@@ -1,7 +1,7 @@
-From d27b50e949dc49ffef99439a3cc983252800fdb0 Mon Sep 17 00:00:00 2001
+From 138ebfd76f3cf1b7f4210864709f83e255a25ce6 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Tue, 24 May 2016 16:50:02 +0100
-Subject: [PATCH 01/18] feature: ifdef
+Subject: [PATCH 1/7] feature: ifdef
 
 ---
  .travis.yml         |  30 ++++

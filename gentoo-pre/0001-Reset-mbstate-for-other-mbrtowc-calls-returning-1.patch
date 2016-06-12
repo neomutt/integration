@@ -1,4 +1,4 @@
-From e9c4f68f7412bfb14ec9d96db55ba358c38f45a0 Mon Sep 17 00:00:00 2001
+From 0055dbccd18db6eadeb82fa36e98b9a35e8c875d Mon Sep 17 00:00:00 2001
 From: Kevin McCarthy <kevin@8t8.us>
 Date: Fri, 8 Apr 2016 15:20:53 -0700
 Subject: [PATCH 01/31] Reset mbstate for other mbrtowc() calls returning -1
@@ -65,7 +65,7 @@ index c804274..c48c68f 100644
        wc = replacement_char ();
      }
 diff --git a/pager.c b/pager.c
-index e2207a1..d18495e 100644
+index 7c9d9de..bce402c 100644
 --- a/pager.c
 +++ b/pager.c
 @@ -1014,10 +1014,14 @@ trim_incomplete_mbyte(unsigned char *buf, size_t len)
@@ -85,7 +85,7 @@ index e2207a1..d18495e 100644
    }
    *buf = '\0';
  
-@@ -1136,6 +1140,8 @@ static int format_line (struct line_t **lineInfo, int n, unsigned char *buf,
+@@ -1133,6 +1137,8 @@ static int format_line (struct line_t **lineInfo, int n, unsigned char *buf,
      k = mbrtowc (&wc, (char *)buf+ch, cnt-ch, &mbstate);
      if (k == -2 || k == -1)
      {

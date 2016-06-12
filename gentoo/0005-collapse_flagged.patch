@@ -1,4 +1,4 @@
-From fc7e93b69378375fbdf1297484cbc3016f1b8fc9 Mon Sep 17 00:00:00 2001
+From 7090e1d4e4f9626fbd9a250ca39e16f6d155aef8 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Mon, 30 May 2016 03:42:56 +0100
 Subject: [PATCH 05/13] collapse_flagged
@@ -22,7 +22,7 @@ index f77d115..6cd1dcf 100644
  patch-initials-neo-UNKNOWN
  patch-trash-neo-UNKNOWN
 diff --git a/curs_main.c b/curs_main.c
-index 2500465..374e48f 100644
+index 2ede1fd..96b3a3e 100644
 --- a/curs_main.c
 +++ b/curs_main.c
 @@ -122,6 +122,11 @@ static const char *No_visible = N_("No visible messages.");
@@ -37,7 +37,7 @@ index 2500465..374e48f 100644
  
  /* de facto standard escapes for tsl/fsl */
  static char *tsl = "\033]0;";
-@@ -2396,14 +2401,14 @@ int mutt_index_menu (void)
+@@ -2397,14 +2402,14 @@ int mutt_index_menu (void)
  	  if (option (OPTUNCOLLAPSEJUMP))
  	    menu->current = mutt_thread_next_unread (Context, CURHDR);
  	}
@@ -54,7 +54,7 @@ index 2500465..374e48f 100644
  	  break;
  	}
  
-@@ -2428,8 +2433,10 @@ int mutt_index_menu (void)
+@@ -2429,8 +2434,10 @@ int mutt_index_menu (void)
  
  	  if (CURHDR->collapsed)
  	    final = mutt_uncollapse_thread (Context, CURHDR);
@@ -66,7 +66,7 @@ index 2500465..374e48f 100644
  	  else
  	    final = CURHDR->virtual;
  
-@@ -2447,9 +2454,11 @@ int mutt_index_menu (void)
+@@ -2448,9 +2455,11 @@ int mutt_index_menu (void)
  	    {
  	      if (h->collapsed)
  		mutt_uncollapse_thread (Context, h);
@@ -80,7 +80,7 @@ index 2500465..374e48f 100644
  	  }
  
 diff --git a/init.h b/init.h
-index f580d31..519b46b 100644
+index c6a2c43..f013bbb 100644
 --- a/init.h
 +++ b/init.h
 @@ -413,6 +413,12 @@ struct option_t MuttVars[] = {

@@ -1,4 +1,4 @@
-From 92bf54482726f841bc51359deef109f34080938c Mon Sep 17 00:00:00 2001
+From 201d2420b175f02989fa59327d857dd90bc3befb Mon Sep 17 00:00:00 2001
 From: Kevin McCarthy <kevin@8t8.us>
 Date: Wed, 27 Apr 2016 17:56:59 -0700
 Subject: [PATCH 24/31] Add cols parameter to mutt_FormatString()
@@ -123,7 +123,7 @@ index 3ffcd13..3185422 100644
  }
  #endif
 diff --git a/compose.c b/compose.c
-index 6eeb8e8..006af0e 100644
+index 46606a3..f1d7908 100644
 --- a/compose.c
 +++ b/compose.c
 @@ -136,7 +136,7 @@ static struct mapping_t ComposeNewsHelp[] = {
@@ -135,7 +135,7 @@ index 6eeb8e8..006af0e 100644
  	    (unsigned long)(((ATTACHPTR **) menu->data)[num]),
  	    M_FORMAT_STAT_FILE | M_FORMAT_ARROWCURSOR);
  }
-@@ -469,7 +469,7 @@ static unsigned long cum_attachs_size (MUTTMENU *menu)
+@@ -470,7 +470,7 @@ static unsigned long cum_attachs_size (MUTTMENU *menu)
  }
  
  /* prototype for use below */
@@ -144,7 +144,7 @@ index 6eeb8e8..006af0e 100644
        const char *p);
  
  /*
-@@ -485,7 +485,7 @@ static void compose_status_line (char *buf, size_t buflen, size_t col, MUTTMENU
+@@ -486,7 +486,7 @@ static void compose_status_line (char *buf, size_t buflen, size_t col, MUTTMENU
   */
  
  static const char *
@@ -153,7 +153,7 @@ index 6eeb8e8..006af0e 100644
  		   const char *prefix, const char *ifstring,
  		   const char *elsestring,
  		   unsigned long data, format_flag flags)
-@@ -528,17 +528,17 @@ compose_format_str (char *buf, size_t buflen, size_t col, char op, const char *s
+@@ -529,17 +529,17 @@ compose_format_str (char *buf, size_t buflen, size_t col, char op, const char *s
    }
  
    if (optional)
@@ -176,7 +176,7 @@ index 6eeb8e8..006af0e 100644
          (unsigned long) menu, 0);
  }
  
-@@ -1489,7 +1489,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
+@@ -1490,7 +1490,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
      /* Draw formatted compose status line */
      if (menu->redraw & REDRAW_STATUS) 
      {
@@ -186,7 +186,7 @@ index 6eeb8e8..006af0e 100644
  	SETCOLOR (MT_COLOR_STATUS);
  	mutt_paddstr (MuttStatusWindow->cols, buf);
 diff --git a/compress.c b/compress.c
-index 641bf1f..67673d3 100644
+index b486755..11873af 100644
 --- a/compress.c
 +++ b/compress.c
 @@ -310,6 +310,7 @@ store_size (const CONTEXT *ctx)
@@ -631,10 +631,10 @@ index 1a2cf89..cbd04dd 100644
      {
        i = nntp_post (msg);
 diff --git a/sidebar.c b/sidebar.c
-index 4252716..bf10cac 100644
+index 9500390..bdddefe 100644
 --- a/sidebar.c
 +++ b/sidebar.c
-@@ -154,6 +154,7 @@ find_prev_new (int wrap)
+@@ -149,6 +149,7 @@ static BUFFY *find_prev_new (int wrap)
   * @dest:        Buffer in which to save string
   * @destlen:     Buffer length
   * @col:         Starting column, UNUSED
@@ -642,27 +642,27 @@ index 4252716..bf10cac 100644
   * @op:          printf-like operator, e.g. 'B'
   * @src:         printf-like format string
   * @prefix:      Field formatting string, UNUSED
-@@ -170,7 +171,7 @@ find_prev_new (int wrap)
+@@ -164,7 +165,7 @@ static BUFFY *find_prev_new (int wrap)
+  *
   * Returns: src (unchanged)
   */
- static const char *
--cb_format_str (char *dest, size_t destlen, size_t col, char op, const char *src,
-+cb_format_str (char *dest, size_t destlen, size_t col, int cols, char op, const char *src,
- 	const char *prefix, const char *ifstring, const char *elsestring,
- 	unsigned long data, format_flag flags)
+-static const char *cb_format_str(char *dest, size_t destlen, size_t col, char op,
++static const char *cb_format_str(char *dest, size_t destlen, size_t col, int cols, char op,
+                                  const char *src, const char *prefix, const char *ifstring,
+                                  const char *elsestring, unsigned long data, format_flag flags)
  {
-@@ -265,9 +266,9 @@ cb_format_str (char *dest, size_t destlen, size_t col, char op, const char *src,
- 	}
+@@ -267,9 +268,9 @@ static const char *cb_format_str(char *dest, size_t destlen, size_t col, char op
+   }
  
- 	if (optional)
--		mutt_FormatString (dest, destlen, col, ifstring,   cb_format_str, (unsigned long) sbe, flags);
-+		mutt_FormatString (dest, destlen, col, cols, ifstring,   cb_format_str, (unsigned long) sbe, flags);
- 	else if (flags & M_FORMAT_OPTIONAL)
--		mutt_FormatString (dest, destlen, col, elsestring, cb_format_str, (unsigned long) sbe, flags);
-+		mutt_FormatString (dest, destlen, col, cols, elsestring, cb_format_str, (unsigned long) sbe, flags);
+   if (optional)
+-    mutt_FormatString (dest, destlen, col, ifstring,   cb_format_str, (unsigned long) sbe, flags);
++    mutt_FormatString (dest, destlen, col, cols, ifstring,   cb_format_str, (unsigned long) sbe, flags);
+   else if (flags & M_FORMAT_OPTIONAL)
+-    mutt_FormatString (dest, destlen, col, elsestring, cb_format_str, (unsigned long) sbe, flags);
++    mutt_FormatString (dest, destlen, col, cols, elsestring, cb_format_str, (unsigned long) sbe, flags);
  
- 	/* We return the format string, unchanged */
- 	return src;
+   /* We return the format string, unchanged */
+   return src;
 diff --git a/smime.c b/smime.c
 index 7f9a8b5..897c9e0 100644
 --- a/smime.c

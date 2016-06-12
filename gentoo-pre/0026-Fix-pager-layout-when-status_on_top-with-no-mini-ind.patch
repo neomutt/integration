@@ -1,8 +1,8 @@
-From bf8a63e98818682545414400237b8390e152cdd5 Mon Sep 17 00:00:00 2001
+From b493c54f53624acb4d59c06297d7b04de4d6549d Mon Sep 17 00:00:00 2001
 From: Kevin McCarthy <kevin@8t8.us>
 Date: Sat, 30 Apr 2016 10:50:43 -0700
 Subject: [PATCH 26/31] Fix pager layout when $status_on_top with no
- mini-index.  (closes #3836)
+ mini-index. (closes #3836)
 
 The pager_window->row_offset should only be adjusted when we have a
 mini-index.
@@ -17,7 +17,7 @@ adjustments are explicitly stated.
  1 file changed, 11 insertions(+), 21 deletions(-)
 
 diff --git a/pager.c b/pager.c
-index 3e2956f..902cee1 100644
+index 17c85b2..822c31a 100644
 --- a/pager.c
 +++ b/pager.c
 @@ -1693,45 +1693,35 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)

@@ -1,4 +1,4 @@
-From 5f5548400dd7fa5a7f36ccf3fd6f947558647dd6 Mon Sep 17 00:00:00 2001
+From f6df9e0ed1d69550e9bcb7ea4abc8a817096bcf4 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 6 May 2016 00:24:10 +0100
 Subject: [PATCH 20/22] upstream/809802_timeout_hook
@@ -12,7 +12,7 @@ Subject: [PATCH 20/22] upstream/809802_timeout_hook
  5 files changed, 37 insertions(+), 5 deletions(-)
 
 diff --git a/curs_main.c b/curs_main.c
-index 4c70d55..91d7822 100644
+index 4e8208b..000feaa 100644
 --- a/curs_main.c
 +++ b/curs_main.c
 @@ -931,8 +931,10 @@ int mutt_index_menu (void)
@@ -75,10 +75,10 @@ index 98c2f26..329fb47 100644
  void mutt_account_hook (const char* url)
  {
 diff --git a/init.h b/init.h
-index 7d1c818..09c4fb1 100644
+index 1799483..cd46a8b 100644
 --- a/init.h
 +++ b/init.h
-@@ -4308,6 +4308,7 @@ const struct command_t Commands[] = {
+@@ -4309,6 +4309,7 @@ const struct command_t Commands[] = {
    { "spam",		parse_spam_list,	M_SPAM },
    { "nospam",		parse_spam_list,	M_NOSPAM },
    { "subscribe",	parse_subscribe,	0 },

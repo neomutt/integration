@@ -1,4 +1,4 @@
-From c5e6d310cf9df7c852b2edd69161b81dbc45cd09 Mon Sep 17 00:00:00 2001
+From 10436169226ee7cdc22f669ef491102a8ac8d44e Mon Sep 17 00:00:00 2001
 From: Tim Stoakes <tim@stoakes.net>
 Date: Sun, 16 Sep 2012 09:31:54 +0200
 Subject: [PATCH 06/10] fix: Add browser sort by description, message count and
@@ -7,24 +7,16 @@ Subject: [PATCH 06/10] fix: Add browser sort by description, message count and
 Now the browser can sort by mail folder description, (all) message count, and
 new message count.
 ---
- browser.c | 74 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++------
+ browser.c | 73 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++------
  browser.h |  2 ++
  init.h    |  6 ++++++
- 3 files changed, 76 insertions(+), 6 deletions(-)
+ 3 files changed, 75 insertions(+), 6 deletions(-)
 
 diff --git a/browser.c b/browser.c
-index f72c4a6..3ffcd13 100644
+index f6cd181..3ffcd13 100644
 --- a/browser.c
 +++ b/browser.c
-@@ -29,6 +29,7 @@
- #include "sort.h"
- #include "mailbox.h"
- #include "browser.h"
-+#include "mx.h"
- #ifdef USE_IMAP
- #include "imap.h"
- #endif
-@@ -105,6 +106,16 @@ static int browser_compare_subject (const void *a, const void *b)
+@@ -106,6 +106,16 @@ static int browser_compare_subject (const void *a, const void *b)
    return ((BrowserSort & SORT_REVERSE) ? -r : r);
  }
  
@@ -41,7 +33,7 @@ index f72c4a6..3ffcd13 100644
  static int browser_compare_date (const void *a, const void *b)
  {
    struct folder_file *pa = (struct folder_file *) a;
-@@ -125,6 +136,26 @@ static int browser_compare_size (const void *a, const void *b)
+@@ -126,6 +136,26 @@ static int browser_compare_size (const void *a, const void *b)
    return ((BrowserSort & SORT_REVERSE) ? -r : r);
  }
  
@@ -68,7 +60,7 @@ index f72c4a6..3ffcd13 100644
  static void browser_sort (struct browser_state *state)
  {
    int (*f) (const void *, const void *);
-@@ -147,6 +178,15 @@ static void browser_sort (struct browser_state *state)
+@@ -148,6 +178,15 @@ static void browser_sort (struct browser_state *state)
  #endif
        f = browser_compare_size;
        break;
@@ -84,7 +76,7 @@ index f72c4a6..3ffcd13 100644
      case SORT_SUBJECT:
      default:
        f = browser_compare_subject;
-@@ -293,7 +333,16 @@ folder_format_str (char *dest, size_t destlen, size_t col, char op, const char *
+@@ -294,7 +333,16 @@ folder_format_str (char *dest, size_t destlen, size_t col, char op, const char *
        else
  	mutt_format_s (dest, destlen, fmt, "");
        break;
@@ -102,7 +94,7 @@ index f72c4a6..3ffcd13 100644
      case 'N':
  #ifdef USE_IMAP
        if (mx_is_imap (folder->ff->desc))
-@@ -498,8 +547,9 @@ static void add_folder (MUTTMENU *m, struct browser_state *state,
+@@ -499,8 +547,9 @@ static void add_folder (MUTTMENU *m, struct browser_state *state,
    }
  
    (state->entry)[state->entrylen].new = new;
@@ -113,7 +105,7 @@ index f72c4a6..3ffcd13 100644
  #ifdef USE_IMAP
    (state->entry)[state->entrylen].imap = 0;
  #endif
-@@ -1464,9 +1514,9 @@ void _mutt_select_file (char *f, size_t flen, int flags, char ***files, int *num
+@@ -1465,9 +1514,9 @@ void _mutt_select_file (char *f, size_t flen, int flags, char ***files, int *num
  	  int reverse = (i == OP_SORT_REVERSE);
  	  
  	  switch (mutt_multi_choice ((reverse) ?
@@ -126,7 +118,7 @@ index f72c4a6..3ffcd13 100644
  	  {
  	    case -1: /* abort */
  	      resort = 0;
-@@ -1484,7 +1534,19 @@ void _mutt_select_file (char *f, size_t flen, int flags, char ***files, int *num
+@@ -1485,7 +1534,19 @@ void _mutt_select_file (char *f, size_t flen, int flags, char ***files, int *num
  	      BrowserSort = SORT_SIZE;
  	      break;
  
@@ -161,10 +153,10 @@ index ad89ab2..a41e0d5 100644
    char delim;
    
 diff --git a/init.h b/init.h
-index 1d0f9f1..1b57aa2 100644
+index 9425d5a..47811cd 100644
 --- a/init.h
 +++ b/init.h
-@@ -3489,7 +3489,10 @@ struct option_t MuttVars[] = {
+@@ -3490,7 +3490,10 @@ struct option_t MuttVars[] = {
    ** entries are sorted alphabetically.  Valid values:
    ** .il
    ** .dd alpha (alphabetically)
@@ -175,7 +167,7 @@ index 1d0f9f1..1b57aa2 100644
    ** .dd size
    ** .dd unsorted
    ** .ie
-@@ -4134,7 +4137,10 @@ const struct mapping_t SortAuxMethods[] = {
+@@ -4135,7 +4138,10 @@ const struct mapping_t SortAuxMethods[] = {
  
  const struct mapping_t SortBrowserMethods[] = {
    { "alpha",	SORT_SUBJECT },

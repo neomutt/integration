@@ -1,4 +1,4 @@
-From 046cb03e69d8b02d8c5bb0069e642afa0b433cd1 Mon Sep 17 00:00:00 2001
+From 6e4af4a83da08d6f5ad6b0cd43f9edd33b5c1512 Mon Sep 17 00:00:00 2001
 From: Derek Martin <code@pizzashack.org>
 Date: Mon, 9 May 2016 14:06:54 -0700
 Subject: [PATCH 30/31] Change M_* symbols to MUTT_*
@@ -39,7 +39,6 @@ this change.
  editmsg.c           |  20 ++--
  enter.c             |  62 +++++-----
  flags.c             |  54 ++++-----
- functions.h         |  14 +--
  group.h             |   4 +-
  handler.c           |  60 +++++-----
  hcache.c            |   4 +-
@@ -65,7 +64,7 @@ this change.
  menu.c              |  46 +++----
  mh.c                |  86 ++++++-------
  mutt.h              | 338 ++++++++++++++++++++++++++--------------------------
- mutt_curses.h       |  12 +-
+ mutt_curses.h       |   4 +-
  mutt_menu.h         |   2 +-
  mutt_notmuch.c      |  28 ++---
  mutt_sasl.c         |  12 +-
@@ -109,7 +108,7 @@ this change.
  sys_socket.h        |  22 ++--
  system.c            |   6 +-
  thread.c            |  58 ++++-----
- 94 files changed, 1853 insertions(+), 1850 deletions(-)
+ 93 files changed, 1842 insertions(+), 1839 deletions(-)
 
 diff --git a/account.c b/account.c
 index 57eba36..ca0ee8e 100644
@@ -801,7 +800,7 @@ index 3185422..c46db6e 100644
  	      } */
  	    }
 diff --git a/buffy.c b/buffy.c
-index 5bec109..9de77dd 100644
+index 6471b26..5e85983 100644
 --- a/buffy.c
 +++ b/buffy.c
 @@ -132,7 +132,7 @@ static int test_new_folder (const char *path)
@@ -831,16 +830,16 @@ index 5bec109..9de77dd 100644
      {
        if(*tmp)
        {
-@@ -586,7 +586,7 @@ buffy_mbox_update (BUFFY *mailbox, struct stat *sb)
- 	if ((mailbox->sb_last_checked > sb->st_mtime) && (mailbox->msg_count != 0))
- 		return; /* no check necessary */
+@@ -589,7 +589,7 @@ buffy_mbox_update (BUFFY *mailbox, struct stat *sb)
+   if ((mailbox->sb_last_checked > sb->st_mtime) && (mailbox->msg_count != 0))
+     return; /* no check necessary */
  
--	ctx = mx_open_mailbox (mailbox->path, M_READONLY | M_QUIET | M_NOSORT | M_PEEK, NULL);
-+	ctx = mx_open_mailbox (mailbox->path, MUTT_READONLY | MUTT_QUIET | MUTT_NOSORT | MUTT_PEEK, NULL);
- 	if (ctx) {
- 		mailbox->msg_count       = ctx->msgcount;
- 		mailbox->msg_unread      = ctx->unread;
-@@ -607,22 +607,22 @@ static void buffy_check(BUFFY *tmp, struct stat *contex_sb)
+-  ctx = mx_open_mailbox (mailbox->path, M_READONLY | M_QUIET | M_NOSORT | M_PEEK, NULL);
++  ctx = mx_open_mailbox (mailbox->path, MUTT_READONLY | MUTT_QUIET | MUTT_NOSORT | MUTT_PEEK, NULL);
+   if (ctx)
+   {
+     mailbox->msg_count       = ctx->msgcount;
+@@ -611,22 +611,22 @@ static void buffy_check(BUFFY *tmp, struct stat *contex_sb)
  
      sb.st_size=0;
  
@@ -868,7 +867,7 @@ index 5bec109..9de77dd 100644
        else
  #endif
        if (stat (tmp->path, &sb) != 0 || (S_ISREG(sb.st_mode) && sb.st_size == 0) ||
-@@ -641,17 +641,17 @@ static void buffy_check(BUFFY *tmp, struct stat *contex_sb)
+@@ -645,17 +645,17 @@ static void buffy_check(BUFFY *tmp, struct stat *contex_sb)
       * before polling */
      if (!Context || !Context->path ||
  #ifdef USE_NNTP
@@ -890,7 +889,7 @@ index 5bec109..9de77dd 100644
  #ifdef USE_SIDEBAR
  	if (option(OPTSIDEBAR))
  	  buffy_mbox_update (tmp, &sb);
-@@ -660,7 +660,7 @@ static void buffy_check(BUFFY *tmp, struct stat *contex_sb)
+@@ -664,7 +664,7 @@ static void buffy_check(BUFFY *tmp, struct stat *contex_sb)
  	  BuffyCount++;
  	break;
  
@@ -899,7 +898,7 @@ index 5bec109..9de77dd 100644
  #ifdef USE_SIDEBAR
  	if (option(OPTSIDEBAR))
  	  buffy_maildir_update (tmp);
-@@ -669,7 +669,7 @@ static void buffy_check(BUFFY *tmp, struct stat *contex_sb)
+@@ -673,7 +673,7 @@ static void buffy_check(BUFFY *tmp, struct stat *contex_sb)
  	  BuffyCount++;
  	break;
  
@@ -908,7 +907,7 @@ index 5bec109..9de77dd 100644
  #ifdef USE_SIDEBAR
  	if (option(OPTSIDEBAR))
  	  mh_buffy_update (tmp);
-@@ -679,7 +679,7 @@ static void buffy_check(BUFFY *tmp, struct stat *contex_sb)
+@@ -683,7 +683,7 @@ static void buffy_check(BUFFY *tmp, struct stat *contex_sb)
  	  BuffyCount++;
  	break;
  #ifdef USE_NOTMUCH
@@ -917,7 +916,7 @@ index 5bec109..9de77dd 100644
  	tmp->msg_count = 0;
  	tmp->msg_unread = 0;
  	tmp->msg_flagged = 0;
-@@ -740,9 +740,9 @@ int mutt_buffy_check (int force)
+@@ -744,9 +744,9 @@ int mutt_buffy_check (int force)
  #endif
  
    /* check device ID and serial number instead of comparing paths */
@@ -995,7 +994,7 @@ index e52ce38..54891f0 100644
  /* Check if given character set is valid (either officially assigned or
   * known to local iconv implementation). If strict is non-zero, check
 diff --git a/color.c b/color.c
-index 54c944f..04d12ca 100644
+index 172bc59..6583f53 100644
 --- a/color.c
 +++ b/color.c
 @@ -601,7 +601,7 @@ add_pattern (COLOR_LINE **top, const char *s, int sensitive,
@@ -1346,7 +1345,7 @@ index 191b4be..39f307d 100644
  
    /* inform the user */
 diff --git a/compose.c b/compose.c
-index 006af0e..e42c840 100644
+index f1d7908..d12a64c 100644
 --- a/compose.c
 +++ b/compose.c
 @@ -138,7 +138,7 @@ static void snd_entry (char *b, size_t blen, MUTTMENU *menu, int num)
@@ -1358,7 +1357,7 @@ index 006af0e..e42c840 100644
  }
  
  
-@@ -271,7 +271,7 @@ check_attachments(ATTACHPTR **idx, short idxlen)
+@@ -272,7 +272,7 @@ check_attachments(ATTACHPTR **idx, short idxlen)
        snprintf(msg, sizeof(msg), _("%s [#%d] modified. Update encoding?"),
  	       pretty, i+1);
        
@@ -1367,7 +1366,7 @@ index 006af0e..e42c840 100644
  	mutt_update_encoding(idx[i]->content);
        else if(r == -1)
  	return -1;
-@@ -346,7 +346,7 @@ static int edit_address_list (int line, ADDRESS **addr)
+@@ -347,7 +347,7 @@ static int edit_address_list (int line, ADDRESS **addr)
    
    mutt_addrlist_to_local (*addr);
    rfc822_write_address (buf, sizeof (buf), *addr, 0);
@@ -1376,7 +1375,7 @@ index 006af0e..e42c840 100644
    {
      rfc822_free_address (addr);
      *addr = mutt_parse_adrlist (*addr, buf);
-@@ -491,7 +491,7 @@ compose_format_str (char *buf, size_t buflen, size_t col, int cols, char op, con
+@@ -492,7 +492,7 @@ compose_format_str (char *buf, size_t buflen, size_t col, int cols, char op, con
  		   unsigned long data, format_flag flags)
  {
    char fmt[SHORT_STRING], tmp[SHORT_STRING];
@@ -1385,7 +1384,7 @@ index 006af0e..e42c840 100644
    MUTTMENU *menu = (MUTTMENU *) data;
  
    *buf = 0;
-@@ -529,7 +529,7 @@ compose_format_str (char *buf, size_t buflen, size_t col, int cols, char op, con
+@@ -530,7 +530,7 @@ compose_format_str (char *buf, size_t buflen, size_t col, int cols, char op, con
  
    if (optional)
      compose_status_line (buf, buflen, col, cols, menu, ifstring);
@@ -1394,7 +1393,7 @@ index 006af0e..e42c840 100644
      compose_status_line (buf, buflen, col, cols, menu, elsestring);
  
    return (src);
-@@ -608,7 +608,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
+@@ -609,7 +609,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
  	break;
        case OP_COMPOSE_EDIT_FROM:
  	menu->redraw = edit_address_list (HDR_FROM, &msg->env->from);
@@ -1403,7 +1402,7 @@ index 006af0e..e42c840 100644
  	break;
        case OP_COMPOSE_EDIT_TO:
  #ifdef USE_NNTP
-@@ -621,7 +621,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
+@@ -622,7 +622,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
  	  crypt_opportunistic_encrypt (msg);
  	  redraw_crypt_lines (msg);
  	}
@@ -1412,7 +1411,7 @@ index 006af0e..e42c840 100644
          break;
        case OP_COMPOSE_EDIT_BCC:
  #ifdef USE_NNTP
-@@ -634,7 +634,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
+@@ -635,7 +635,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
  	  crypt_opportunistic_encrypt (msg);
  	  redraw_crypt_lines (msg);
  	}
@@ -1421,7 +1420,7 @@ index 006af0e..e42c840 100644
  	break;
        case OP_COMPOSE_EDIT_CC:
  #ifdef USE_NNTP
-@@ -647,7 +647,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
+@@ -648,7 +648,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
  	  crypt_opportunistic_encrypt (msg);
  	  redraw_crypt_lines (msg);
  	}
@@ -1430,7 +1429,7 @@ index 006af0e..e42c840 100644
          break;
  #ifdef USE_NNTP
        case OP_COMPOSE_EDIT_NEWSGROUPS:
-@@ -719,15 +719,15 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
+@@ -720,15 +720,15 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
  	  else
  	    mutt_window_clrtoeol(MuttIndexWindow);
  	}
@@ -1449,7 +1448,7 @@ index 006af0e..e42c840 100644
  	{
  	  strfcpy (fcc, buf, fcclen);
  	  mutt_pretty_mailbox (fcc, fcclen);
-@@ -736,7 +736,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
+@@ -737,7 +737,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
  	  fccSet = 1;
  	}
  	MAYBE_REDRAW (menu->redraw);
@@ -1458,7 +1457,7 @@ index 006af0e..e42c840 100644
          break;
        case OP_COMPOSE_EDIT_MESSAGE:
  	if (Editor && (mutt_strcmp ("builtin", Editor) != 0) && !option (OPTEDITHDRS))
-@@ -744,7 +744,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
+@@ -745,7 +745,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
  	  mutt_edit_file (Editor, msg->content->filename);
  	  mutt_update_encoding (msg->content);
  	  menu->redraw = REDRAW_FULL;
@@ -1467,7 +1466,7 @@ index 006af0e..e42c840 100644
  	  break;
  	}
  	/* fall through */
-@@ -790,7 +790,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
+@@ -791,7 +791,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
  	}
  
          menu->redraw = REDRAW_FULL;
@@ -1476,7 +1475,7 @@ index 006af0e..e42c840 100644
  	break;
  
  
-@@ -821,7 +821,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
+@@ -822,7 +822,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
  	  unset_option(OPTNEEDREDRAW);
  	}
  	
@@ -1485,7 +1484,7 @@ index 006af0e..e42c840 100644
          break;
  
  
-@@ -870,7 +870,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
+@@ -871,7 +871,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
  
  	  menu->redraw |= REDRAW_INDEX | REDRAW_STATUS;
  	}
@@ -1494,7 +1493,7 @@ index 006af0e..e42c840 100644
          break;
  
        case OP_COMPOSE_ATTACH_MESSAGE:
-@@ -898,7 +898,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
+@@ -899,7 +899,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
  
  	  if (Context)
  #ifdef USE_NNTP
@@ -1503,7 +1502,7 @@ index 006af0e..e42c840 100644
  #endif
  	  {
  	    strfcpy (fname, NONULL (Context->path), sizeof (fname));
-@@ -932,7 +932,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
+@@ -933,7 +933,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
  
  	  menu->redraw = REDRAW_FULL;
  
@@ -1512,7 +1511,7 @@ index 006af0e..e42c840 100644
  	  if (ctx == NULL)
  	  {
  	    mutt_error (_("Unable to open mailbox %s"), fname);
-@@ -1003,7 +1003,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
+@@ -1004,7 +1004,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
  	  Sort = oldSort;
  	  SortAux = oldSortAux;
  	}
@@ -1521,7 +1520,7 @@ index 006af0e..e42c840 100644
          break;
  
        case OP_DELETE:
-@@ -1025,7 +1025,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
+@@ -1026,7 +1026,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
  	  msg->content = idx[0]->content;
  
          menu->redraw |= REDRAW_STATUS;
@@ -1530,7 +1529,7 @@ index 006af0e..e42c840 100644
          break;
  
  #define CURRENT idx[menu->current]->content
-@@ -1044,7 +1044,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
+@@ -1045,7 +1045,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
          else
  	  mutt_message (_("The current attachment will be converted."));
  	menu->redraw = REDRAW_CURRENT;
@@ -1539,7 +1538,7 @@ index 006af0e..e42c840 100644
          break;
        }
  #undef CURRENT
-@@ -1061,7 +1061,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
+@@ -1062,7 +1062,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
  	  mutt_str_replace (&idx[menu->current]->content->description, buf);
  	  menu->redraw = REDRAW_CURRENT;
  	}
@@ -1548,7 +1547,7 @@ index 006af0e..e42c840 100644
          break;
  
        case OP_COMPOSE_UPDATE_ENCODING:
-@@ -1081,7 +1081,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
+@@ -1082,7 +1082,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
            mutt_update_encoding(idx[menu->current]->content);
  	  menu->redraw = REDRAW_CURRENT | REDRAW_STATUS;
  	}
@@ -1557,7 +1556,7 @@ index 006af0e..e42c840 100644
          break;
        
        case OP_COMPOSE_TOGGLE_DISPOSITION:
-@@ -1100,7 +1100,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
+@@ -1101,7 +1101,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
  
  	  menu->redraw = REDRAW_CURRENT;
  	}
@@ -1566,7 +1565,7 @@ index 006af0e..e42c840 100644
          break;
  
        case OP_COMPOSE_EDIT_ENCODING:
-@@ -1119,7 +1119,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
+@@ -1120,7 +1120,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
  	  else
  	    mutt_error _("Invalid encoding.");
  	}
@@ -1575,7 +1574,7 @@ index 006af0e..e42c840 100644
          break;
  
        case OP_COMPOSE_SEND_MESSAGE:
-@@ -1145,7 +1145,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
+@@ -1146,7 +1146,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
  	  if ((i = query_quadoption (OPT_COPY,
  				_("Save a copy of this message?"))) == -1)
  	    break;
@@ -1584,7 +1583,7 @@ index 006af0e..e42c840 100644
  	    *fcc = 0;
  	}
  
-@@ -1158,7 +1158,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
+@@ -1159,7 +1159,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
  	mutt_edit_file (NONULL(Editor), idx[menu->current]->content->filename);
  	mutt_update_encoding (idx[menu->current]->content);
  	menu->redraw = REDRAW_CURRENT | REDRAW_STATUS;
@@ -1593,7 +1592,7 @@ index 006af0e..e42c840 100644
  	break;
  
        case OP_COMPOSE_TOGGLE_UNLINK:
-@@ -1199,7 +1199,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
+@@ -1200,7 +1200,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
  	CHECK_COUNT;
  	strfcpy (fname, idx[menu->current]->content->filename, sizeof (fname));
  	mutt_pretty_mailbox (fname, sizeof (fname));
@@ -1602,7 +1601,7 @@ index 006af0e..e42c840 100644
  							== 0 && fname[0])
  	{
  	  if (stat(idx[menu->current]->content->filename, &st) == -1)
-@@ -1221,7 +1221,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
+@@ -1222,7 +1222,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
  	    mutt_stamp_attachment(idx[menu->current]->content);
  	  
  	}
@@ -1611,7 +1610,7 @@ index 006af0e..e42c840 100644
          break;
  
        case OP_COMPOSE_NEW_MIME:
-@@ -1233,7 +1233,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
+@@ -1234,7 +1234,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
  
            mutt_window_clearline (MuttMessageWindow, 0);
  	  fname[0] = 0;
@@ -1620,7 +1619,7 @@ index 006af0e..e42c840 100644
  	      != 0 || !fname[0])
  	    continue;
  	  mutt_expand_path (fname, sizeof (fname));
-@@ -1289,7 +1289,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
+@@ -1290,7 +1290,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
  	    menu->redraw = REDRAW_FULL;
  	  }
  	}
@@ -1629,7 +1628,7 @@ index 006af0e..e42c840 100644
          break;
  
        case OP_COMPOSE_EDIT_MIME:
-@@ -1299,7 +1299,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
+@@ -1300,7 +1300,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
  	  mutt_update_encoding (idx[menu->current]->content);
  	  menu->redraw = REDRAW_FULL;
  	}
@@ -1638,7 +1637,7 @@ index 006af0e..e42c840 100644
          break;
  
        case OP_VIEW_ATTACH:
-@@ -1330,17 +1330,17 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
+@@ -1331,17 +1331,17 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
  	if (op == OP_FILTER) /* cte might have changed */
  	  menu->redraw = menu->tagprefix ? REDRAW_FULL : REDRAW_CURRENT;
          menu->redraw |= REDRAW_STATUS;
@@ -1659,7 +1658,7 @@ index 006af0e..e42c840 100644
            {
              while (idxlen-- > 0)
              {
-@@ -1425,7 +1425,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
+@@ -1426,7 +1426,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
            if (msg->security & (ENCRYPT | SIGN))
            {
              if (mutt_yesorno (_("S/MIME already selected. Clear & continue ? "),
@@ -1668,7 +1667,7 @@ index 006af0e..e42c840 100644
              {
                mutt_clear_error ();
                break;
-@@ -1439,7 +1439,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
+@@ -1440,7 +1440,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
  	}
  	msg->security = crypt_pgp_send_menu (msg, &menu->redraw);
  	redraw_crypt_lines (msg);
@@ -1677,7 +1676,7 @@ index 006af0e..e42c840 100644
          break;
  
  
-@@ -1458,7 +1458,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
+@@ -1459,7 +1459,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
            if (msg->security & (ENCRYPT | SIGN))
            {
              if (mutt_yesorno (_("PGP already selected. Clear & continue ? "),
@@ -1686,7 +1685,7 @@ index 006af0e..e42c840 100644
              {
                mutt_clear_error ();
                break;
-@@ -1472,7 +1472,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
+@@ -1473,7 +1473,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
  	}
  	msg->security = crypt_smime_send_menu(msg, &menu->redraw);
  	redraw_crypt_lines (msg);
@@ -1695,7 +1694,7 @@ index 006af0e..e42c840 100644
          break;
  
  
-@@ -1480,7 +1480,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
+@@ -1481,7 +1481,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
        case OP_COMPOSE_MIX:
        
        	mix_make_chain (&msg->chain, &menu->redraw);
@@ -1705,7 +1704,7 @@ index 006af0e..e42c840 100644
  #endif
  
 diff --git a/compress.c b/compress.c
-index 67673d3..fb77631 100644
+index 11873af..30cc427 100644
 --- a/compress.c
 +++ b/compress.c
 @@ -120,7 +120,7 @@ remove_file (const CONTEXT *ctx)
@@ -2457,7 +2456,7 @@ index 13d7626..2267c3c 100644
        k = 0;
        continue;
 diff --git a/curs_main.c b/curs_main.c
-index fbdfa91..2500465 100644
+index dc0c175..2ede1fd 100644
 --- a/curs_main.c
 +++ b/curs_main.c
 @@ -204,16 +204,16 @@ void mutt_ts_icon(char *str)
@@ -2776,7 +2775,7 @@ index fbdfa91..2500465 100644
  		  strfcpy(buf, Context->path, sizeof (buf));
  		  mutt_buffy_vfolder (buf, sizeof (buf));
  	  }
-@@ -1823,7 +1823,7 @@ int mutt_index_menu (void)
+@@ -1824,7 +1824,7 @@ int mutt_index_menu (void)
  #ifdef USE_NNTP
  	/* mutt_buffy_check() must be done with mail-reader mode! */
  	menu->help = mutt_compile_help (helpstr, sizeof (helpstr), MENU_MAIN,
@@ -2785,7 +2784,7 @@ index fbdfa91..2500465 100644
  #endif
  	break;
  
-@@ -1872,7 +1872,7 @@ int mutt_index_menu (void)
+@@ -1873,7 +1873,7 @@ int mutt_index_menu (void)
  
  	if ((menu->menu == MENU_MAIN)
  	    && (query_quadoption (OPT_QUIT,
@@ -2794,7 +2793,7 @@ index fbdfa91..2500465 100644
  	{
  	  if (Context)
  	  {
-@@ -1888,7 +1888,7 @@ int mutt_index_menu (void)
+@@ -1889,7 +1889,7 @@ int mutt_index_menu (void)
  	CHECK_MSGCOUNT;
          CHECK_VISIBLE;
  	CHECK_READONLY;
@@ -2803,7 +2802,7 @@ index fbdfa91..2500465 100644
  
          if ((Sort & SORT_MASK) != SORT_THREADS)
  	  mutt_error _("Threading is not enabled.");
-@@ -1924,7 +1924,7 @@ int mutt_index_menu (void)
+@@ -1925,7 +1925,7 @@ int mutt_index_menu (void)
          CHECK_VISIBLE;
  	CHECK_READONLY;
          /* L10N: CHECK_ACL */
@@ -2812,7 +2811,7 @@ index fbdfa91..2500465 100644
  
          if ((Sort & SORT_MASK) != SORT_THREADS)
  	  mutt_error _("Threading is not enabled.");
-@@ -2205,7 +2205,7 @@ int mutt_index_menu (void)
+@@ -2206,7 +2206,7 @@ int mutt_index_menu (void)
          CHECK_VISIBLE;
  	CHECK_READONLY;
          /* L10N: CHECK_ACL */
@@ -2821,7 +2820,7 @@ index fbdfa91..2500465 100644
  
          if (tag)
          {
-@@ -2213,14 +2213,14 @@ int mutt_index_menu (void)
+@@ -2214,14 +2214,14 @@ int mutt_index_menu (void)
  	  {
  	    if (Context->hdrs[Context->v2r[j]]->tagged)
  	      mutt_set_flag (Context, Context->hdrs[Context->v2r[j]],
@@ -2838,7 +2837,7 @@ index fbdfa91..2500465 100644
  	  if (option (OPTRESOLVE))
  	  {
  	    if ((menu->current = ci_next_undeleted (menu->current)) == -1)
-@@ -2243,7 +2243,7 @@ int mutt_index_menu (void)
+@@ -2244,7 +2244,7 @@ int mutt_index_menu (void)
          CHECK_VISIBLE;
  	CHECK_READONLY;
          /* L10N: CHECK_ACL */
@@ -2847,7 +2846,7 @@ index fbdfa91..2500465 100644
  
  	if (tag)
  	{
-@@ -2253,9 +2253,9 @@ int mutt_index_menu (void)
+@@ -2254,9 +2254,9 @@ int mutt_index_menu (void)
  	    {
  	      if (Context->hdrs[Context->v2r[j]]->read ||
  		  Context->hdrs[Context->v2r[j]]->old)
@@ -2859,7 +2858,7 @@ index fbdfa91..2500465 100644
  	    }
  	  }
  	  menu->redraw = REDRAW_STATUS | REDRAW_INDEX;
-@@ -2263,9 +2263,9 @@ int mutt_index_menu (void)
+@@ -2264,9 +2264,9 @@ int mutt_index_menu (void)
  	else
  	{
  	  if (CURHDR->read || CURHDR->old)
@@ -2871,7 +2870,7 @@ index fbdfa91..2500465 100644
  
  	  if (option (OPTRESOLVE))
  	  {
-@@ -2357,7 +2357,7 @@ int mutt_index_menu (void)
+@@ -2358,7 +2358,7 @@ int mutt_index_menu (void)
  	CHECK_MSGCOUNT;
          CHECK_VISIBLE;
  	CHECK_READONLY;
@@ -2880,7 +2879,7 @@ index fbdfa91..2500465 100644
  
  	if (mutt_change_flag (tag ? NULL : CURHDR, (op == OP_MAIN_SET_FLAG)) == 0)
  	{
-@@ -2499,23 +2499,23 @@ int mutt_index_menu (void)
+@@ -2500,23 +2500,23 @@ int mutt_index_menu (void)
          CHECK_VISIBLE;
  	CHECK_READONLY;
          /* L10N: CHECK_ACL */
@@ -2911,7 +2910,7 @@ index fbdfa91..2500465 100644
  	  if (option (OPTRESOLVE))
  	  {
  	    if ((menu->current = ci_next_undeleted (menu->current)) == -1)
-@@ -2544,15 +2544,15 @@ int mutt_index_menu (void)
+@@ -2545,15 +2545,15 @@ int mutt_index_menu (void)
          CHECK_VISIBLE;
  	CHECK_READONLY;
          /* L10N: CHECK_ACL */
@@ -2930,7 +2929,7 @@ index fbdfa91..2500465 100644
  				  op == OP_DELETE_THREAD ? 0 : 1);
  	  if (option (OPTRESOLVE))
  	    if ((menu->current = ci_next_undeleted (menu->current)) == -1)
-@@ -2566,7 +2566,7 @@ int mutt_index_menu (void)
+@@ -2567,7 +2567,7 @@ int mutt_index_menu (void)
  	CHECK_MSGCOUNT;
  	CHECK_READONLY;
  	CHECK_ATTACH
@@ -2939,7 +2938,7 @@ index fbdfa91..2500465 100644
  	{
  	  NNTP_DATA *nntp_data = Context->data;
  	  if (mutt_newsgroup_catchup (nntp_data->nserv, nntp_data->group))
-@@ -2600,7 +2600,7 @@ int mutt_index_menu (void)
+@@ -2601,7 +2601,7 @@ int mutt_index_menu (void)
  	CHECK_READONLY;
  	CHECK_ATTACH;
          /* L10N: CHECK_ACL */
@@ -2948,7 +2947,7 @@ index fbdfa91..2500465 100644
  
  	if (option (OPTPGPAUTODEC) && (tag || !(CURHDR->security & PGP_TRADITIONAL_CHECKED)))
  	  mutt_check_traditional_pgp (tag ? NULL : CURHDR, &menu->redraw);
-@@ -2713,7 +2713,7 @@ int mutt_index_menu (void)
+@@ -2714,7 +2714,7 @@ int mutt_index_menu (void)
  	/* in an IMAP folder index with imap_peek=no, piping could change
  	 * new or old messages status to read. Redraw what's needed.
  	 */
@@ -2957,7 +2956,7 @@ index fbdfa91..2500465 100644
  	{
  	  menu->redraw = (tag ? REDRAW_INDEX : REDRAW_CURRENT) | REDRAW_STATUS;
  	}
-@@ -2732,7 +2732,7 @@ int mutt_index_menu (void)
+@@ -2733,7 +2733,7 @@ int mutt_index_menu (void)
  	/* in an IMAP folder index with imap_peek=no, printing could change
  	 * new or old messages status to read. Redraw what's needed.
  	 */
@@ -2966,7 +2965,7 @@ index fbdfa91..2500465 100644
  	{
  	  menu->redraw = (tag ? REDRAW_INDEX : REDRAW_CURRENT) | REDRAW_STATUS;
  	}
-@@ -2747,9 +2747,9 @@ int mutt_index_menu (void)
+@@ -2748,9 +2748,9 @@ int mutt_index_menu (void)
  	CHECK_VISIBLE;
  	CHECK_READONLY;
          /* L10N: CHECK_ACL */
@@ -2978,7 +2977,7 @@ index fbdfa91..2500465 100644
  				   op == OP_MAIN_READ_THREAD ? 0 : 1);
  
  	if (rc != -1)
-@@ -2809,12 +2809,12 @@ int mutt_index_menu (void)
+@@ -2810,12 +2810,12 @@ int mutt_index_menu (void)
  	if (op != OP_FOLLOWUP || !CURHDR->env->followup_to ||
  	    mutt_strcasecmp (CURHDR->env->followup_to, "poster") ||
  	    query_quadoption (OPT_FOLLOWUPTOPOSTER,
@@ -2994,7 +2993,7 @@ index fbdfa91..2500465 100644
  	    break;
  	  if (op == OP_POST)
  	    ci_send_message (SENDNEWS, NULL, NULL, Context, NULL);
-@@ -2851,7 +2851,7 @@ int mutt_index_menu (void)
+@@ -2852,7 +2852,7 @@ int mutt_index_menu (void)
  
  	CHECK_MSGCOUNT;
          CHECK_VISIBLE;
@@ -3003,7 +3002,7 @@ index fbdfa91..2500465 100644
  				   op == OP_TAG_THREAD ? 0 : 1);
  
  	if (rc != -1)
-@@ -2876,18 +2876,18 @@ int mutt_index_menu (void)
+@@ -2877,18 +2877,18 @@ int mutt_index_menu (void)
          CHECK_VISIBLE;
  	CHECK_READONLY;
          /* L10N: CHECK_ACL */
@@ -3027,7 +3026,7 @@ index fbdfa91..2500465 100644
  	  if (option (OPTRESOLVE) && menu->current < Context->vcount - 1)
  	  {
  	    menu->current++;
-@@ -2906,11 +2906,11 @@ int mutt_index_menu (void)
+@@ -2907,11 +2907,11 @@ int mutt_index_menu (void)
          CHECK_VISIBLE;
  	CHECK_READONLY;
          /* L10N: CHECK_ACL */
@@ -3042,7 +3041,7 @@ index fbdfa91..2500465 100644
  				  (op == OP_UNDELETE_THREAD) ? 0 : 1);
  
  	if (rc > -1)
-@@ -3007,7 +3007,7 @@ void mutt_set_header_color (CONTEXT *ctx, HEADER *curhdr)
+@@ -3008,7 +3008,7 @@ void mutt_set_header_color (CONTEXT *ctx, HEADER *curhdr)
      return;
  
    for (color = ColorIndexList; color; color = color->next)
@@ -3371,7 +3370,7 @@ index 333730a..7a806dd 100644
  	first = 0;
  	if (IsWPrint (wc)) /* why? */
 diff --git a/flags.c b/flags.c
-index f544f51..eb8e6dc 100644
+index 6a7e9ca..9acf21a 100644
 --- a/flags.c
 +++ b/flags.c
 @@ -37,14 +37,14 @@ void _mutt_set_flag (CONTEXT *ctx, HEADER *h, int flag, int bf, int upd_ctx)
@@ -3546,73 +3545,6 @@ index f544f51..eb8e6dc 100644
        break;
  
      default:
-diff --git a/functions.h b/functions.h
-index 5747425..5231e27 100644
---- a/functions.h
-+++ b/functions.h
-@@ -22,7 +22,7 @@
-  *
-  * Notes:
-  *
-- * - If you want to bind \n or \r, use M_ENTER_S so that it will work
-+ * - If you want to bind \n or \r, use MUTT_ENTER_S so that it will work
-  * correctly under both ncurses and S-Lang
-  *
-  * - If you need to bind a control char, use the octal value because the \cX
-@@ -70,7 +70,7 @@ const struct binding_t OpGeneric[] = { /* map: generic */
-   { "tag-prefix-cond",	OP_TAG_PREFIX_COND,	NULL },
-   { "end-cond",		OP_END_COND,		NULL },
-   { "shell-escape",	OP_SHELL_ESCAPE,	"!" },
--  { "select-entry",	OP_GENERIC_SELECT_ENTRY,M_ENTER_S },
-+  { "select-entry",	OP_GENERIC_SELECT_ENTRY,MUTT_ENTER_S },
-   { "search",		OP_SEARCH,		"/" },
-   { "search-reverse",	OP_SEARCH_REVERSE,	"\033/" },
-   { "search-opposite",	OP_SEARCH_OPPOSITE,	NULL },
-@@ -169,7 +169,7 @@ const struct binding_t OpMain[] = { /* map: index */
- #ifdef USE_NNTP
-   { "catchup",			OP_CATCHUP,			"y" },
- #endif
--  { "display-message",		OP_DISPLAY_MESSAGE,		M_ENTER_S },
-+  { "display-message",		OP_DISPLAY_MESSAGE,		MUTT_ENTER_S },
-   { "buffy-list",		OP_BUFFY_LIST,			"." },
-   { "sync-mailbox",		OP_MAIN_SYNC_FOLDER,		"$" },
-   { "display-address",		OP_DISPLAY_ADDRESS,		"@" },
-@@ -301,7 +301,7 @@ const struct binding_t OpPager[] = { /* map: pager */
-   { "search",		OP_SEARCH,			"/" },
-   { "search-reverse",	OP_SEARCH_REVERSE,		"\033/" },
-   { "search-opposite",	OP_SEARCH_OPPOSITE,		NULL },
--  { "next-line",	OP_NEXT_LINE,			M_ENTER_S },
-+  { "next-line",	OP_NEXT_LINE,			MUTT_ENTER_S },
-   { "jump",		OP_JUMP,			NULL },
-   { "next-unread",	OP_MAIN_NEXT_UNREAD,		NULL },
-   { "previous-new",	OP_MAIN_PREV_NEW,		NULL },
-@@ -368,7 +368,7 @@ const struct binding_t OpAttach[] = { /* map: attachment */
-   { "list-reply",	OP_LIST_REPLY,			"L" },
-   { "forward-message",	OP_FORWARD_MESSAGE,		"f" },
-   { "view-text",	OP_ATTACH_VIEW_TEXT,		"T" },
--  { "view-attach",	OP_VIEW_ATTACH,			M_ENTER_S },
-+  { "view-attach",	OP_VIEW_ATTACH,			MUTT_ENTER_S },
-   { "delete-entry",	OP_DELETE,			"d" },
-   { "undelete-entry",	OP_UNDELETE,			"u" },
-   { "collapse-parts",	OP_ATTACH_COLLAPSE,		"v" },
-@@ -418,7 +418,7 @@ const struct binding_t OpCompose[] = { /* map: compose */
-   { "toggle-unlink",	OP_COMPOSE_TOGGLE_UNLINK,	"u" },
-   { "toggle-recode",    OP_COMPOSE_TOGGLE_RECODE,	NULL },
-   { "update-encoding",	OP_COMPOSE_UPDATE_ENCODING,	"U" },
--  { "view-attach",	OP_VIEW_ATTACH,			M_ENTER_S },
-+  { "view-attach",	OP_VIEW_ATTACH,			MUTT_ENTER_S },
-   { "send-message",	OP_COMPOSE_SEND_MESSAGE,	"y" },
-   { "pipe-entry",	OP_PIPE,			"|" },
- 
-@@ -542,7 +542,7 @@ const struct binding_t OpSmime[] = { /* map: smime */
- 
- #ifdef MIXMASTER
- const struct binding_t OpMix[] = { /* map: mixmaster */
--  { "accept",		OP_MIX_USE,	M_ENTER_S },
-+  { "accept",		OP_MIX_USE,	MUTT_ENTER_S },
-   { "append",		OP_MIX_APPEND,	"a"       },
-   { "insert",		OP_MIX_INSERT,	"i"       },
-   { "delete",		OP_MIX_DELETE,  "d"	  },
 diff --git a/group.h b/group.h
 index d61c615..68f01dc 100644
 --- a/group.h
@@ -3987,10 +3919,10 @@ index c8b0818..d2c1253 100644
  
    return (src);
 diff --git a/headers.c b/headers.c
-index b126c23..19546ce 100644
+index d1343ad..07bc983 100644
 --- a/headers.c
 +++ b/headers.c
-@@ -316,7 +316,7 @@ int mutt_label_message(HEADER *hdr)
+@@ -322,7 +322,7 @@ int mutt_label_message(HEADER *hdr)
    if (buf[0])
      strcat(buf, ", ");    /* __STRCAT_CHECKED__ */
  
@@ -3999,7 +3931,7 @@ index b126c23..19546ce 100644
      return 0;
  
    new = buf;
-@@ -347,7 +347,7 @@ int mutt_label_message(HEADER *hdr)
+@@ -353,7 +353,7 @@ int mutt_label_message(HEADER *hdr)
          if (label_message(HDR_OF(i), new)) {
            ++changed;
            mutt_set_flag(Context, HDR_OF(i),
@@ -5224,7 +5156,7 @@ index 90240de..c9a6dd2 100644
          break;
        default:
 diff --git a/init.h b/init.h
-index 4a73af1..d057c73 100644
+index 113d8ad..e2001f6 100644
 --- a/init.h
 +++ b/init.h
 @@ -50,9 +50,9 @@
@@ -5465,7 +5397,7 @@ index 4a73af1..d057c73 100644
    /*
    ** .pp
    ** If \fIset\fP, when replying to a message, Mutt will use the address listed
-@@ -3570,7 +3570,7 @@ struct option_t MuttVars[] = {
+@@ -3571,7 +3571,7 @@ struct option_t MuttVars[] = {
    ** the default from the GNUTLS library.
    */
  # endif /* USE_SSL_GNUTLS */
@@ -5474,7 +5406,7 @@ index 4a73af1..d057c73 100644
    /*
    ** .pp
    ** If \fIset\fP (the default), mutt will attempt to use \fCSTARTTLS\fP on servers
-@@ -4223,7 +4223,7 @@ const struct command_t Commands[] = {
+@@ -4224,7 +4224,7 @@ const struct command_t Commands[] = {
    { "alternates",	parse_alternates,	0 },
    { "unalternates",	parse_unalternates,	0 },
  #ifdef USE_SOCKET
@@ -5483,7 +5415,7 @@ index 4a73af1..d057c73 100644
  #endif
    { "alias",		parse_alias,		0 },
    { "attachments",	parse_attachments,	0 },
-@@ -4231,34 +4231,34 @@ const struct command_t Commands[] = {
+@@ -4232,34 +4232,34 @@ const struct command_t Commands[] = {
    { "auto_view",	parse_list,		UL &AutoViewList },
    { "alternative_order",	parse_list,	UL &AlternativeOrderList},
    { "bind",		mutt_parse_bind,	0 },
@@ -5530,7 +5462,7 @@ index 4a73af1..d057c73 100644
  #ifdef USE_NOTMUCH
    { "virtual-mailboxes",mutt_parse_virtual_mailboxes, 0 },
    { "tag-transforms",	parse_tag_transforms,	0 },
-@@ -4266,30 +4266,30 @@ const struct command_t Commands[] = {
+@@ -4267,30 +4267,30 @@ const struct command_t Commands[] = {
  #endif
    { "mailto_allow",	parse_list,		UL &MailtoAllow },
    { "unmailto_allow",	parse_unlist,		UL &MailtoAllow },
@@ -5573,7 +5505,7 @@ index 4a73af1..d057c73 100644
    { "unalias",		parse_unalias,		0 },
    { "unalternative_order",parse_unlist,		UL &AlternativeOrderList },
    { "unauto_view",	parse_unlist,		UL &AutoViewList },
-@@ -4300,7 +4300,7 @@ const struct command_t Commands[] = {
+@@ -4301,7 +4301,7 @@ const struct command_t Commands[] = {
    { "unmono",		mutt_parse_unmono,	0 },
    { "unmy_hdr",		parse_unmy_hdr,		0 },
    { "unscore",		mutt_parse_unscore,	0 },
@@ -5693,7 +5625,7 @@ index ec1e0e2..579b5ad 100644
  
  typedef struct
 diff --git a/main.c b/main.c
-index a0e62fc..55ebcc3 100644
+index 0d1f2a3..85acc90 100644
 --- a/main.c
 +++ b/main.c
 @@ -168,13 +168,13 @@ init_extended_keys();
@@ -6042,7 +5974,7 @@ index 1592870..298b70e 100644
  
  /*
 diff --git a/menu.c b/menu.c
-index 8215bd2..b80017b 100644
+index 9e10b01..b4a3947 100644
 --- a/menu.c
 +++ b/menu.c
 @@ -66,7 +66,7 @@ get_color (int index, unsigned char *s)
@@ -6208,10 +6140,10 @@ index 8215bd2..b80017b 100644
      searchDir = -searchDir;
  
 diff --git a/mh.c b/mh.c
-index dd15280..5c175ae 100644
+index 54c7467..5a3df43 100644
 --- a/mh.c
 +++ b/mh.c
-@@ -716,7 +716,7 @@ static void maildir_update_mtime (CONTEXT * ctx)
+@@ -715,7 +715,7 @@ static void maildir_update_mtime (CONTEXT * ctx)
    struct stat st;
    struct mh_data *data = mh_data (ctx);
  
@@ -6220,7 +6152,7 @@ index dd15280..5c175ae 100644
    {
      snprintf (buf, sizeof (buf), "%s/%s", ctx->path, "cur");
      if (stat (buf, &st) == 0)
-@@ -760,7 +760,7 @@ HEADER *maildir_parse_stream (int magic, FILE *f, const char *fname,
+@@ -759,7 +759,7 @@ HEADER *maildir_parse_stream (int magic, FILE *f, const char *fname,
  
    h->index = -1;
  
@@ -6229,7 +6161,7 @@ index dd15280..5c175ae 100644
    {
      /*
       * maildir stores its flags in the filename, so ignore the
-@@ -829,8 +829,8 @@ static int maildir_parse_dir (CONTEXT * ctx, struct maildir ***last,
+@@ -828,8 +828,8 @@ static int maildir_parse_dir (CONTEXT * ctx, struct maildir ***last,
  
    while ((de = readdir (dirp)) != NULL)
    {
@@ -6240,7 +6172,7 @@ index dd15280..5c175ae 100644
        continue;
  
      /* FOO - really ignore the return value? */
-@@ -840,7 +840,7 @@ static int maildir_parse_dir (CONTEXT * ctx, struct maildir ***last,
+@@ -839,7 +839,7 @@ static int maildir_parse_dir (CONTEXT * ctx, struct maildir ***last,
  
      h = mutt_new_header ();
      h->old = is_old;
@@ -6249,7 +6181,7 @@ index dd15280..5c175ae 100644
        maildir_parse_flags (h, de->d_name);
  
      if (count)
-@@ -1073,7 +1073,7 @@ static struct maildir* maildir_sort (struct maildir* list, size_t len,
+@@ -1072,7 +1072,7 @@ static struct maildir* maildir_sort (struct maildir* list, size_t len,
   */
  static void mh_sort_natural (CONTEXT *ctx, struct maildir **md)
  {
@@ -6258,7 +6190,7 @@ index dd15280..5c175ae 100644
      return;
    dprint (4, (debugfile, "maildir: sorting %s into natural order\n",
  	      ctx->path));
-@@ -1170,7 +1170,7 @@ static void maildir_delayed_parsing (CONTEXT * ctx, struct maildir **md,
+@@ -1169,7 +1169,7 @@ static void maildir_delayed_parsing (CONTEXT * ctx, struct maildir **md,
        ret = 0;
      }
  
@@ -6267,7 +6199,7 @@ index dd15280..5c175ae 100644
        data = mutt_hcache_fetch (hc, p->h->path, strlen);
      else
        data = mutt_hcache_fetch (hc, p->h->path + 3, &maildir_hcache_keylen);
-@@ -1179,7 +1179,7 @@ static void maildir_delayed_parsing (CONTEXT * ctx, struct maildir **md,
+@@ -1178,7 +1178,7 @@ static void maildir_delayed_parsing (CONTEXT * ctx, struct maildir **md,
      if (data != NULL && !ret && lastchanged.st_mtime <= when->tv_sec)
      {
        p->h = mutt_hcache_restore ((unsigned char *)data, &p->h);
@@ -6276,7 +6208,7 @@ index dd15280..5c175ae 100644
  	maildir_parse_flags (p->h, fn);
      }
      else
-@@ -1190,10 +1190,10 @@ static void maildir_delayed_parsing (CONTEXT * ctx, struct maildir **md,
+@@ -1189,10 +1189,10 @@ static void maildir_delayed_parsing (CONTEXT * ctx, struct maildir **md,
      {
        p->header_parsed = 1;
  #if USE_HCACHE
@@ -6290,7 +6222,7 @@ index dd15280..5c175ae 100644
  #endif
      } else
        mutt_free_header (&p->h);
-@@ -1240,7 +1240,7 @@ int mh_read_dir (CONTEXT * ctx, const char *subdir)
+@@ -1239,7 +1239,7 @@ int mh_read_dir (CONTEXT * ctx, const char *subdir)
    if (!ctx->quiet)
    {
      snprintf (msgbuf, sizeof (msgbuf), _("Scanning %s..."), ctx->path);
@@ -6299,7 +6231,7 @@ index dd15280..5c175ae 100644
    }
  
    if (!ctx->data)
-@@ -1261,11 +1261,11 @@ int mh_read_dir (CONTEXT * ctx, const char *subdir)
+@@ -1260,11 +1260,11 @@ int mh_read_dir (CONTEXT * ctx, const char *subdir)
    if (!ctx->quiet)
    {
      snprintf (msgbuf, sizeof (msgbuf), _("Reading %s..."), ctx->path);
@@ -6313,7 +6245,7 @@ index dd15280..5c175ae 100644
    {
      if (mh_read_sequences (&mhs, ctx->path) < 0)
        return -1;
-@@ -1487,7 +1487,7 @@ int maildir_commit_message (CONTEXT * ctx, MESSAGE * msg, HEADER * hdr)
+@@ -1486,7 +1486,7 @@ int maildir_commit_message (CONTEXT * ctx, MESSAGE * msg, HEADER * hdr)
        }
  
  #ifdef USE_NOTMUCH
@@ -6322,7 +6254,7 @@ index dd15280..5c175ae 100644
  	nm_update_filename(ctx, hdr->path, full, hdr);
  #endif
        if (hdr)
-@@ -1621,12 +1621,12 @@ static int mh_rewrite_message (CONTEXT * ctx, int msgno)
+@@ -1620,12 +1620,12 @@ static int mh_rewrite_message (CONTEXT * ctx, int msgno)
      return -1;
  
    if ((rc = mutt_copy_message (dest->fp, ctx, h,
@@ -6337,7 +6269,7 @@ index dd15280..5c175ae 100644
        rc = maildir_commit_message (ctx, dest, h);
      else
        rc = _mh_commit_message (ctx, dest, h, 0);
-@@ -1654,7 +1654,7 @@ static int mh_rewrite_message (CONTEXT * ctx, int msgno)
+@@ -1653,7 +1653,7 @@ static int mh_rewrite_message (CONTEXT * ctx, int msgno)
       * lose flag modifications.
       */
  
@@ -6346,7 +6278,7 @@ index dd15280..5c175ae 100644
      {
        snprintf (newpath, _POSIX_PATH_MAX, "%s/%s", ctx->path, h->path);
        if ((rc = safe_rename (newpath, oldpath)) == 0)
-@@ -1759,23 +1759,23 @@ int mh_sync_mailbox_message (CONTEXT * ctx, int msgno)
+@@ -1758,23 +1758,23 @@ int mh_sync_mailbox_message (CONTEXT * ctx, int msgno)
      char path[_POSIX_PATH_MAX], tmp[_POSIX_PATH_MAX];
      HEADER *h = ctx->hdrs[msgno];
  
@@ -6376,7 +6308,7 @@ index dd15280..5c175ae 100644
        {
  	/* MH just moves files out of the way when you delete them */
  	if (*h->path != ',')
-@@ -1789,11 +1789,11 @@ int mh_sync_mailbox_message (CONTEXT * ctx, int msgno)
+@@ -1788,11 +1788,11 @@ int mh_sync_mailbox_message (CONTEXT * ctx, int msgno)
      }
      else if (h->changed || h->attach_del ||
  	     h->label_changed ||
@@ -6390,7 +6322,7 @@ index dd15280..5c175ae 100644
        {
  	if (maildir_sync_message (ctx, msgno) == -1)
  	  return -1;
-@@ -1808,10 +1808,10 @@ int mh_sync_mailbox_message (CONTEXT * ctx, int msgno)
+@@ -1807,10 +1807,10 @@ int mh_sync_mailbox_message (CONTEXT * ctx, int msgno)
  #if USE_HCACHE
      if (hc && h->changed)
      {
@@ -6405,7 +6337,7 @@ index dd15280..5c175ae 100644
      }
  #endif
  
-@@ -1827,7 +1827,7 @@ int mh_sync_mailbox (CONTEXT * ctx, int *index_hint)
+@@ -1826,7 +1826,7 @@ int mh_sync_mailbox (CONTEXT * ctx, int *index_hint)
    char msgbuf[STRING];
    progress_t progress;
  
@@ -6414,7 +6346,7 @@ index dd15280..5c175ae 100644
      i = mh_check_mailbox (ctx, index_hint);
    else
      i = maildir_check_mailbox (ctx, index_hint);
-@@ -1836,14 +1836,14 @@ int mh_sync_mailbox (CONTEXT * ctx, int *index_hint)
+@@ -1835,14 +1835,14 @@ int mh_sync_mailbox (CONTEXT * ctx, int *index_hint)
      return i;
  
  #if USE_HCACHE
@@ -6431,7 +6363,7 @@ index dd15280..5c175ae 100644
    }
  
    for (i = 0; i < ctx->msgcount; i++)
-@@ -1861,11 +1861,11 @@ int mh_sync_mailbox (CONTEXT * ctx, int *index_hint)
+@@ -1860,11 +1860,11 @@ int mh_sync_mailbox (CONTEXT * ctx, int *index_hint)
    }
  
  #if USE_HCACHE
@@ -6445,7 +6377,7 @@ index dd15280..5c175ae 100644
      mh_update_sequences (ctx);
  
    /* XXX race condition? */
-@@ -1879,7 +1879,7 @@ int mh_sync_mailbox (CONTEXT * ctx, int *index_hint)
+@@ -1878,7 +1878,7 @@ int mh_sync_mailbox (CONTEXT * ctx, int *index_hint)
      for (i = 0, j = 0; i < ctx->msgcount; i++)
      {
        if (!ctx->hdrs[i]->deleted
@@ -6454,7 +6386,7 @@ index dd15280..5c175ae 100644
  	ctx->hdrs[i]->index = j++;
      }
    }
-@@ -1888,7 +1888,7 @@ int mh_sync_mailbox (CONTEXT * ctx, int *index_hint)
+@@ -1887,7 +1887,7 @@ int mh_sync_mailbox (CONTEXT * ctx, int *index_hint)
  
  err:
  #if USE_HCACHE
@@ -6463,7 +6395,7 @@ index dd15280..5c175ae 100644
      mutt_hcache_close (hc);
  #endif /* USE_HCACHE */
    return -1;
-@@ -1949,13 +1949,13 @@ void maildir_update_flags (CONTEXT *ctx, HEADER *o, HEADER *n)
+@@ -1948,13 +1948,13 @@ void maildir_update_flags (CONTEXT *ctx, HEADER *o, HEADER *n)
     * bits are already properly set, but it is still faster not to pass
     * through it */
    if (o->flagged != n->flagged)
@@ -6481,7 +6413,7 @@ index dd15280..5c175ae 100644
  
    /* mutt_set_flag() will set this, but we don't need to
     * sync the changes we made because we just updated the
-@@ -2113,7 +2113,7 @@ int maildir_check_mailbox (CONTEXT * ctx, int *index_hint)
+@@ -2112,7 +2112,7 @@ int maildir_check_mailbox (CONTEXT * ctx, int *index_hint)
    /* Incorporate new messages */
    have_new = maildir_move_to_context (ctx, &md);
  
@@ -6490,7 +6422,7 @@ index dd15280..5c175ae 100644
  }
  
  /* 
-@@ -2226,7 +2226,7 @@ int mh_check_mailbox (CONTEXT * ctx, int *index_hint)
+@@ -2225,7 +2225,7 @@ int mh_check_mailbox (CONTEXT * ctx, int *index_hint)
    /* Incorporate new messages */
    have_new = maildir_move_to_context (ctx, &md);
  
@@ -6939,32 +6871,10 @@ index aa6a2ee..0674107 100644
  #include "ascii.h"
  #include "protos.h"
 diff --git a/mutt_curses.h b/mutt_curses.h
-index 19a1086..35d788e 100644
+index f9eedb0..9b8304e 100644
 --- a/mutt_curses.h
 +++ b/mutt_curses.h
-@@ -37,8 +37,8 @@
-  * ncurses and SLang seem to send different characters when the Enter key is
-  * pressed, so define some macros to properly detect the Enter key.
-  */
--#define M_ENTER_C '\r'
--#define M_ENTER_S "\r"
-+#define MUTT_ENTER_C '\r'
-+#define MUTT_ENTER_S "\r"
- 
- #else /* USE_SLANG_CURSES */
- 
-@@ -52,8 +52,8 @@
- # include <curses.h>
- #endif
- 
--#define M_ENTER_C '\n'
--#define M_ENTER_S "\n"
-+#define MUTT_ENTER_C '\n'
-+#define MUTT_ENTER_S "\n"
- 
- #endif /* USE_SLANG_CURSES */
- 
-@@ -164,8 +164,8 @@ typedef struct color_line
+@@ -154,8 +154,8 @@ typedef struct color_line
    struct color_line *next;
  } COLOR_LINE;
  
@@ -6989,7 +6899,7 @@ index 0932df3..d728f57 100644
  typedef struct menu_t
  {
 diff --git a/mutt_notmuch.c b/mutt_notmuch.c
-index 3a25cc1..b41d6fc 100644
+index 3e65f9f..b001535 100644
 --- a/mutt_notmuch.c
 +++ b/mutt_notmuch.c
 @@ -9,7 +9,7 @@
@@ -7001,7 +6911,7 @@ index 3a25cc1..b41d6fc 100644
   *   (it's implemented in get_ctxdata() and init_context() functions).
   *
   * - exception are nm_nonctx_* functions -- these functions use nm_default_uri
-@@ -270,7 +270,7 @@ static int deinit_context(CONTEXT *ctx)
+@@ -282,7 +282,7 @@ static int deinit_context(CONTEXT *ctx)
  {
  	int i;
  
@@ -7010,7 +6920,7 @@ index 3a25cc1..b41d6fc 100644
  		return -1;
  
  	for (i = 0; i < ctx->msgcount; i++) {
-@@ -289,7 +289,7 @@ static int deinit_context(CONTEXT *ctx)
+@@ -301,7 +301,7 @@ static int deinit_context(CONTEXT *ctx)
  
  static int init_context(CONTEXT *ctx)
  {
@@ -7019,7 +6929,7 @@ index 3a25cc1..b41d6fc 100644
  		return -1;
  
  	if (ctx->data)
-@@ -361,7 +361,7 @@ char *nm_header_get_fullpath(HEADER *h, char *buf, size_t bufsz)
+@@ -373,7 +373,7 @@ char *nm_header_get_fullpath(HEADER *h, char *buf, size_t bufsz)
  
  static struct nm_ctxdata *get_ctxdata(CONTEXT *ctx)
  {
@@ -7028,7 +6938,7 @@ index 3a25cc1..b41d6fc 100644
  		return ctx->data;
  
  	return NULL;
-@@ -770,7 +770,7 @@ static int update_message_path(HEADER *h, const char *path)
+@@ -782,7 +782,7 @@ static int update_message_path(HEADER *h, const char *path)
  	     strncmp(p - 3, "new", 3) == 0 ||
  	     strncmp(p - 3, "tmp", 3) == 0)) {
  
@@ -7037,16 +6947,16 @@ index 3a25cc1..b41d6fc 100644
  
  		FREE(&h->path);
  		FREE(&data->folder);
-@@ -932,7 +932,7 @@ static void nm_progress_update(CONTEXT *ctx, notmuch_query_t *q)
- 		static char msg[STRING];
- 		snprintf(msg, sizeof(msg), _("Reading messages..."));
- 
+@@ -951,7 +951,7 @@ static void nm_progress_update(CONTEXT *ctx, notmuch_query_t *q)
+ #else
+ 		count = notmuch_query_count_messages(q);
+ #endif
 -		mutt_progress_init(&data->progress, msg, M_PROGRESS_MSG,
 +		mutt_progress_init(&data->progress, msg, MUTT_PROGRESS_MSG,
- 			ReadInc, notmuch_query_count_messages(q));
+ 			ReadInc, count);
  		data->progress_ready = 1;
  	}
-@@ -975,7 +975,7 @@ static void append_message(CONTEXT *ctx,
+@@ -994,7 +994,7 @@ static void append_message(CONTEXT *ctx,
  		mx_alloc_memory(ctx);
  	}
  	if (access(path, F_OK) == 0)
@@ -7055,7 +6965,7 @@ index 3a25cc1..b41d6fc 100644
  	else {
  		/* maybe moved try find it... */
  		char *folder = get_folder_from_path(path);
-@@ -983,7 +983,7 @@ static void append_message(CONTEXT *ctx,
+@@ -1002,7 +1002,7 @@ static void append_message(CONTEXT *ctx,
  		if (folder) {
  			FILE *f = maildir_open_find_message(folder, path, &newpath);
  			if (f) {
@@ -7064,7 +6974,7 @@ index 3a25cc1..b41d6fc 100644
  				fclose(f);
  
  				dprint(1, (debugfile, "nm: not up-to-date: %s -> %s\n",
-@@ -1539,7 +1539,7 @@ int nm_sync(CONTEXT *ctx, int *index_hint)
+@@ -1570,7 +1570,7 @@ int nm_sync(CONTEXT *ctx, int *index_hint)
  	if (!ctx->quiet) {
  		/* all is in this function so we don't use data->progress here */
  		snprintf(msgbuf, sizeof (msgbuf), _("Writing %s..."), ctx->path);
@@ -7073,7 +6983,7 @@ index 3a25cc1..b41d6fc 100644
  				   WriteInc, ctx->msgcount);
  	}
  
-@@ -1568,7 +1568,7 @@ int nm_sync(CONTEXT *ctx, int *index_hint)
+@@ -1599,7 +1599,7 @@ int nm_sync(CONTEXT *ctx, int *index_hint)
  		rc = mh_sync_mailbox_message(ctx, i);
  #endif
  		ctx->path = uri;
@@ -7082,7 +6992,7 @@ index 3a25cc1..b41d6fc 100644
  
  		if (rc)
  			break;
-@@ -1587,7 +1587,7 @@ int nm_sync(CONTEXT *ctx, int *index_hint)
+@@ -1618,7 +1618,7 @@ int nm_sync(CONTEXT *ctx, int *index_hint)
  	}
  
  	ctx->path = uri;
@@ -7091,7 +7001,7 @@ index 3a25cc1..b41d6fc 100644
  
  	if (!is_longrun(data))
  		release_db(data);
-@@ -1846,9 +1846,9 @@ done:
+@@ -1889,9 +1889,9 @@ done:
  	dprint(1, (debugfile, "nm: ... check done [count=%d, new_flags=%d, occult=%d]\n",
  				ctx->msgcount, new_flags, occult));
  
@@ -7425,7 +7335,7 @@ index f665a5a..a972df4 100644
  }
  
 diff --git a/mx.c b/mx.c
-index 670a27c..bd10175 100644
+index 5af78c4..6263060 100644
 --- a/mx.c
 +++ b/mx.c
 @@ -134,7 +134,7 @@ retry_lock:
@@ -7673,7 +7583,7 @@ index 670a27c..bd10175 100644
      {
        /* avoid unnecessary work since the mailbox is completely unthreaded
  	 to begin with */
-@@ -857,39 +857,39 @@ static int sync_mailbox (CONTEXT *ctx, int *index_hint)
+@@ -853,39 +853,39 @@ static int sync_mailbox (CONTEXT *ctx, int *index_hint)
  
    switch (ctx->magic)
    {
@@ -7721,7 +7631,7 @@ index 670a27c..bd10175 100644
        rc = nm_sync (ctx, index_hint);
        break;
  #endif /* USE_NOTMUCH */
-@@ -924,7 +924,7 @@ static int trash_append (CONTEXT *ctx)
+@@ -920,7 +920,7 @@ static int trash_append (CONTEXT *ctx)
  	struct stat st, stc;
  
  	if (!TrashPath || !ctx->deleted ||
@@ -7730,7 +7640,7 @@ index 670a27c..bd10175 100644
  		return 0;
  	}
  
-@@ -949,7 +949,7 @@ static int trash_append (CONTEXT *ctx)
+@@ -945,7 +945,7 @@ static int trash_append (CONTEXT *ctx)
  		return 0;
  #endif
  
@@ -7739,7 +7649,7 @@ index 670a27c..bd10175 100644
  		for (i = 0 ; i < ctx->msgcount ; i++) {
  			if (ctx->hdrs[i]->deleted && !ctx->hdrs[i]->appended
  			    && !ctx->hdrs[i]->purged
-@@ -992,7 +992,7 @@ int mx_close_mailbox (CONTEXT *ctx, int *index_hint)
+@@ -988,7 +988,7 @@ int mx_close_mailbox (CONTEXT *ctx, int *index_hint)
    if (ctx->append)
    {
      /* mailbox was opened in write-mode */
@@ -7748,7 +7658,7 @@ index 670a27c..bd10175 100644
        mbox_close_mailbox (ctx);
      else
        mx_fastclose_mailbox (ctx);
-@@ -1000,7 +1000,7 @@ int mx_close_mailbox (CONTEXT *ctx, int *index_hint)
+@@ -996,7 +996,7 @@ int mx_close_mailbox (CONTEXT *ctx, int *index_hint)
    }
  
  #ifdef USE_NNTP
@@ -7757,7 +7667,7 @@ index 670a27c..bd10175 100644
    {
      NNTP_DATA *nntp_data = ctx->data;
  
-@@ -1012,7 +1012,7 @@ int mx_close_mailbox (CONTEXT *ctx, int *index_hint)
+@@ -1008,7 +1008,7 @@ int mx_close_mailbox (CONTEXT *ctx, int *index_hint)
  	ctx->closing = 0;
  	return -1;
        }
@@ -7766,7 +7676,7 @@ index 670a27c..bd10175 100644
  	mutt_newsgroup_catchup (nntp_data->nserv, nntp_data->group);
      }
    }
-@@ -1033,15 +1033,15 @@ int mx_close_mailbox (CONTEXT *ctx, int *index_hint)
+@@ -1029,15 +1029,15 @@ int mx_close_mailbox (CONTEXT *ctx, int *index_hint)
  
  #ifdef USE_NNTP
    /* don't need to move articles from newsgroup */
@@ -7785,7 +7695,7 @@ index 670a27c..bd10175 100644
      {
        isSpool = 1;
        strfcpy (mbox, p, sizeof (mbox));
-@@ -1068,7 +1068,7 @@ int mx_close_mailbox (CONTEXT *ctx, int *index_hint)
+@@ -1064,7 +1064,7 @@ int mx_close_mailbox (CONTEXT *ctx, int *index_hint)
     * There is no point in asking whether or not to purge if we are
     * just marking messages as "trash".
     */
@@ -7794,7 +7704,7 @@ index 670a27c..bd10175 100644
    {
      snprintf (buf, sizeof (buf), ctx->deleted == 1
  	     ? _("Purge %d deleted message?") : _("Purge %d deleted messages?"),
-@@ -1085,7 +1085,7 @@ int mx_close_mailbox (CONTEXT *ctx, int *index_hint)
+@@ -1081,7 +1081,7 @@ int mx_close_mailbox (CONTEXT *ctx, int *index_hint)
      for (i = 0; i < ctx->msgcount; i++)
      {
        if (!ctx->hdrs[i]->deleted && !ctx->hdrs[i]->old && !ctx->hdrs[i]->read)
@@ -7803,7 +7713,7 @@ index 670a27c..bd10175 100644
      }
    }
  
-@@ -1098,7 +1098,7 @@ int mx_close_mailbox (CONTEXT *ctx, int *index_hint)
+@@ -1094,7 +1094,7 @@ int mx_close_mailbox (CONTEXT *ctx, int *index_hint)
      /* try to use server-side copy first */
      i = 1;
      
@@ -7812,7 +7722,7 @@ index 670a27c..bd10175 100644
      {
        /* tag messages for moving, and clear old tags, if any */
        for (i = 0; i < ctx->msgcount; i++)
-@@ -1121,7 +1121,7 @@ int mx_close_mailbox (CONTEXT *ctx, int *index_hint)
+@@ -1117,7 +1117,7 @@ int mx_close_mailbox (CONTEXT *ctx, int *index_hint)
      else /* use regular append-copy mode */
  #endif
      {
@@ -7821,7 +7731,7 @@ index 670a27c..bd10175 100644
        {
  	ctx->closing = 0;
  	return -1;
-@@ -1134,8 +1134,8 @@ int mx_close_mailbox (CONTEXT *ctx, int *index_hint)
+@@ -1130,8 +1130,8 @@ int mx_close_mailbox (CONTEXT *ctx, int *index_hint)
          {
  	  if (mutt_append_message (&f, ctx, ctx->hdrs[i], 0, CH_UPDATE_LEN) == 0)
  	  {
@@ -7832,7 +7742,7 @@ index 670a27c..bd10175 100644
  	  }
  	  else
  	  {
-@@ -1154,7 +1154,7 @@ int mx_close_mailbox (CONTEXT *ctx, int *index_hint)
+@@ -1150,7 +1150,7 @@ int mx_close_mailbox (CONTEXT *ctx, int *index_hint)
    {
      if (!ctx->quiet)
        mutt_message _("Mailbox is unchanged.");
@@ -7841,7 +7751,7 @@ index 670a27c..bd10175 100644
        mbox_reset_atime (ctx, NULL);
      mx_fastclose_mailbox (ctx);
      return 0;
-@@ -1170,7 +1170,7 @@ int mx_close_mailbox (CONTEXT *ctx, int *index_hint)
+@@ -1166,7 +1166,7 @@ int mx_close_mailbox (CONTEXT *ctx, int *index_hint)
  
  #ifdef USE_IMAP
    /* allow IMAP to preserve the deleted flag across sessions */
@@ -7850,7 +7760,7 @@ index 670a27c..bd10175 100644
    {
      if ((check = imap_sync_mailbox (ctx, purge, index_hint)) != 0)
      {
-@@ -1209,7 +1209,7 @@ int mx_close_mailbox (CONTEXT *ctx, int *index_hint)
+@@ -1205,7 +1205,7 @@ int mx_close_mailbox (CONTEXT *ctx, int *index_hint)
    }
  
    if (ctx->msgcount == ctx->deleted &&
@@ -7859,7 +7769,7 @@ index 670a27c..bd10175 100644
        !mutt_is_spool(ctx->path) && !option (OPTSAVEEMPTY))
      mx_unlink_empty (ctx->path);
  
-@@ -1244,7 +1244,7 @@ void mx_update_tables(CONTEXT *ctx, int committing)
+@@ -1245,7 +1245,7 @@ void mx_update_tables(CONTEXT *ctx, int committing)
    {
      if (!ctx->hdrs[i]->quasi_deleted &&
  	((committing && (!ctx->hdrs[i]->deleted ||
@@ -7868,7 +7778,7 @@ index 670a27c..bd10175 100644
  	(!committing && ctx->hdrs[i]->active)))
      {
        if (i != j)
-@@ -1266,7 +1266,7 @@ void mx_update_tables(CONTEXT *ctx, int committing)
+@@ -1267,7 +1267,7 @@ void mx_update_tables(CONTEXT *ctx, int committing)
        else if (ctx->hdrs[j]->changed)
  	ctx->changed++;
        
@@ -7877,7 +7787,7 @@ index 670a27c..bd10175 100644
        {
  	if (ctx->hdrs[j]->deleted)
  	  ctx->deleted++;
-@@ -1287,7 +1287,7 @@ void mx_update_tables(CONTEXT *ctx, int committing)
+@@ -1288,7 +1288,7 @@ void mx_update_tables(CONTEXT *ctx, int committing)
      }
      else
      {
@@ -7886,7 +7796,7 @@ index 670a27c..bd10175 100644
  	ctx->size -= (ctx->hdrs[i]->content->length +
  		      ctx->hdrs[i]->content->offset -
  		      ctx->hdrs[i]->content->hdr_offset);
-@@ -1357,12 +1357,12 @@ int mx_sync_mailbox (CONTEXT *ctx, int *index_hint)
+@@ -1358,12 +1358,12 @@ int mx_sync_mailbox (CONTEXT *ctx, int *index_hint)
  	      ctx->deleted);
      if ((purge = query_quadoption (OPT_DELETE, buf)) < 0)
        return (-1);
@@ -7901,7 +7811,7 @@ index 670a27c..bd10175 100644
        {
          for (i = 0 ; i < ctx->msgcount ; i++)
            ctx->hdrs[i]->deleted = 0;
-@@ -1385,7 +1385,7 @@ int mx_sync_mailbox (CONTEXT *ctx, int *index_hint)
+@@ -1386,7 +1386,7 @@ int mx_sync_mailbox (CONTEXT *ctx, int *index_hint)
    }
  
  #ifdef USE_IMAP
@@ -7910,7 +7820,7 @@ index 670a27c..bd10175 100644
      rc = imap_sync_mailbox (ctx, purge, index_hint);
    else
  #endif
-@@ -1393,7 +1393,7 @@ int mx_sync_mailbox (CONTEXT *ctx, int *index_hint)
+@@ -1394,7 +1394,7 @@ int mx_sync_mailbox (CONTEXT *ctx, int *index_hint)
    if (rc == 0)
    {
  #ifdef USE_IMAP
@@ -7919,7 +7829,7 @@ index 670a27c..bd10175 100644
      {
        if (!ctx->quiet)
          mutt_message _("Mailbox checkpointed.");
-@@ -1409,7 +1409,7 @@ int mx_sync_mailbox (CONTEXT *ctx, int *index_hint)
+@@ -1410,7 +1410,7 @@ int mx_sync_mailbox (CONTEXT *ctx, int *index_hint)
      mutt_sleep (0);
      
      if (ctx->msgcount == ctx->deleted &&
@@ -7928,7 +7838,7 @@ index 670a27c..bd10175 100644
  	!mutt_is_spool (ctx->path) && !option (OPTSAVEEMPTY))
      {
        unlink (ctx->path);
-@@ -1424,10 +1424,10 @@ int mx_sync_mailbox (CONTEXT *ctx, int *index_hint)
+@@ -1425,10 +1425,10 @@ int mx_sync_mailbox (CONTEXT *ctx, int *index_hint)
       * MH and maildir are safe.  mbox-style seems to need re-sorting,
       * at least with the new threading code.
       */
@@ -7941,7 +7851,7 @@ index 670a27c..bd10175 100644
        {
  	mx_update_tables (ctx, 1);
  	mutt_sort_headers (ctx, 1); /* rethread from scratch */
-@@ -1476,18 +1476,18 @@ MESSAGE *mx_open_new_message (CONTEXT *dest, HEADER *hdr, int flags)
+@@ -1477,18 +1477,18 @@ MESSAGE *mx_open_new_message (CONTEXT *dest, HEADER *hdr, int flags)
  
    switch (dest->magic)
    {
@@ -7965,7 +7875,7 @@ index 670a27c..bd10175 100644
        func = imap_open_new_message;
        break;
  #endif
-@@ -1506,7 +1506,7 @@ MESSAGE *mx_open_new_message (CONTEXT *dest, HEADER *hdr, int flags)
+@@ -1507,7 +1507,7 @@ MESSAGE *mx_open_new_message (CONTEXT *dest, HEADER *hdr, int flags)
      msg->flags.flagged = hdr->flagged;
      msg->flags.replied = hdr->replied;
      msg->flags.read    = hdr->read;
@@ -7974,7 +7884,7 @@ index 670a27c..bd10175 100644
      msg->received = hdr->received;
    }
  
-@@ -1515,11 +1515,11 @@ MESSAGE *mx_open_new_message (CONTEXT *dest, HEADER *hdr, int flags)
+@@ -1516,11 +1516,11 @@ MESSAGE *mx_open_new_message (CONTEXT *dest, HEADER *hdr, int flags)
    
    if (func (msg, dest, hdr) == 0)
    {
@@ -7989,7 +7899,7 @@ index 670a27c..bd10175 100644
      {
        if (hdr)
        {
-@@ -1556,8 +1556,8 @@ int mx_check_mailbox (CONTEXT *ctx, int *index_hint, int lock)
+@@ -1557,8 +1557,8 @@ int mx_check_mailbox (CONTEXT *ctx, int *index_hint, int lock)
  
      switch (ctx->magic)
      {
@@ -8000,7 +7910,7 @@ index 670a27c..bd10175 100644
  
  	if (lock)
  	{
-@@ -1565,7 +1565,7 @@ int mx_check_mailbox (CONTEXT *ctx, int *index_hint, int lock)
+@@ -1566,7 +1566,7 @@ int mx_check_mailbox (CONTEXT *ctx, int *index_hint, int lock)
  	  if (mbox_lock_mailbox (ctx, 0, 0) == -1)
  	  {
  	    mutt_unblock_signals ();
@@ -8009,7 +7919,7 @@ index 670a27c..bd10175 100644
  	  }
  	}
  	
-@@ -1580,13 +1580,13 @@ int mx_check_mailbox (CONTEXT *ctx, int *index_hint, int lock)
+@@ -1581,13 +1581,13 @@ int mx_check_mailbox (CONTEXT *ctx, int *index_hint, int lock)
  	return rc;
  
  
@@ -8026,7 +7936,7 @@ index 670a27c..bd10175 100644
  	/* caller expects that mailbox may change */
          imap_allow_reopen (ctx);
  	rc = imap_check_mailbox (ctx, index_hint, 0);
-@@ -1595,17 +1595,17 @@ int mx_check_mailbox (CONTEXT *ctx, int *index_hint, int lock)
+@@ -1596,17 +1596,17 @@ int mx_check_mailbox (CONTEXT *ctx, int *index_hint, int lock)
  #endif /* USE_IMAP */
  
  #ifdef USE_POP
@@ -8047,7 +7957,7 @@ index 670a27c..bd10175 100644
  	return nm_check_database(ctx, index_hint);
  #endif
  }
-@@ -1623,22 +1623,22 @@ MESSAGE *mx_open_message (CONTEXT *ctx, int msgno)
+@@ -1624,22 +1624,22 @@ MESSAGE *mx_open_message (CONTEXT *ctx, int msgno)
    msg = safe_calloc (1, sizeof (MESSAGE));
    switch (msg->magic = ctx->magic)
    {
@@ -8076,7 +7986,7 @@ index 670a27c..bd10175 100644
  	msg->magic = nm_header_get_magic(cur);
  	folder = nm_header_get_folder(cur);
        }
-@@ -1646,7 +1646,7 @@ MESSAGE *mx_open_message (CONTEXT *ctx, int msgno)
+@@ -1647,7 +1647,7 @@ MESSAGE *mx_open_message (CONTEXT *ctx, int msgno)
        snprintf (path, sizeof (path), "%s/%s", folder, cur->path);
  
        if ((msg->fp = fopen (path, "r")) == NULL && errno == ENOENT &&
@@ -8085,7 +7995,7 @@ index 670a27c..bd10175 100644
  	msg->fp = maildir_open_find_message (folder, cur->path, NULL);
        
        if (msg->fp == NULL)
-@@ -1660,7 +1660,7 @@ MESSAGE *mx_open_message (CONTEXT *ctx, int msgno)
+@@ -1661,7 +1661,7 @@ MESSAGE *mx_open_message (CONTEXT *ctx, int msgno)
      break;
      
  #ifdef USE_IMAP
@@ -8094,7 +8004,7 @@ index 670a27c..bd10175 100644
      {
        if (imap_fetch_message (msg, ctx, msgno) != 0)
  	FREE (&msg);
-@@ -1669,7 +1669,7 @@ MESSAGE *mx_open_message (CONTEXT *ctx, int msgno)
+@@ -1670,7 +1670,7 @@ MESSAGE *mx_open_message (CONTEXT *ctx, int msgno)
  #endif /* USE_IMAP */
  
  #ifdef USE_POP
@@ -8103,7 +8013,7 @@ index 670a27c..bd10175 100644
      {
        if (pop_fetch_message (msg, ctx, msgno) != 0)
  	FREE (&msg);
-@@ -1678,7 +1678,7 @@ MESSAGE *mx_open_message (CONTEXT *ctx, int msgno)
+@@ -1679,7 +1679,7 @@ MESSAGE *mx_open_message (CONTEXT *ctx, int msgno)
  #endif /* USE_POP */
  
  #ifdef USE_NNTP
@@ -8112,7 +8022,7 @@ index 670a27c..bd10175 100644
      {
        if (nntp_fetch_message (msg, ctx, msgno) != 0)
  	FREE (&msg);
-@@ -1709,14 +1709,14 @@ int mx_commit_message (MESSAGE *msg, CONTEXT *ctx)
+@@ -1710,14 +1710,14 @@ int mx_commit_message (MESSAGE *msg, CONTEXT *ctx)
  
    switch (msg->magic)
    {
@@ -8129,7 +8039,7 @@ index 670a27c..bd10175 100644
      {
        if (fputc ('\n', msg->fp) == EOF)
  	r = -1;
-@@ -1724,7 +1724,7 @@ int mx_commit_message (MESSAGE *msg, CONTEXT *ctx)
+@@ -1725,7 +1725,7 @@ int mx_commit_message (MESSAGE *msg, CONTEXT *ctx)
      }
  
  #ifdef USE_IMAP
@@ -8138,7 +8048,7 @@ index 670a27c..bd10175 100644
      {
        if ((r = safe_fclose (&msg->fp)) == 0)
  	r = imap_append_message (ctx, msg);
-@@ -1732,24 +1732,24 @@ int mx_commit_message (MESSAGE *msg, CONTEXT *ctx)
+@@ -1733,24 +1733,24 @@ int mx_commit_message (MESSAGE *msg, CONTEXT *ctx)
      }
  #endif
  
@@ -8167,7 +8077,7 @@ index 670a27c..bd10175 100644
        && (fflush (msg->fp) == EOF || fsync (fileno (msg->fp)) == -1))
    {
      mutt_perror _("Can't write message");
-@@ -1764,12 +1764,12 @@ int mx_close_message (MESSAGE **msg)
+@@ -1765,12 +1765,12 @@ int mx_close_message (MESSAGE **msg)
  {
    int r = 0;
  
@@ -8184,7 +8094,7 @@ index 670a27c..bd10175 100644
    {
      r = safe_fclose (&(*msg)->fp);
    }
-@@ -1779,7 +1779,7 @@ int mx_close_message (MESSAGE **msg)
+@@ -1780,7 +1780,7 @@ int mx_close_message (MESSAGE **msg)
    dprint (2, (debugfile, "mx_close_message (): close: path=%s, commited=%s\n",
  	(*msg)->path, (*msg)->commited_path));
  
@@ -8193,7 +8103,7 @@ index 670a27c..bd10175 100644
    {
      dprint (1, (debugfile, "mx_close_message (): unlinking %s\n",
  		(*msg)->path));
-@@ -1900,12 +1900,12 @@ int mx_check_empty (const char *path)
+@@ -1901,12 +1901,12 @@ int mx_check_empty (const char *path)
  {
    switch (mx_get_magic (path))
    {
@@ -8598,7 +8508,7 @@ index 9ec5ced..8ba02d7 100644
        {
  	NNTP_DATA *nntp_data = nserv->groups_list[i];
 diff --git a/pager.c b/pager.c
-index f66ab04..71e81f9 100644
+index 24b60ec..ff049dc 100644
 --- a/pager.c
 +++ b/pager.c
 @@ -199,14 +199,14 @@ resolve_color (struct line_t *lineInfo, int n, int cnt, int flags, int special,
@@ -11451,10 +11361,10 @@ index cbd04dd..4350f1c 100644
  
    /* mutt_write_rfc822_header() only writes out a Date: header with
 diff --git a/sidebar.c b/sidebar.c
-index bf10cac..6c26fcf 100644
+index bdddefe..a63034b 100644
 --- a/sidebar.c
 +++ b/sidebar.c
-@@ -161,7 +161,7 @@ find_prev_new (int wrap)
+@@ -156,7 +156,7 @@ static BUFFY *find_prev_new (int wrap)
   * @ifstring:    If condition is met, display this string
   * @elsestring:  Otherwise, display this string
   * @data:        Pointer to our sidebar_entry
@@ -11463,33 +11373,33 @@ index bf10cac..6c26fcf 100644
   *
   * cb_format_str is a callback function for mutt_FormatString.  It understands
   * five operators. '%B' : Mailbox name, '%F' : Number of flagged messages,
-@@ -190,7 +190,7 @@ cb_format_str (char *dest, size_t destlen, size_t col, int cols, char op, const
+@@ -184,7 +184,7 @@ static const char *cb_format_str(char *dest, size_t destlen, size_t col, int col
  
- 	int c = Context && (mutt_strcmp (Context->path, b->path) == 0);
+   int c = Context && (mutt_strcmp (Context->path, b->path) == 0);
  
--	optional = flags & M_FORMAT_OPTIONAL;
-+	optional = flags & MUTT_FORMAT_OPTIONAL;
+-  optional = flags & M_FORMAT_OPTIONAL;
++  optional = flags & MUTT_FORMAT_OPTIONAL;
  
- 	switch (op) {
- 		case 'B':
-@@ -267,7 +267,7 @@ cb_format_str (char *dest, size_t destlen, size_t col, int cols, char op, const
+   switch (op)
+   {
+@@ -269,7 +269,7 @@ static const char *cb_format_str(char *dest, size_t destlen, size_t col, int col
  
- 	if (optional)
- 		mutt_FormatString (dest, destlen, col, cols, ifstring,   cb_format_str, (unsigned long) sbe, flags);
--	else if (flags & M_FORMAT_OPTIONAL)
-+	else if (flags & MUTT_FORMAT_OPTIONAL)
- 		mutt_FormatString (dest, destlen, col, cols, elsestring, cb_format_str, (unsigned long) sbe, flags);
+   if (optional)
+     mutt_FormatString (dest, destlen, col, cols, ifstring,   cb_format_str, (unsigned long) sbe, flags);
+-  else if (flags & M_FORMAT_OPTIONAL)
++  else if (flags & MUTT_FORMAT_OPTIONAL)
+     mutt_FormatString (dest, destlen, col, cols, elsestring, cb_format_str, (unsigned long) sbe, flags);
  
- 	/* We return the format string, unchanged */
-@@ -745,7 +745,7 @@ draw_sidebar (int num_rows, int num_cols, int div_width)
- 			}
- 		}
+   /* We return the format string, unchanged */
+@@ -747,7 +747,7 @@ static void draw_sidebar (int num_rows, int num_cols, int div_width)
+       }
+     }
  #ifdef USE_NOTMUCH
--		else if (b->magic == M_NOTMUCH) {
-+		else if (b->magic == MUTT_NOTMUCH) {
- 			sidebar_folder_name = b->desc;
- 		}
- #endif
+-    else if (b->magic == M_NOTMUCH)
++    else if (b->magic == MUTT_NOTMUCH)
+     {
+       sidebar_folder_name = b->desc;
+     }
 diff --git a/smime.c b/smime.c
 index 897c9e0..c68f7e8 100644
 --- a/smime.c

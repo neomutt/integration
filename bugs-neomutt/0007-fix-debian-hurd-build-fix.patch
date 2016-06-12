@@ -1,4 +1,4 @@
-From 1a358b814c056cb4c709f212f36e8391eca3a3a0 Mon Sep 17 00:00:00 2001
+From 11f0866631c9b146f13a633493dfe6289a3fe7e8 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Sat, 19 Mar 2016 15:12:21 +0000
 Subject: [PATCH 07/10] fix: debian: hurd build fix

@@ -1,4 +1,4 @@
-From d9b401bf7ecd52a6a9d6d1165cd3218c115b7717 Mon Sep 17 00:00:00 2001
+From 27f200e0978d2e5ef3c7965ecfc6d92a7deb1e22 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 6 May 2016 00:24:01 +0100
 Subject: [PATCH 12/22] debian-specific/566076-build_doc_adjustments
@@ -8,7 +8,7 @@ Subject: [PATCH 12/22] debian-specific/566076-build_doc_adjustments
  1 file changed, 3 insertions(+), 5 deletions(-)
 
 diff --git a/doc/Makefile.am b/doc/Makefile.am
-index e502d47..38734a7 100644
+index cd633dc..77c99df 100644
 --- a/doc/Makefile.am
 +++ b/doc/Makefile.am
 @@ -110,9 +110,7 @@ uninstall-local:

@@ -1,4 +1,4 @@
-From 54a73ea0a727ce0195215cdd96f712d1ce2d91cd Mon Sep 17 00:00:00 2001
+From ced428f27e52ebe9d62c4094c36a1c8c6cbe88c8 Mon Sep 17 00:00:00 2001
 From: David Wilson <dw@botanicus.net>
 Date: Tue, 22 Oct 2013 11:34:57 -0700
 Subject: [PATCH 05/10] fix: Use unlocked libc IO everywhere.
@@ -34,10 +34,10 @@ After: 6 seconds
  2 files changed, 9 insertions(+)
 
 diff --git a/configure.ac b/configure.ac
-index 76ae485..d47933b 100644
+index e125f1f..87018df 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -355,6 +355,7 @@ AC_CHECK_HEADERS(sys/time.h sys/resource.h sys/syscall.h)
+@@ -354,6 +354,7 @@ AC_CHECK_HEADERS(sys/time.h sys/resource.h sys/syscall.h)
  AC_CHECK_HEADERS(unix.h)
  
  AC_CHECK_FUNCS(setrlimit getsid)

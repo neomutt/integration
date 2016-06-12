@@ -1,4 +1,4 @@
-From 84ab3f3523d04d93245ba9c63181eab903167617 Mon Sep 17 00:00:00 2001
+From 72a19cb5ff1caf459a2b58c681fcef7910627888 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Mon, 30 May 2016 03:42:37 +0100
 Subject: [PATCH 04/13] dont-reveal-bbc
@@ -13,7 +13,7 @@ Subject: [PATCH 04/13] dont-reveal-bbc
  6 files changed, 11 insertions(+), 13 deletions(-)
 
 diff --git a/headers.c b/headers.c
-index 19546ce..e53f74b 100644
+index 07bc983..d546eb8 100644
 --- a/headers.c
 +++ b/headers.c
 @@ -52,7 +52,7 @@ void mutt_edit_headers (const char *editor,
@@ -26,10 +26,10 @@ index 19546ce..e53f74b 100644
  
    /* now copy the body of the message. */
 diff --git a/init.h b/init.h
-index d057c73..f580d31 100644
+index e2001f6..c6a2c43 100644
 --- a/init.h
 +++ b/init.h
-@@ -4048,11 +4048,9 @@ struct option_t MuttVars[] = {
+@@ -4049,11 +4049,9 @@ struct option_t MuttVars[] = {
    { "write_bcc",	DT_BOOL, R_NONE, OPTWRITEBCC, 1},
    /*
    ** .pp
@@ -45,7 +45,7 @@ index d057c73..f580d31 100644
    { "write_inc",	DT_NUM,	 R_NONE, UL &WriteInc, 10 },
    /*
 diff --git a/main.c b/main.c
-index 55ebcc3..4c8d56d 100644
+index 85acc90..316425a 100644
 --- a/main.c
 +++ b/main.c
 @@ -764,7 +764,7 @@ int main (int argc, char **argv)

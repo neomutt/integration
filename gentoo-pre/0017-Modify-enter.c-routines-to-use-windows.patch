@@ -1,4 +1,4 @@
-From 39825e95286d35a232ebbebff0a999f9c098008d Mon Sep 17 00:00:00 2001
+From 7dc72d755e3c12b2fb1c82d273ed1b75e5876f46 Mon Sep 17 00:00:00 2001
 From: Kevin McCarthy <kevin@8t8.us>
 Date: Wed, 27 Apr 2016 17:56:53 -0700
 Subject: [PATCH 17/31] Modify enter.c routines to use windows.

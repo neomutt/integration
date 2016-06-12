@@ -1,15 +1,15 @@
-From d6ee638adedb5380167a17cee266946e231087e4 Mon Sep 17 00:00:00 2001
+From 8c21111afbf7309be91ce7be4e9771fc29a6650b Mon Sep 17 00:00:00 2001
 From: Kevin McCarthy <kevin@8t8.us>
 Date: Wed, 27 Apr 2016 17:56:54 -0700
 Subject: [PATCH 18/31] Modify the index to use windows.
 
 Change the index screen to use MuttIndexWindow and MuttStatusWindow.
 ---
- curs_main.c | 30 +++++++++++++-----------------
- 1 file changed, 13 insertions(+), 17 deletions(-)
+ curs_main.c | 35 +++++++++++++----------------------
+ 1 file changed, 13 insertions(+), 22 deletions(-)
 
 diff --git a/curs_main.c b/curs_main.c
-index 4c70d55..e98d913 100644
+index 4e8208b..5dd53e8 100644
 --- a/curs_main.c
 +++ b/curs_main.c
 @@ -727,8 +727,6 @@ int mutt_index_menu (void)
@@ -21,9 +21,15 @@ index 4c70d55..e98d913 100644
    menu->make_entry = index_make_entry;
    menu->color = index_color;
    menu->current = ci_first_message ();
-@@ -875,15 +873,12 @@ int mutt_index_menu (void)
- 	SidebarWidth = 0;
- #endif
+@@ -869,21 +867,13 @@ int mutt_index_menu (void)
+ 
+       if (menu->redraw & REDRAW_STATUS)
+       {
+-#ifdef USE_SIDEBAR
+-        /* Temporarily lie about the sidebar width */
+-	short sw = SidebarWidth;
+-	SidebarWidth = 0;
+-#endif
  	menu_status_line (buf, sizeof (buf), menu, NONULL (Status));
 -#ifdef USE_SIDEBAR
 -        SidebarWidth = sw; /* Restore the sidebar width */
@@ -32,14 +38,14 @@ index 4c70d55..e98d913 100644
 +        mutt_window_move (MuttStatusWindow, 0, 0);
  	SETCOLOR (MT_COLOR_STATUS);
  #ifdef USE_SIDEBAR
- 	sb_set_buffystats (Context);
+ 	mutt_sb_set_buffystats (Context);
  #endif
 -	mutt_draw_statusline (COLS, buf);
 +	mutt_draw_statusline (MuttStatusWindow->cols, buf);
  	NORMAL_COLOR;
  	menu->redraw &= ~REDRAW_STATUS;
  	if (option(OPTTSENABLED) && TSSupported)
-@@ -902,11 +897,12 @@ int mutt_index_menu (void)
+@@ -902,11 +892,12 @@ int mutt_index_menu (void)
  	menu->oldcurrent = -1;
  
        if (option (OPTARROWCURSOR))
@@ -55,7 +61,7 @@ index 4c70d55..e98d913 100644
        mutt_refresh ();
  
  #if defined (USE_SLANG_CURSES) || defined (HAVE_RESIZETERM)
-@@ -953,14 +949,14 @@ int mutt_index_menu (void)
+@@ -953,14 +944,14 @@ int mutt_index_menu (void)
  	tag = 1;
  
  	/* give visual indication that the next command is a tag- command */
@@ -73,7 +79,7 @@ index 4c70d55..e98d913 100644
  	  continue;
  	}
        }
-@@ -984,14 +980,14 @@ int mutt_index_menu (void)
+@@ -984,14 +975,14 @@ int mutt_index_menu (void)
  	tag = 1;
  
  	/* give visual indication that the next command is a tag- command */
@@ -91,7 +97,7 @@ index 4c70d55..e98d913 100644
  	  continue;
  	}
        }
-@@ -1823,7 +1819,7 @@ int mutt_index_menu (void)
+@@ -1823,7 +1814,7 @@ int mutt_index_menu (void)
  	  }
  	  if (!buf[0])
  	  {

@@ -1,4 +1,4 @@
-From a749bffa988f6eb0ce106e9d88a4550d048b7dfb Mon Sep 17 00:00:00 2001
+From 4f260868a22b974b7a4702ae2930fa3e21546494 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 15:24:12 +0100
 Subject: [PATCH 20/21] threadcomplete

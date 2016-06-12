@@ -1,4 +1,4 @@
-From 083bf4a969365884141d9cd319d6be4e25be1f49 Mon Sep 17 00:00:00 2001
+From 354559d163dfcb2fe49d56ed33f2b4c7f240606b Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 15:22:12 +0100
 Subject: [PATCH 14/21] Makefile.am
@@ -8,10 +8,10 @@ Subject: [PATCH 14/21] Makefile.am
  1 file changed, 4 deletions(-)
 
 diff --git a/Makefile.am b/Makefile.am
-index 1dd9313..6b7269e 100644
+index 8d02bb2..fc4b0a5 100644
 --- a/Makefile.am
 +++ b/Makefile.am
-@@ -175,10 +175,6 @@ install-exec-hook:
+@@ -165,10 +165,6 @@ install-exec-hook:
  
  install-data-local:
  	$(MKDIR_P) $(DESTDIR)$(sysconfdir)

@@ -1,4 +1,4 @@
-From 0bafeb9b11f1844307a0f4db9f0891ea0c0f85ee Mon Sep 17 00:00:00 2001
+From 51b306267c1e656d60c49061fe797e6f19466ce9 Mon Sep 17 00:00:00 2001
 From: Sami Farin <hvtaifwkbgefbaei@gmail.com>
 Date: Wed, 16 Oct 2013 11:34:57 -0700
 Subject: [PATCH 03/10] fix: Bye srandom() and random()
@@ -74,7 +74,7 @@ index f87e869..050f88a 100644
    /* on one of the systems I use, getcwd() does not return the same prefix
       as is listed in the passwd file */
 diff --git a/main.c b/main.c
-index ae2beb9..bfd2411 100644
+index 6987503..f19b920 100644
 --- a/main.c
 +++ b/main.c
 @@ -222,7 +222,7 @@ int main (int argc, char **argv)
@@ -87,10 +87,10 @@ index ae2beb9..bfd2411 100644
  
    memset (Options, 0, sizeof (Options));
 diff --git a/mh.c b/mh.c
-index fe86431..dd15280 100644
+index 4c0dd83..54c7467 100644
 --- a/mh.c
 +++ b/mh.c
-@@ -351,8 +351,8 @@ static int mh_mkstemp (CONTEXT * dest, FILE ** fp, char **tgt)
+@@ -350,8 +350,8 @@ static int mh_mkstemp (CONTEXT * dest, FILE ** fp, char **tgt)
    omask = umask (mh_umask (dest));
    FOREVER
    {
@@ -101,7 +101,7 @@ index fe86431..dd15280 100644
      if ((fd = open (path, O_WRONLY | O_EXCL | O_CREAT, 0666)) == -1)
      {
        if (errno != EEXIST)
-@@ -1371,9 +1371,9 @@ int maildir_open_new_message (MESSAGE * msg, CONTEXT * dest, HEADER * hdr)
+@@ -1370,9 +1370,9 @@ int maildir_open_new_message (MESSAGE * msg, CONTEXT * dest, HEADER * hdr)
    omask = umask (mh_umask (dest));
    FOREVER
    {
@@ -114,7 +114,7 @@ index fe86431..dd15280 100644
  
      dprint (2, (debugfile, "maildir_open_new_message (): Trying %s.\n",
  		path));
-@@ -1457,8 +1457,8 @@ int maildir_commit_message (CONTEXT * ctx, MESSAGE * msg, HEADER * hdr)
+@@ -1456,8 +1456,8 @@ int maildir_commit_message (CONTEXT * ctx, MESSAGE * msg, HEADER * hdr)
    /* construct a new file name. */
    FOREVER
    {
