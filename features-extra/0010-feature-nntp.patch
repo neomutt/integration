@@ -1,7 +1,7 @@
-From 3a1fd60ab431fa0362896396d0331e0fb611200d Mon Sep 17 00:00:00 2001
+From d5507c1ea2b01611530a80fe1e609810e277507f Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Tue, 24 May 2016 17:50:57 +0100
-Subject: [PATCH 17/18] feature: nntp
+Subject: [PATCH 10/11] feature: nntp
 
 ---
  ChangeLog.nntp      |  416 +++++++++
@@ -489,15 +489,15 @@ index 0000000..1452e86
 +* Fri Jan 28 2000 Vsevolod Volkov <vvv@mutt.kiev.ua>
 +- update to 1.1.2
 diff --git a/Makefile.am b/Makefile.am
-index 1dd9313..41c6e8e 100644
+index 8d02bb2..6fbeabc 100644
 --- a/Makefile.am
 +++ b/Makefile.am
-@@ -56,6 +56,7 @@ EXTRA_mutt_SOURCES = account.c bcache.c crypt-gpgme.c crypt-mod-pgp-classic.c \
+@@ -56,6 +56,7 @@ EXTRA_mutt_SOURCES = account.c bcache.c compress.c crypt-gpgme.c crypt-mod-pgp-c
  	mutt_idna.c mutt_sasl.c mutt_socket.c mutt_ssl.c mutt_ssl_gnutls.c \
  	mutt_tunnel.c pgp.c pgpinvoke.c pgpkey.c pgplib.c pgpmicalg.c \
  	pgppacket.c pop.c pop_auth.c pop_lib.c remailer.c resize.c sha1.c \
 +	nntp.c newsrc.c \
- 	smime.c smtp.c utf8.c wcwidth.c \
+ 	sidebar.c smime.c smtp.c utf8.c wcwidth.c \
  	bcache.h browser.h hcache.h mbyte.h mutt_idna.h remailer.h url.h
  
 @@ -67,6 +68,7 @@ EXTRA_DIST = COPYRIGHT GPL OPS OPS.PGP OPS.CRYPT OPS.SMIME TODO UPDATING \
@@ -1487,10 +1487,10 @@ index 515d69f..ad89ab2 100644
  };
  
 diff --git a/buffy.c b/buffy.c
-index 99258c8..4a31b24 100644
+index dfec46f..64a2082 100644
 --- a/buffy.c
 +++ b/buffy.c
-@@ -580,6 +580,9 @@ int mutt_buffy_check (int force)
+@@ -584,6 +584,9 @@ int mutt_buffy_check (int force)
  
    /* check device ID and serial number instead of comparing paths */
    if (!Context || Context->magic == M_IMAP || Context->magic == M_POP
@@ -1500,7 +1500,7 @@ index 99258c8..4a31b24 100644
        || stat (Context->path, &contex_sb) != 0)
    {
      contex_sb.st_dev=0;
-@@ -599,6 +602,11 @@ int mutt_buffy_check (int force)
+@@ -600,6 +603,11 @@ int mutt_buffy_check (int force)
  	tmp->magic = M_POP;
        else
  #endif
@@ -1512,7 +1512,7 @@ index 99258c8..4a31b24 100644
        if (stat (tmp->path, &sb) != 0 || (S_ISREG(sb.st_mode) && sb.st_size == 0) ||
  	  (!tmp->magic && (tmp->magic = mx_get_magic (tmp->path)) <= 0))
        {
-@@ -614,7 +622,11 @@ int mutt_buffy_check (int force)
+@@ -615,7 +623,11 @@ int mutt_buffy_check (int force)
      /* check to see if the folder is the currently selected folder
       * before polling */
      if (!Context || !Context->path ||
@@ -1610,7 +1610,7 @@ index d0ee4af..8dc48cd 100644
    if (*s == '=' || *s == '+' || *s == '!')
    {
 diff --git a/compose.c b/compose.c
-index 86cdfb3..b2c04e4 100644
+index bf6bac8..3e8c1e9 100644
 --- a/compose.c
 +++ b/compose.c
 @@ -35,11 +35,16 @@
@@ -1709,8 +1709,8 @@ index 86cdfb3..b2c04e4 100644
    }
  
    if ((WithCrypto & APPLICATION_SMIME)
-@@ -255,9 +297,28 @@ static void draw_envelope (HEADER *msg, char *fcc)
-   sb_draw();
+@@ -256,9 +298,28 @@ static void draw_envelope (HEADER *msg, char *fcc)
+   mutt_sb_draw();
  #endif
    draw_envelope_addr (HDR_FROM, msg->env->from);
 +#ifdef USE_NNTP
@@ -1738,7 +1738,7 @@ index 86cdfb3..b2c04e4 100644
    mvprintw (HDR_SUBJECT, SidebarWidth, TITLE_FMT, Prompts[HDR_SUBJECT - 1]);
    mutt_paddstr (W, NONULL (msg->env->subject));
    draw_envelope_addr (HDR_REPLYTO, msg->env->reply_to);
-@@ -510,6 +571,12 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
+@@ -511,6 +572,12 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
    /* Sort, SortAux could be changed in mutt_index_menu() */
    int oldSort, oldSortAux;
    struct stat st;
@@ -1751,7 +1751,7 @@ index 86cdfb3..b2c04e4 100644
  
    mutt_attach_init (msg->content);
    idx = mutt_gen_attach_list (msg->content, -1, idx, &idxlen, &idxmax, 0, 1);
-@@ -520,10 +587,18 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
+@@ -521,10 +588,18 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
    menu->make_entry = snd_entry;
    menu->tag = mutt_tag_attach;
    menu->data = idx;
@@ -1761,7 +1761,7 @@ index 86cdfb3..b2c04e4 100644
 +  else
 +#endif
    menu->help = mutt_compile_help (helpstr, sizeof (helpstr), MENU_COMPOSE, ComposeHelp);
-   
+ 
    while (loop)
    {
 +#ifdef USE_NNTP
@@ -1770,7 +1770,7 @@ index 86cdfb3..b2c04e4 100644
      switch (op = mutt_menuLoop (menu))
      {
        case OP_REDRAW:
-@@ -536,6 +611,10 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
+@@ -537,6 +612,10 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
          mutt_message_hook (NULL, msg, M_SEND2HOOK);
  	break;
        case OP_COMPOSE_EDIT_TO:
@@ -1781,7 +1781,7 @@ index 86cdfb3..b2c04e4 100644
  	menu->redraw = edit_address_list (HDR_TO, &msg->env->to);
  	if (option (OPTCRYPTOPPORTUNISTICENCRYPT))
  	{
-@@ -545,6 +624,10 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
+@@ -546,6 +625,10 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
          mutt_message_hook (NULL, msg, M_SEND2HOOK);
          break;
        case OP_COMPOSE_EDIT_BCC:
@@ -1792,7 +1792,7 @@ index 86cdfb3..b2c04e4 100644
  	menu->redraw = edit_address_list (HDR_BCC, &msg->env->bcc);
  	if (option (OPTCRYPTOPPORTUNISTICENCRYPT))
  	{
-@@ -554,6 +637,10 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
+@@ -555,6 +638,10 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
          mutt_message_hook (NULL, msg, M_SEND2HOOK);
  	break;
        case OP_COMPOSE_EDIT_CC:
@@ -1803,7 +1803,7 @@ index 86cdfb3..b2c04e4 100644
  	menu->redraw = edit_address_list (HDR_CC, &msg->env->cc);
  	if (option (OPTCRYPTOPPORTUNISTICENCRYPT))
  	{
-@@ -562,6 +649,62 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
+@@ -563,6 +650,62 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
  	}
          mutt_message_hook (NULL, msg, M_SEND2HOOK);	
          break;
@@ -1866,7 +1866,7 @@ index 86cdfb3..b2c04e4 100644
        case OP_COMPOSE_EDIT_SUBJECT:
  	if (msg->env->subject)
  	  strfcpy (buf, msg->env->subject, sizeof (buf));
-@@ -730,6 +873,9 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
+@@ -731,6 +874,9 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
          break;
  
        case OP_COMPOSE_ATTACH_MESSAGE:
@@ -1876,7 +1876,7 @@ index 86cdfb3..b2c04e4 100644
  	{
  	  char *prompt;
  	  HEADER *h;
-@@ -737,7 +883,22 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
+@@ -738,7 +884,22 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
  	  fname[0] = 0;
  	  prompt = _("Open mailbox to attach message from");
  
@@ -1899,7 +1899,7 @@ index 86cdfb3..b2c04e4 100644
  	  {
  	    strfcpy (fname, NONULL (Context->path), sizeof (fname));
  	    mutt_pretty_mailbox (fname, sizeof (fname));
-@@ -746,6 +907,11 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
+@@ -747,6 +908,11 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
  	  if (mutt_enter_fname (prompt, fname, sizeof (fname), &menu->redraw, 1) == -1 || !fname[0])
  	    break;
  
@@ -1911,7 +1911,7 @@ index 86cdfb3..b2c04e4 100644
  	  mutt_expand_path (fname, sizeof (fname));
  #ifdef USE_IMAP
            if (!mx_is_imap (fname))
-@@ -753,6 +919,9 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
+@@ -754,6 +920,9 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
  #ifdef USE_POP
            if (!mx_is_pop (fname))
  #endif
@@ -1922,10 +1922,10 @@ index 86cdfb3..b2c04e4 100644
  	  if (access (fname, R_OK) == -1)
  	  {
 diff --git a/configure.ac b/configure.ac
-index 1fe1932..e7d76f5 100644
+index 50c2666..b9872d2 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -617,6 +617,15 @@ AC_ARG_ENABLE(imap, AS_HELP_STRING([--enable-imap],[Enable IMAP support]),
+@@ -616,6 +616,15 @@ AC_ARG_ENABLE(imap, AS_HELP_STRING([--enable-imap],[Enable IMAP support]),
  ])
  AM_CONDITIONAL(BUILD_IMAP, test x$need_imap = xyes)
  
@@ -1941,7 +1941,7 @@ index 1fe1932..e7d76f5 100644
  AC_ARG_ENABLE(smtp, AS_HELP_STRING([--enable-smtp],[include internal SMTP relay support]),
  	[if test $enableval = yes; then
  		AC_DEFINE(USE_SMTP, 1, [Include internal SMTP relay support])
-@@ -624,7 +633,7 @@ AC_ARG_ENABLE(smtp, AS_HELP_STRING([--enable-smtp],[include internal SMTP relay
+@@ -623,7 +632,7 @@ AC_ARG_ENABLE(smtp, AS_HELP_STRING([--enable-smtp],[include internal SMTP relay
  		need_socket="yes"
  	fi])
  
@@ -1951,7 +1951,7 @@ index 1fe1932..e7d76f5 100644
  fi
  
 diff --git a/curs_main.c b/curs_main.c
-index 0d2027e..b72d1da 100644
+index 5f07fa3..95e18ee 100644
 --- a/curs_main.c
 +++ b/curs_main.c
 @@ -22,6 +22,7 @@
@@ -2285,7 +2285,7 @@ index 0d2027e..b72d1da 100644
 +#endif
  	mutt_expand_path (buf, sizeof (buf));
  #ifdef USE_SIDEBAR
- 	sb_set_open_buffy (buf);
+ 	mutt_sb_set_open_buffy (buf);
 @@ -1420,9 +1654,7 @@ int mutt_index_menu (void)
  	CurrentMenu = MENU_MAIN;
  	mutt_folder_hook (buf);
@@ -2388,7 +2388,7 @@ index 0d2027e..b72d1da 100644
  
  	CHECK_ATTACH;
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index 3932b4d..1418bd9 100644
+index 59f4edc..fc718c6 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
 @@ -10840,6 +10840,398 @@ <sect1 id="nested-if">
@@ -3259,7 +3259,7 @@ index 8c18085..cc17b72 100644
      
        ch = ' ';
 diff --git a/headers.c b/headers.c
-index 465bcf3..b126c23 100644
+index a7d1036..d1343ad 100644
 --- a/headers.c
 +++ b/headers.c
 @@ -114,6 +114,9 @@ void mutt_edit_headers (const char *editor,
@@ -3306,7 +3306,7 @@ index 0c37cc4..dcd16bd 100644
      Spoolfile = safe_strdup (p);
    else if ((p = getenv ("MAILDIR")))
 diff --git a/init.h b/init.h
-index 9544b16..5021220 100644
+index 2577434..5da5388 100644
 --- a/init.h
 +++ b/init.h
 @@ -177,6 +177,20 @@ struct option_t MuttVars[] = {
@@ -3535,7 +3535,7 @@ index 9544b16..5021220 100644
 +  /*
 +  ** .pp
 +  ** Your login name on the NNTP server.  If \fIunset\fP and NNTP server requires
-+  ** authentification, Mutt will prompt you for your account name when you
++  ** authentication, Mutt will prompt you for your account name when you
 +  ** connect to news server.
 +  */
 +  { "nntp_pass",	DT_STR, R_NONE, UL &NntpPass, UL "" },
@@ -3601,7 +3601,7 @@ index 9544b16..5021220 100644
  #ifdef USE_SIDEBAR
    { "sidebar_divider_char", DT_STR, R_BOTH, UL &SidebarDividerChar, UL "|" },
    /*
-@@ -3787,6 +4002,14 @@ struct option_t MuttVars[] = {
+@@ -3788,6 +4003,14 @@ struct option_t MuttVars[] = {
    ** X-Label headers.  You can modify this variable in runtime to accomplish
    ** various kinds of conversion.
    */
@@ -3643,7 +3643,7 @@ index 2249661..b3c6c8d 100644
  int mx_access (const char*, int);
  int mx_check_empty (const char *);
 diff --git a/main.c b/main.c
-index ba492bd..ae2beb9 100644
+index db7268b..6987503 100644
 --- a/main.c
 +++ b/main.c
 @@ -66,6 +66,10 @@
@@ -3919,7 +3919,7 @@ index fd025b8..b226b74 100644
    {
      if (magic == -1)
 diff --git a/mx.c b/mx.c
-index 17f9222..e4e108b 100644
+index 6ee50ad..c928b32 100644
 --- a/mx.c
 +++ b/mx.c
 @@ -45,6 +45,10 @@
@@ -3981,7 +3981,7 @@ index 17f9222..e4e108b 100644
      default:
        rc = -1;
        break;
-@@ -813,6 +844,12 @@ static int sync_mailbox (CONTEXT *ctx, int *index_hint)
+@@ -809,6 +840,12 @@ static int sync_mailbox (CONTEXT *ctx, int *index_hint)
        rc = pop_sync_mailbox (ctx, index_hint);
        break;
  #endif /* USE_POP */
@@ -3994,7 +3994,7 @@ index 17f9222..e4e108b 100644
    }
  
  #if 0
-@@ -918,6 +955,25 @@ int mx_close_mailbox (CONTEXT *ctx, int *index_hint)
+@@ -914,6 +951,25 @@ int mx_close_mailbox (CONTEXT *ctx, int *index_hint)
      return 0;
    }
  
@@ -4020,7 +4020,7 @@ index 17f9222..e4e108b 100644
    for (i = 0; i < ctx->msgcount; i++)
    {
      if (!ctx->hdrs[i]->deleted && ctx->hdrs[i]->read 
-@@ -931,6 +987,12 @@ int mx_close_mailbox (CONTEXT *ctx, int *index_hint)
+@@ -927,6 +983,12 @@ int mx_close_mailbox (CONTEXT *ctx, int *index_hint)
  #endif
    }
  
@@ -4033,7 +4033,7 @@ index 17f9222..e4e108b 100644
    if (read_msgs && quadoption (OPT_MOVE) != M_NO)
    {
      char *p;
-@@ -1492,6 +1554,11 @@ int mx_check_mailbox (CONTEXT *ctx, int *index_hint, int lock)
+@@ -1493,6 +1555,11 @@ int mx_check_mailbox (CONTEXT *ctx, int *index_hint, int lock)
        case M_POP:
  	return (pop_check_mailbox (ctx, index_hint));
  #endif /* USE_POP */
@@ -4045,7 +4045,7 @@ index 17f9222..e4e108b 100644
      }
    }
  
-@@ -1552,6 +1619,15 @@ MESSAGE *mx_open_message (CONTEXT *ctx, int msgno)
+@@ -1553,6 +1620,15 @@ MESSAGE *mx_open_message (CONTEXT *ctx, int msgno)
      }
  #endif /* USE_POP */
  
@@ -4061,7 +4061,7 @@ index 17f9222..e4e108b 100644
      default:
        dprint (1, (debugfile, "mx_open_message(): function not implemented for mailbox type %d.\n", ctx->magic));
        FREE (&msg);
-@@ -1627,6 +1703,9 @@ int mx_close_message (MESSAGE **msg)
+@@ -1628,6 +1704,9 @@ int mx_close_message (MESSAGE **msg)
    int r = 0;
  
    if ((*msg)->magic == M_MH || (*msg)->magic == M_MAILDIR
@@ -7968,7 +7968,7 @@ index 0000000..705c524
 +
 +#endif /* _NNTP_H_ */
 diff --git a/pager.c b/pager.c
-index 9b63316..e2207a1 100644
+index 0f5359c..7c9d9de 100644
 --- a/pager.c
 +++ b/pager.c
 @@ -1088,6 +1088,11 @@ fill_buffer (FILE *f, LOFF_T *last_pos, LOFF_T offset, unsigned char **buf,
@@ -7983,7 +7983,7 @@ index 9b63316..e2207a1 100644
  
  static int format_line (struct line_t **lineInfo, int n, unsigned char *buf,
  			int flags, ansi_attr *pa, int cnt,
-@@ -1548,6 +1553,16 @@ static const struct mapping_t PagerHelpExtra[] = {
+@@ -1545,6 +1550,16 @@ static const struct mapping_t PagerHelpExtra[] = {
    { NULL,	0 }
  };
  
@@ -8000,7 +8000,7 @@ index 9b63316..e2207a1 100644
  
  
  /* This pager is actually not so simple as it once was.  It now operates in
-@@ -1590,6 +1605,10 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
+@@ -1587,6 +1602,10 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
    int old_PagerIndexLines;		/* some people want to resize it
    					 * while inside the pager... */
  
@@ -8011,7 +8011,7 @@ index 9b63316..e2207a1 100644
    if (!(flags & M_SHOWCOLOR))
      flags |= M_SHOWFLAT;
  
-@@ -1629,7 +1648,11 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
+@@ -1626,7 +1645,11 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
    if (IsHeader (extra))
    {
      strfcpy (tmphelp, helpstr, sizeof (tmphelp));
@@ -8024,7 +8024,7 @@ index 9b63316..e2207a1 100644
      snprintf (helpstr, sizeof (helpstr), "%s %s", tmphelp, buffer);
    }
    if (!InHelp)
-@@ -2593,6 +2616,60 @@ search_next:
+@@ -2590,6 +2613,60 @@ search_next:
  	redraw = REDRAW_FULL;
  	break;
  
@@ -8085,7 +8085,7 @@ index 9b63316..e2207a1 100644
        case OP_REPLY:
  	CHECK_MODE(IsHeader (extra) || IsMsgAttach (extra));
          CHECK_ATTACH;      
-@@ -2639,7 +2716,7 @@ search_next:
+@@ -2636,7 +2713,7 @@ search_next:
          CHECK_ATTACH;
          if (IsMsgAttach (extra))
  	  mutt_attach_forward (extra->fp, extra->hdr, extra->idx,

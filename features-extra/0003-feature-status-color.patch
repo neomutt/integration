@@ -1,7 +1,7 @@
-From 1cad34f8043331f0845ad1760f4472950c5359aa Mon Sep 17 00:00:00 2001
+From 49da143a1ea385aa80f9d385c21b94844a388cc7 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Tue, 24 May 2016 17:22:39 +0100
-Subject: [PATCH 10/18] feature: status-color
+Subject: [PATCH 03/11] feature: status-color
 
 ---
  PATCHES                 |   1 +
@@ -197,7 +197,7 @@ index e2ff989..0efc743 100644
    }
    else if (object == MT_COLOR_QUOTED)
 diff --git a/curs_main.c b/curs_main.c
-index a241fe6..d23f33c 100644
+index f6f5550..0b660ea 100644
 --- a/curs_main.c
 +++ b/curs_main.c
 @@ -482,6 +482,112 @@ static void resort_index (MUTTMENU *menu)
@@ -315,7 +315,7 @@ index a241fe6..d23f33c 100644
    { N_("Del"),   OP_DELETE },
 @@ -667,7 +773,7 @@ int mutt_index_menu (void)
  #ifdef USE_SIDEBAR
- 	sb_set_buffystats (Context);
+ 	mutt_sb_set_buffystats (Context);
  #endif
 -	mutt_paddstr (COLS, buf);
 +	mutt_draw_statusline (COLS, buf);
@@ -323,7 +323,7 @@ index a241fe6..d23f33c 100644
  	menu->redraw &= ~REDRAW_STATUS;
  	if (option(OPTTSENABLED) && TSSupported)
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index 4637b82..6417cf6 100644
+index e5c4a66..633ac6a 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
 @@ -10761,6 +10761,209 @@ <sect1 id="skip-quoted-patch">
@@ -592,7 +592,7 @@ index 0000000..385396f
 +
 +# vim: syntax=muttrc
 diff --git a/mutt_curses.h b/mutt_curses.h
-index 6f63160..514f12d 100644
+index 75ea85a..69d06c5 100644
 --- a/mutt_curses.h
 +++ b/mutt_curses.h
 @@ -142,6 +142,7 @@ enum
@@ -603,7 +603,7 @@ index 6f63160..514f12d 100644
    char *pattern;
    pattern_t *color_pattern; /* compiled pattern to speed up index color
                                 calculation */
-@@ -188,6 +189,7 @@ extern int ColorQuoteUsed;
+@@ -192,6 +193,7 @@ extern int ColorQuoteUsed;
  extern int ColorDefs[];
  extern COLOR_LINE *ColorHdrList;
  extern COLOR_LINE *ColorBodyList;
@@ -612,10 +612,10 @@ index 6f63160..514f12d 100644
  
  void ci_init_color (void);
 diff --git a/pager.c b/pager.c
-index 03f231e..5865eb3 100644
+index d4697ba..227727e 100644
 --- a/pager.c
 +++ b/pager.c
-@@ -1833,13 +1833,13 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
+@@ -1830,13 +1830,13 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
  	size_t l2 = sizeof (buffer);
  	hfi.hdr = (IsHeader (extra)) ? extra->hdr : extra->bdy->hdr;
  	mutt_make_string_info (buffer, l1 < l2 ? l1 : l2, NONULL (PagerFmt), &hfi, M_FORMAT_MAKEPRINT);

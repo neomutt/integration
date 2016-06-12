@@ -1,7 +1,7 @@
-From 13838fd3c32af1dae94773a6f4d195f575b56355 Mon Sep 17 00:00:00 2001
+From 028adbd1d14b431e5e8a81fd9a08fcde51e1b9f4 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Tue, 24 May 2016 17:29:47 +0100
-Subject: [PATCH 15/18] feature: limit-current-thread
+Subject: [PATCH 08/11] feature: limit-current-thread
 
 ---
  OPS                             |   1 +
@@ -90,7 +90,7 @@ index 0000000..072413e
 +    * Richard Russon <rich@flatcap.org>
 +
 diff --git a/curs_main.c b/curs_main.c
-index 1d5d8c1..8b84c48 100644
+index 56821e9..109f42a 100644
 --- a/curs_main.c
 +++ b/curs_main.c
 @@ -1044,12 +1044,14 @@ int mutt_index_menu (void)
@@ -110,7 +110,7 @@ index 1d5d8c1..8b84c48 100644
  	  if (menu->oldcurrent >= 0)
  	  {
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index 4c4936d..6eba963 100644
+index a1689b2..0e17cf4 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
 @@ -10197,6 +10197,125 @@ <sect1 id="initials">

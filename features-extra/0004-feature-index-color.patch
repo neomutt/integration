@@ -1,7 +1,7 @@
-From 52b2949e1065d6a1b22cdd0411b4a5252c26fad4 Mon Sep 17 00:00:00 2001
+From 7285e297e987b92ca5d66ce23116b9b22fbb7475 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Tue, 24 May 2016 17:26:21 +0100
-Subject: [PATCH 11/18] feature: index-color
+Subject: [PATCH 04/11] feature: index-color
 
 ---
  PATCHES                |   1 +
@@ -377,7 +377,7 @@ index 1ab6d2d..eb06c36 100644
      {
        k = (k == (size_t)(-1)) ? 1 : n;
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index 6417cf6..2011d8b 100644
+index 633ac6a..acdb199 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
 @@ -3259,7 +3259,7 @@ <sect1 id="color">
@@ -999,7 +999,7 @@ index 0d332bd..7fbc357 100644
        break;
  
 diff --git a/menu.c b/menu.c
-index 8eed91c..7839205 100644
+index 6b58e1f..ab9a066 100644
 --- a/menu.c
 +++ b/menu.c
 @@ -30,7 +30,39 @@
@@ -1128,7 +1128,7 @@ index 765f8f5..51c9e51 100644
  #define M_THREAD_UNCOLLAPSE	(1<<1)
  #define M_THREAD_GET_HIDDEN	(1<<2)
 diff --git a/mutt_curses.h b/mutt_curses.h
-index 514f12d..254b768 100644
+index 69d06c5..9c4eeb1 100644
 --- a/mutt_curses.h
 +++ b/mutt_curses.h
 @@ -125,7 +125,6 @@ enum
@@ -1157,7 +1157,7 @@ index 514f12d..254b768 100644
    MT_COLOR_MAX
  };
  
-@@ -191,6 +201,9 @@ extern COLOR_LINE *ColorHdrList;
+@@ -195,6 +205,9 @@ extern COLOR_LINE *ColorHdrList;
  extern COLOR_LINE *ColorBodyList;
  extern COLOR_LINE *ColorStatusList;
  extern COLOR_LINE *ColorIndexList;

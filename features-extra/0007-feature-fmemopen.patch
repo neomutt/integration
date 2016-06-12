@@ -1,7 +1,7 @@
-From 31ae63b3c80f41e5c8a93cbcbf635819007e93a5 Mon Sep 17 00:00:00 2001
+From a70fdf7a25630b9c53275214dcf5a816f7fa0b51 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Tue, 24 May 2016 17:29:02 +0100
-Subject: [PATCH 14/18] feature: fmemopen
+Subject: [PATCH 07/11] feature: fmemopen
 
 ---
  PATCHES             |   1 +
@@ -78,10 +78,10 @@ index 0000000..adab594
 +    * Richard Russon <rich@flatcap.org>
 +
 diff --git a/configure.ac b/configure.ac
-index 54a7400..1fe1932 100644
+index 6bf08a1..50c2666 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -1325,6 +1325,8 @@ if test $mutt_cv_langinfo_yesexpr = yes; then
+@@ -1324,6 +1324,8 @@ if test $mutt_cv_langinfo_yesexpr = yes; then
    AC_DEFINE(HAVE_LANGINFO_YESEXPR,1,[ Define if you have <langinfo.h> and nl_langinfo(YESEXPR). ])
  fi
  
@@ -91,7 +91,7 @@ index 54a7400..1fe1932 100644
  have_openjade="no"
  AC_PATH_PROG([OSPCAT], [ospcat], [none])
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index d5ea867..4c4936d 100644
+index 76022ae..a1689b2 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
 @@ -9581,6 +9581,109 @@ <sect1 id="cond-date">

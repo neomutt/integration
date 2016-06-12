@@ -1,7 +1,7 @@
-From e7f6a60e6aefbc9821f64d45305d0ed98f686524 Mon Sep 17 00:00:00 2001
+From 50dec5d8e869589fc372dbee67b84e4b496a7554 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Tue, 24 May 2016 17:42:12 +0100
-Subject: [PATCH 16/18] feature: keywords
+Subject: [PATCH 09/11] feature: keywords
 
 ---
  OPS                 |   1 +
@@ -21,7 +21,7 @@ Subject: [PATCH 16/18] feature: keywords
  hash.h              |   7 ++
  hcache.c            |   4 +-
  hdrline.c           |  71 ++++++-----
- headers.c           | 187 +++++++++++++++++++++++++++++
+ headers.c           | 196 ++++++++++++++++++++++++++++++
  imap/imap.c         |   3 +-
  imap/message.c      |   3 +-
  init.c              |  55 +++++++++
@@ -37,7 +37,7 @@ Subject: [PATCH 16/18] feature: keywords
  sendlib.c           |   2 -
  sort.c              |  42 +++++++
  sort.h              |   1 +
- 33 files changed, 1111 insertions(+), 67 deletions(-)
+ 33 files changed, 1120 insertions(+), 67 deletions(-)
  create mode 100644 README.keywords
  create mode 100644 doc/muttrc.keywords
  create mode 100644 doc/vimrc-keywords
@@ -203,7 +203,7 @@ index 554efb6..4970c3a 100644
    if (reverse)
      Sort |= SORT_REVERSE;
 diff --git a/copy.c b/copy.c
-index 7a250e6..050ab9d 100644
+index 3c67260..a09ba57 100644
 --- a/copy.c
 +++ b/copy.c
 @@ -111,6 +111,15 @@ mutt_copy_hdr (FILE *in, FILE *out, LOFF_T off_start, LOFF_T off_end, int flags,
@@ -222,7 +222,7 @@ index 7a250e6..050ab9d 100644
        if (!ignore && fputs (buf, out) == EOF)
  	return (-1);
      }
-@@ -413,6 +422,61 @@ mutt_copy_header (FILE *in, HEADER *h, FILE *out, int flags, const char *prefix)
+@@ -414,6 +423,61 @@ mutt_copy_header (FILE *in, HEADER *h, FILE *out, int flags, const char *prefix)
        fprintf (out, "Lines: %d\n", h->lines);
    }
  
@@ -284,7 +284,7 @@ index 7a250e6..050ab9d 100644
    if ((flags & CH_NONEWLINE) == 0)
    {
      if (flags & CH_PREFIX)
-@@ -493,6 +557,9 @@ _mutt_copy_message (FILE *fpout, FILE *fpin, HEADER *hdr, BODY *body,
+@@ -494,6 +558,9 @@ _mutt_copy_message (FILE *fpout, FILE *fpin, HEADER *hdr, BODY *body,
        _mutt_make_string (prefix, sizeof (prefix), NONULL (Prefix), Context, hdr, 0);
    }
  
@@ -307,7 +307,7 @@ index 5f12a3c..9a98d21 100644
  
  int mutt_copy_hdr (FILE *, FILE *, LOFF_T, LOFF_T, int, const char *);
 diff --git a/curs_main.c b/curs_main.c
-index 8b84c48..0d2027e 100644
+index 109f42a..5f07fa3 100644
 --- a/curs_main.c
 +++ b/curs_main.c
 @@ -1407,6 +1407,9 @@ int mutt_index_menu (void)
@@ -352,7 +352,7 @@ index 8b84c48..0d2027e 100644
  
  	CHECK_ATTACH;
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index 6eba963..3932b4d 100644
+index 0e17cf4..59f4edc 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
 @@ -1156,7 +1156,7 @@ <table id="tab-keys-editor">
@@ -1034,10 +1034,10 @@ index 7fbc357..8c18085 100644
        break;
  
 diff --git a/headers.c b/headers.c
-index 0a75998..465bcf3 100644
+index 0a75998..a7d1036 100644
 --- a/headers.c
 +++ b/headers.c
-@@ -211,3 +211,190 @@ void mutt_edit_headers (const char *editor,
+@@ -211,3 +211,199 @@ void mutt_edit_headers (const char *editor,
      }
    }
  }
@@ -1046,6 +1046,9 @@ index 0a75998..465bcf3 100644
 +{
 +  uintptr_t count;
 +  LIST *label;
++
++  if (!env || !env->labels || !Labels)
++    return;
 +
 +  for (label = env->labels; label; label = label->next)
 +  {
@@ -1067,6 +1070,9 @@ index 0a75998..465bcf3 100644
 +{
 +  uintptr_t count;
 +  LIST *label;
++
++  if (!env || !env->labels || !Labels)
++    return;
 +
 +  for (label = env->labels; label; label = label->next)
 +  {
@@ -1186,6 +1192,9 @@ index 0a75998..465bcf3 100644
 +void mutt_scan_labels(CONTEXT *ctx)
 +{
 +  int i;
++
++  if (!ctx)
++    return;
 +
 +  for (i = 0; i < ctx->msgcount; i++)
 +    if (ctx->hdrs[i]->env->labels)
@@ -1334,7 +1343,7 @@ index 0113e7d..0c37cc4 100644
 +}
 +
 diff --git a/init.h b/init.h
-index 6996359..9544b16 100644
+index b46a3ea..2577434 100644
 --- a/init.h
 +++ b/init.h
 @@ -1389,6 +1389,28 @@ struct option_t MuttVars[] = {
@@ -1366,7 +1375,7 @@ index 6996359..9544b16 100644
    { "locale",		DT_STR,  R_BOTH, UL &Locale, UL "C" },
    /*
    ** .pp
-@@ -3751,6 +3773,20 @@ struct option_t MuttVars[] = {
+@@ -3752,6 +3774,20 @@ struct option_t MuttVars[] = {
    {"xterm_set_titles",	DT_SYN,  R_NONE, UL "ts_enabled", 0 },
    /*
    */
@@ -1387,7 +1396,7 @@ index 6996359..9544b16 100644
    /*--*/
    { NULL, 0, 0, 0, 0 }
  };
-@@ -3767,6 +3803,7 @@ const struct mapping_t SortMethods[] = {
+@@ -3768,6 +3804,7 @@ const struct mapping_t SortMethods[] = {
    { "to",		SORT_TO },
    { "score",		SORT_SCORE },
    { "spam",		SORT_SPAM },
@@ -1395,7 +1404,7 @@ index 6996359..9544b16 100644
    { NULL,               0 }
  };
  
-@@ -3786,6 +3823,7 @@ const struct mapping_t SortAuxMethods[] = {
+@@ -3787,6 +3824,7 @@ const struct mapping_t SortAuxMethods[] = {
    { "to",		SORT_TO },
    { "score",		SORT_SCORE },
    { "spam",		SORT_SPAM },
@@ -1404,12 +1413,12 @@ index 6996359..9544b16 100644
  };
  
 diff --git a/main.c b/main.c
-index 801480d..ba492bd 100644
+index 7e81016..db7268b 100644
 --- a/main.c
 +++ b/main.c
 @@ -832,9 +832,13 @@ int main (int argc, char **argv)
  #ifdef USE_SIDEBAR
-       sb_set_open_buffy (folder);
+       mutt_sb_set_open_buffy (folder);
  #endif
 +      Labels = hash_create (131, 0);
 +      mutt_scan_labels(Context);
@@ -1422,10 +1431,10 @@ index 801480d..ba492bd 100644
  #ifdef USE_IMAP
      imap_logout_all ();
 diff --git a/mh.c b/mh.c
-index 3465417..68b8436 100644
+index 3e87181..474a7b4 100644
 --- a/mh.c
 +++ b/mh.c
-@@ -1655,7 +1655,7 @@ static int mh_sync_message (CONTEXT * ctx, int msgno)
+@@ -1654,7 +1654,7 @@ static int mh_sync_message (CONTEXT * ctx, int msgno)
  {
    HEADER *h = ctx->hdrs[msgno];
  
@@ -1434,7 +1443,7 @@ index 3465417..68b8436 100644
        (h->env && (h->env->refs_changed || h->env->irt_changed)))
      if (mh_rewrite_message (ctx, msgno) != 0)
        return -1;
-@@ -1667,7 +1667,7 @@ static int maildir_sync_message (CONTEXT * ctx, int msgno)
+@@ -1666,7 +1666,7 @@ static int maildir_sync_message (CONTEXT * ctx, int msgno)
  {
    HEADER *h = ctx->hdrs[msgno];
  
@@ -1443,7 +1452,7 @@ index 3465417..68b8436 100644
        (h->env && (h->env->refs_changed || h->env->irt_changed)))
    {
      /* when doing attachment deletion/rethreading, fall back to the MH case. */
-@@ -1789,6 +1789,7 @@ int mh_sync_mailbox (CONTEXT * ctx, int *index_hint)
+@@ -1788,6 +1788,7 @@ int mh_sync_mailbox (CONTEXT * ctx, int *index_hint)
        }
      }
      else if (ctx->hdrs[i]->changed || ctx->hdrs[i]->attach_del ||
@@ -1537,10 +1546,10 @@ index 2e9efad..fd025b8 100644
    {
      MOVE_ELEM(references);
 diff --git a/pager.c b/pager.c
-index 5865eb3..9b63316 100644
+index 227727e..0f5359c 100644
 --- a/pager.c
 +++ b/pager.c
-@@ -2797,6 +2797,18 @@ search_next:
+@@ -2794,6 +2794,18 @@ search_next:
  	redraw = REDRAW_FULL;
  	break;
  

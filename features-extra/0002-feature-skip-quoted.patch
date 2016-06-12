@@ -1,7 +1,7 @@
-From 5ce7afaccdb9357b5592c34dda126682d574c72e Mon Sep 17 00:00:00 2001
+From 704c624598267226af34db127c6a7fa8e00efe02 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Tue, 24 May 2016 17:19:14 +0100
-Subject: [PATCH 09/18] feature: skip-quoted
+Subject: [PATCH 02/11] feature: skip-quoted
 
 ---
  PATCHES                |   1 +
@@ -78,7 +78,7 @@ index 0000000..e9b0ac3
 +    * Richard Russon <rich@flatcap.org>
 +
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index 82459b8..4637b82 100644
+index 239f955..e5c4a66 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
 @@ -10640,6 +10640,127 @@ <sect1 id="sidebar">
@@ -238,10 +238,10 @@ index c4a77ca..94640b3 100644
  WHERE short Timeout;
  WHERE short Wrap;
 diff --git a/init.h b/init.h
-index 292bdc7..6996359 100644
+index 71d170c..b46a3ea 100644
 --- a/init.h
 +++ b/init.h
-@@ -2848,6 +2848,12 @@ struct option_t MuttVars[] = {
+@@ -2849,6 +2849,12 @@ struct option_t MuttVars[] = {
    ** replacing ``%s'' with the supplied string.
    ** For the default value, ``joe'' would be expanded to: ``~f joe | ~s joe''.
    */
@@ -249,16 +249,16 @@ index 292bdc7..6996359 100644
 +  /*
 +  ** .pp
 +  ** Lines of quoted text that are displayed before the unquoted text after
-+  ** 'skip to quoted' command (S)
++  ** "skip to quoted" command (S)
 +  */
    { "sleep_time",	DT_NUM, R_NONE, UL &SleepTime, 1 },
    /*
    ** .pp
 diff --git a/pager.c b/pager.c
-index 94dcdd8..03f231e 100644
+index b4b8889..d4697ba 100644
 --- a/pager.c
 +++ b/pager.c
-@@ -2292,11 +2292,11 @@ search_next:
+@@ -2289,11 +2289,11 @@ search_next:
  	  int dretval = 0;
  	  int new_topline = topline;
  
@@ -272,7 +272,7 @@ index 94dcdd8..03f231e 100644
  	    new_topline++;
  
  	  if (dretval < 0)
-@@ -2305,11 +2305,11 @@ search_next:
+@@ -2302,11 +2302,11 @@ search_next:
  	    break;
  	  }
  

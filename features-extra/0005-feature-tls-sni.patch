@@ -1,7 +1,7 @@
-From 9abb4322baff8808b1104b8c35d45fe2b149f8ee Mon Sep 17 00:00:00 2001
+From b688e28e93b55041fb5e96f554eeb71ed984c454 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Tue, 24 May 2016 17:27:07 +0100
-Subject: [PATCH 12/18] feature: tls sni
+Subject: [PATCH 05/11] feature: tls sni
 
 ---
  PATCHES             |   1 +
@@ -125,7 +125,7 @@ index 0000000..7ff94d8
 +    * Richard Russon <rich@flatcap.org>
 +
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index 2011d8b..cf7c0a6 100644
+index acdb199..e5c5098 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
 @@ -11216,6 +11216,113 @@ <sect1 id="status-color">

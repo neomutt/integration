@@ -1,7 +1,7 @@
-From f54b8bcac685535c857878eab4a847aa8ce91afc Mon Sep 17 00:00:00 2001
+From a202c641c734e113bf743bccffe236fca1be0982 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Tue, 24 May 2016 17:17:59 +0100
-Subject: [PATCH 08/18] feature: progress bar
+Subject: [PATCH 01/11] feature: progress bar
 
 ---
  PATCHES             |   1 +
@@ -174,7 +174,7 @@ index 3178f22..1ab6d2d 100644
    }
  
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index a1364db..82459b8 100644
+index 676ed6a..239f955 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
 @@ -3323,6 +3323,7 @@ <sect1 id="color">
@@ -339,7 +339,7 @@ index 0000000..a632dc0
 +
 +" vim: syntax=vim
 diff --git a/mutt_curses.h b/mutt_curses.h
-index fbcbb87..6f63160 100644
+index 2bfa1ae..75ea85a 100644
 --- a/mutt_curses.h
 +++ b/mutt_curses.h
 @@ -135,6 +135,7 @@ enum
