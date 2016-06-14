@@ -3,6 +3,12 @@ From: Richard Russon <rich@flatcap.org>
 Date: Mon, 30 May 2016 03:42:56 +0100
 Subject: [PATCH 05/13] collapse_flagged
 
+# User Fabian Groffen <grobian@gentoo.org>
+# Date 1279824714 -7200
+# Parent  fc9eccb55b576f2b49cdc434034b323445674053
+
+collapse_flagged from http://debian.lpr.ch/Mutt/
+
 ---
  PATCHES     |  1 +
  curs_main.c | 17 +++++++++++++----

@@ -3,6 +3,13 @@ From: Richard Russon <rich@flatcap.org>
 Date: Mon, 30 May 2016 03:41:49 +0100
 Subject: [PATCH 01/13] ncurses-tinfo
 
+# HG changeset patch
+# Parent 68b21962832030db924b0f7188e36d2b6fa1100f
+# User Jeroen Roovers <jer@gentoo.org>
+buildsys: update for separate tinfo library
+
+https://bugs.gentoo.org/show_bug.cgi?id=459260
+
 ---
  configure.ac | 4 ++++
  1 file changed, 4 insertions(+)

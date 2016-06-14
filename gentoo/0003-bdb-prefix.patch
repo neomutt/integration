@@ -3,6 +3,15 @@ From: Richard Russon <rich@flatcap.org>
 Date: Mon, 30 May 2016 03:42:21 +0100
 Subject: [PATCH 03/13] bdb-prefix
 
+# User Fabian Groffen <grobian@gentoo.org>
+# Date 1279821247 -7200
+
+berkely db check is completely broken, but mess with it just enough such
+that it works for Gentoo Prefix
+
+In particular make it NOT find magic libs from random locations, instead
+require to be in given paths.  Add some versions to detect.
+
 ---
  configure.ac | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)

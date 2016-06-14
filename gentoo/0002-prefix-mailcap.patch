@@ -3,6 +3,13 @@ From: Richard Russon <rich@flatcap.org>
 Date: Mon, 30 May 2016 03:42:06 +0100
 Subject: [PATCH 02/13] prefix-mailcap
 
+# User Fabian Groffen <grobian@gentoo.org>
+# Date 1279820983 -7200
+
+Adjust mailcap search path for Prefix (offset installs).  Due to the
+search path addition, should not cause any problems for non-offset
+installs.
+
 ---
  Makefile.am | 2 +-
  init.c      | 2 +-

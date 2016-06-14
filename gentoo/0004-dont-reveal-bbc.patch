@@ -3,6 +3,20 @@ From: Richard Russon <rich@flatcap.org>
 Date: Mon, 30 May 2016 03:42:37 +0100
 Subject: [PATCH 04/13] dont-reveal-bbc
 
+# User Fabian Groffen <grobian@gentoo.org>
+# Date 1279823714 -7200
+# Parent  b4384f634a994a0b9cfc0df036731396909ce850
+
+http://bugs.debian.org/cgi-bin/bugreport.cgi?msg=28;filename=write_bcc.patch.1.
+5.20-2;att=1;bug=467432
+
+originally adapted for Gentoo patchsets, in NeoMutt however, this should
+be identical to debian/0011-debian-specific-467432-write_bcc.patch
+
+additional information:
+http://dev.mutt.org/trac/ticket/3337
+http://bugs.debian.org/467432
+
 ---
  headers.c | 2 +-
  init.h    | 8 +++-----
