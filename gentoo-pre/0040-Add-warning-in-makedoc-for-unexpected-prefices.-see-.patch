@@ -1,0 +1,39 @@
+From 89c8743b9fa58436530f3f512edd4032fb7702f3 Mon Sep 17 00:00:00 2001
+From: Kevin McCarthy <kevin@8t8.us>
+Date: Sun, 5 Jun 2016 18:30:37 -0700
+Subject: [PATCH 40/45] Add warning in makedoc for unexpected prefices. (see
+ #3845)
+
+In case other types get renamed again in the future, add a warning
+message to makedoc.c.
+---
+ doc/makedoc.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/doc/makedoc.c b/doc/makedoc.c
+index fb49af5..ec04e2c 100644
+--- a/doc/makedoc.c
++++ b/doc/makedoc.c
+@@ -499,6 +499,9 @@ static void pretty_default (char *t, size_t l, const char *s, int type)
+     case DT_SORT:
+     {
+       /* heuristic! */
++      if (strncmp (s, "SORT_", 5))
++        fprintf (stderr,
++                 "WARNING: expected prefix of SORT_ for type DT_SORT instead of %s\n", s);
+       strncpy (t, s + 5, l);
+       for (; *t; t++) *t = tolower ((unsigned char) *t);
+       break;
+@@ -506,6 +509,9 @@ static void pretty_default (char *t, size_t l, const char *s, int type)
+     case DT_MAGIC:
+     {
+       /* heuristic! */
++      if (strncmp (s, "MUTT_", 5))
++        fprintf (stderr,
++                 "WARNING: expected prefix of MUTT_ for type DT_MAGIC instead of %s\n", s);
+       strncpy (t, s + 5, l);
+       for (; *t; t++) *t = tolower ((unsigned char) *t);
+       break;
+-- 
+2.8.2
+

@@ -1,4 +1,4 @@
-From 55498391efccdaa08875cffec832ebdc50874a64 Mon Sep 17 00:00:00 2001
+From 29780e1c516e75f47c0885701088429724a9f412 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 15:23:22 +0100
 Subject: [PATCH 18/21] smime-sender
@@ -40,10 +40,10 @@ index a735c69..1be22bc 100644
  set smime_timeout=300
  
 diff --git a/init.h b/init.h
-index cbf3fc0..66e4ea6 100644
+index 54a7753..26e4f33 100644
 --- a/init.h
 +++ b/init.h
-@@ -2947,6 +2947,15 @@ struct option_t MuttVars[] = {
+@@ -2948,6 +2948,15 @@ struct option_t MuttVars[] = {
    ** the \fCshare/examples/mutt/\fP subdirectory which has been installed on
    ** your system. (S/MIME only)
    */

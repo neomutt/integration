@@ -1,4 +1,4 @@
-From d5507c1ea2b01611530a80fe1e609810e277507f Mon Sep 17 00:00:00 2001
+From 715d80c2f9ef2572c982d8b58b7df935dc811855 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Tue, 24 May 2016 17:50:57 +0100
 Subject: [PATCH 10/11] feature: nntp
@@ -1951,7 +1951,7 @@ index 50c2666..b9872d2 100644
  fi
  
 diff --git a/curs_main.c b/curs_main.c
-index 5f07fa3..95e18ee 100644
+index b21e5c2..73b7b5a 100644
 --- a/curs_main.c
 +++ b/curs_main.c
 @@ -22,6 +22,7 @@
@@ -1973,7 +1973,7 @@ index 5f07fa3..95e18ee 100644
  
  #include <ctype.h>
  #include <stdlib.h>
-@@ -600,12 +605,27 @@ static const struct mapping_t IndexHelp[] = {
+@@ -599,12 +604,27 @@ static const struct mapping_t IndexHelp[] = {
    { NULL,	 0 }
  };
  
@@ -2001,7 +2001,7 @@ index 5f07fa3..95e18ee 100644
    int op = OP_NULL;
    int done = 0;                /* controls when to exit the "event" loop */
    int i = 0, j;
-@@ -626,7 +646,11 @@ int mutt_index_menu (void)
+@@ -625,7 +645,11 @@ int mutt_index_menu (void)
    menu->make_entry = index_make_entry;
    menu->color = index_color;
    menu->current = ci_first_message ();
@@ -2014,7 +2014,7 @@ index 5f07fa3..95e18ee 100644
  
    if (!attach_msg)
      mutt_buffy_check(1); /* force the buffy check after we enter the folder */
-@@ -898,6 +922,9 @@ int mutt_index_menu (void)
+@@ -897,6 +921,9 @@ int mutt_index_menu (void)
        mutt_curs_set (1);	/* fallback from the pager */
      }
  
@@ -2024,7 +2024,7 @@ index 5f07fa3..95e18ee 100644
      switch (op)
      {
  
-@@ -948,6 +975,161 @@ int mutt_index_menu (void)
+@@ -947,6 +974,161 @@ int mutt_index_menu (void)
  	menu_current_bottom (menu);
  	break;
  
@@ -2186,7 +2186,7 @@ index 5f07fa3..95e18ee 100644
        case OP_JUMP:
  
  	CHECK_MSGCOUNT;
-@@ -1046,10 +1228,31 @@ int mutt_index_menu (void)
+@@ -1045,10 +1227,31 @@ int mutt_index_menu (void)
  
        case OP_LIMIT_CURRENT_THREAD:
        case OP_MAIN_LIMIT:
@@ -2218,7 +2218,7 @@ index 5f07fa3..95e18ee 100644
  	if (((op == OP_LIMIT_CURRENT_THREAD) && mutt_limit_current_thread(CURHDR))
  	    || ((op == OP_MAIN_LIMIT) && (mutt_pattern_func (M_LIMIT, _("Limit to messages matching: ")) == 0)))
  	{
-@@ -1314,15 +1517,22 @@ int mutt_index_menu (void)
+@@ -1313,15 +1516,22 @@ int mutt_index_menu (void)
  #endif
        case OP_MAIN_CHANGE_FOLDER:
        case OP_MAIN_NEXT_UNREAD_MAILBOX:
@@ -2248,7 +2248,7 @@ index 5f07fa3..95e18ee 100644
            cp = _("Open mailbox in read-only mode");
          else
            cp = _("Open mailbox");
-@@ -1341,6 +1551,22 @@ int mutt_index_menu (void)
+@@ -1340,6 +1550,22 @@ int mutt_index_menu (void)
  	}
  	else
  	{
@@ -2271,7 +2271,7 @@ index 5f07fa3..95e18ee 100644
  	  mutt_buffy (buf, sizeof (buf));
  
  #ifdef USE_SIDEBAR
-@@ -1368,6 +1594,14 @@ int mutt_index_menu (void)
+@@ -1367,6 +1593,14 @@ int mutt_index_menu (void)
  	  }
  	}
  
@@ -2286,7 +2286,7 @@ index 5f07fa3..95e18ee 100644
  	mutt_expand_path (buf, sizeof (buf));
  #ifdef USE_SIDEBAR
  	mutt_sb_set_open_buffy (buf);
-@@ -1420,9 +1654,7 @@ int mutt_index_menu (void)
+@@ -1419,9 +1653,7 @@ int mutt_index_menu (void)
  	CurrentMenu = MENU_MAIN;
  	mutt_folder_hook (buf);
  
@@ -2297,7 +2297,7 @@ index 5f07fa3..95e18ee 100644
  	{
  	  Labels = hash_create(131, 0);
  	  mutt_scan_labels(Context);
-@@ -1431,6 +1663,11 @@ int mutt_index_menu (void)
+@@ -1430,6 +1662,11 @@ int mutt_index_menu (void)
  	else
  	  menu->current = 0;
  
@@ -2309,7 +2309,7 @@ index 5f07fa3..95e18ee 100644
  	mutt_clear_error ();
  	mutt_buffy_check(1); /* force the buffy check after we have changed
  			      the folder */
-@@ -1499,6 +1736,7 @@ int mutt_index_menu (void)
+@@ -1498,6 +1735,7 @@ int mutt_index_menu (void)
  	CHECK_MSGCOUNT;
          CHECK_VISIBLE;
  	CHECK_READONLY;
@@ -2317,7 +2317,7 @@ index 5f07fa3..95e18ee 100644
  
          if ((Sort & SORT_MASK) != SORT_THREADS)
  	  mutt_error _("Threading is not enabled.");
-@@ -1534,7 +1772,7 @@ int mutt_index_menu (void)
+@@ -1533,7 +1771,7 @@ int mutt_index_menu (void)
          CHECK_VISIBLE;
  	CHECK_READONLY;
          /* L10N: CHECK_ACL */
@@ -2326,7 +2326,7 @@ index 5f07fa3..95e18ee 100644
  
          if ((Sort & SORT_MASK) != SORT_THREADS)
  	  mutt_error _("Threading is not enabled.");
-@@ -2171,6 +2409,20 @@ int mutt_index_menu (void)
+@@ -2170,6 +2408,20 @@ int mutt_index_menu (void)
  	}
  	break;
  
@@ -2347,7 +2347,7 @@ index 5f07fa3..95e18ee 100644
        case OP_DISPLAY_ADDRESS:
  
  	CHECK_MSGCOUNT;
-@@ -2392,6 +2644,39 @@ int mutt_index_menu (void)
+@@ -2391,6 +2643,39 @@ int mutt_index_menu (void)
          menu->redraw = REDRAW_FULL;
          break;
  
@@ -3306,7 +3306,7 @@ index 0c37cc4..dcd16bd 100644
      Spoolfile = safe_strdup (p);
    else if ((p = getenv ("MAILDIR")))
 diff --git a/init.h b/init.h
-index 2577434..5da5388 100644
+index 2bd5bdd..07365fd 100644
 --- a/init.h
 +++ b/init.h
 @@ -177,6 +177,20 @@ struct option_t MuttVars[] = {
@@ -3601,7 +3601,7 @@ index 2577434..5da5388 100644
  #ifdef USE_SIDEBAR
    { "sidebar_divider_char", DT_STR, R_BOTH, UL &SidebarDividerChar, UL "|" },
    /*
-@@ -3788,6 +4003,14 @@ struct option_t MuttVars[] = {
+@@ -3789,6 +4004,14 @@ struct option_t MuttVars[] = {
    ** X-Label headers.  You can modify this variable in runtime to accomplish
    ** various kinds of conversion.
    */
@@ -8253,7 +8253,7 @@ index fdeb172..7c62c96 100644
  
    return (PostCount);
 diff --git a/protos.h b/protos.h
-index 3102509..b84dc09 100644
+index fb82955..992d0bb 100644
 --- a/protos.h
 +++ b/protos.h
 @@ -111,6 +111,7 @@ HASH *mutt_make_id_hash (CONTEXT *);

@@ -1,0 +1,418 @@
+From 2754a47a0f09223b29adc5f066640c2c319ec082 Mon Sep 17 00:00:00 2001
+From: Kevin McCarthy <kevin@8t8.us>
+Date: Sat, 4 Jun 2016 11:32:03 -0700
+Subject: [PATCH 32/45] Sidebar clean up: building and drawing logic.
+
+Fix the autoconf/makefile.am changes to be consistent.
+
+Create a global SidebarNeedsRedraw to indicate a redraw is needed,
+instead of putting sb_draw() everywhere in the code.
+
+Create a menu_redraw_sidebar() function and use the REDRAW_SIDEBAR
+flag instead of piggy-backing it inside the index loop.
+
+Fix curs_main.c and pager.c to be a bit cleaner by using the global and
+REDRAW_SIDEBAR.
+
+Start to clean up some of the buffy code, but this needs to refactored
+and fixed.
+---
+ buffy.c     | 28 ++++++++-------------------
+ curs_main.c | 64 +++++++++++++++++++++++++------------------------------------
+ flags.c     | 12 +++++-------
+ globals.h   |  5 ++---
+ keymap.c    |  3 ---
+ menu.c      | 18 ++++++++++++++---
+ mutt_menu.h |  3 +++
+ pager.c     | 17 +++++++++++-----
+ sidebar.c   |  5 +----
+ 9 files changed, 72 insertions(+), 83 deletions(-)
+
+diff --git a/buffy.c b/buffy.c
+index 3da9db9..246bee6 100644
+--- a/buffy.c
++++ b/buffy.c
+@@ -467,7 +467,6 @@ buffy_maildir_update_dir (BUFFY *mailbox, const char *dir)
+   DIR *dirp = NULL;
+   struct dirent *de = NULL;
+   char *p = NULL;
+-  int read;
+ 
+   snprintf (path, sizeof (path), "%s/%s", mailbox->path, dir);
+ 
+@@ -484,20 +483,18 @@ buffy_maildir_update_dir (BUFFY *mailbox, const char *dir)
+       continue;
+ 
+     /* Matches maildir_parse_flags logic */
+-    read = 0;
+     mailbox->msg_count++;
+     p = strstr (de->d_name, ":2,");
+     if (p)
+     {
+       p += 3;
+-      if (strchr (p, 'S'))
+-        read = 1;
++      if (strchr (p, 'T'))
++        continue;
++      if (!strchr (p, 'S'))
++        mailbox->msg_unread++;
+       if (strchr (p, 'F'))
+         mailbox->msg_flagged++;
+     }
+-    if (!read) {
+-      mailbox->msg_unread++;
+-    }
+   }
+ 
+   closedir (dirp);
+@@ -527,9 +524,6 @@ buffy_maildir_update (BUFFY *mailbox)
+ 	buffy_maildir_update_dir (mailbox, "cur");
+ 
+ 	mailbox->sb_last_checked = time (NULL);
+-
+-	/* make sure the updates are actually put on screen */
+-	mutt_sb_draw();
+ }
+ 
+ #endif
+@@ -598,9 +592,6 @@ buffy_mbox_update (BUFFY *mailbox, struct stat *sb)
+     mailbox->sb_last_checked = time (NULL);
+     mx_close_mailbox (ctx, 0);
+   }
+-
+-  /* make sure the updates are actually put on screen */
+-  mutt_sb_draw();
+ }
+ #endif
+ 
+@@ -755,15 +746,12 @@ int mutt_buffy_check (int force)
+   }
+ 
+ #ifdef USE_SIDEBAR
+-  if (force) {
+-    for (tmp = Incoming; tmp; tmp = tmp->next)
+-      buffy_check(tmp, &contex_sb);
++  if (force)
++  {
++    SidebarNeedsRedraw = 1;
++    mutt_sb_set_update_time();
+   }
+-#else
+-  for (tmp = Incoming; tmp; tmp = tmp->next)
+-    buffy_check(tmp, &contex_sb);
+ #endif
+-
+ #ifdef USE_NOTMUCH
+   for (tmp = VirtIncoming; tmp; tmp = tmp->next)
+     buffy_check(tmp, &contex_sb);
+diff --git a/curs_main.c b/curs_main.c
+index 54b36b4..fa14fff 100644
+--- a/curs_main.c
++++ b/curs_main.c
+@@ -824,31 +824,24 @@ int mutt_index_menu (void)
+        do_buffy_notify = 1;
+     }
+ 
+-#ifdef USE_SIDEBAR
+-    if (option (OPTSIDEBAR))
+-        menu->redraw |= REDRAW_SIDEBAR;
+-#endif
+-
+     if (op != -1)
+       mutt_curs_set (0);
+ 
+     if (menu->redraw & REDRAW_FULL)
+     {
+       menu_redraw_full (menu);
+-#ifdef USE_SIDEBAR
+-      mutt_sb_draw();
+-#endif
+       mutt_show_error ();
+     }
+-#ifdef USE_SIDEBAR
+-    else if (menu->redraw & REDRAW_SIDEBAR) {
+-      mutt_sb_draw();
+-      menu->redraw &= ~REDRAW_SIDEBAR;
+-    }
+-#endif
+ 
+     if (menu->menu == MENU_MAIN)
+     {
++#ifdef USE_SIDEBAR
++      if (menu->redraw & REDRAW_SIDEBAR || SidebarNeedsRedraw)
++      {
++        mutt_sb_set_buffystats (Context);
++        menu_redraw_sidebar (menu);
++      }
++#endif
+       if (Context && Context->hdrs && !(menu->current >= Context->vcount))
+       {
+ 	menu_check_recenter (menu);
+@@ -869,9 +862,6 @@ int mutt_index_menu (void)
+ 	menu_status_line (buf, sizeof (buf), menu, NONULL (Status));
+         mutt_window_move (MuttStatusWindow, 0, 0);
+ 	SETCOLOR (MT_COLOR_STATUS);
+-#ifdef USE_SIDEBAR
+-	mutt_sb_set_buffystats (Context);
+-#endif
+ 	mutt_draw_statusline (MuttStatusWindow->cols, buf);
+ 	NORMAL_COLOR;
+ 	menu->redraw &= ~REDRAW_STATUS;
+@@ -1517,9 +1507,6 @@ int mutt_index_menu (void)
+ 	  break;
+ 
+ 	CHECK_MSGCOUNT;
+-#ifdef USE_SIDEBAR
+-	CHECK_VISIBLE;
+-#endif
+ 	CHECK_READONLY;
+ 	{
+ 	  int oldvcount = Context->vcount;
+@@ -1773,6 +1760,15 @@ int mutt_index_menu (void)
+ 	  }
+ 	}
+ #endif
++#ifdef USE_SIDEBAR
++        else if (op == OP_SIDEBAR_OPEN)
++        {
++          const char *path = mutt_sb_get_highlight();
++          if (!path || !*path)
++            break;
++          strncpy (buf, path, sizeof (buf));
++        }
++#endif
+ 	else
+ 	{
+ #ifdef USE_NNTP
+@@ -1793,24 +1789,16 @@ int mutt_index_menu (void)
+ #endif
+ 	  mutt_buffy (buf, sizeof (buf));
+ 
+-#ifdef USE_SIDEBAR
+-	  if (op == OP_SIDEBAR_OPEN) {
+-	    const char *path = mutt_sb_get_highlight();
+-	    if (!path)
+-	      break;
+-	    strncpy (buf, path, sizeof (buf));
+-	  } else
+-#endif
+-	  if (mutt_enter_fname (cp, buf, sizeof (buf), &menu->redraw, 1) == -1)
+-	  {
+-	    if (menu->menu == MENU_PAGER)
+-	    {
+-	      op = OP_DISPLAY_MESSAGE;
+-	      continue;
+-	    }
+-	    else
+-	      break;
+-	  }
++          if (mutt_enter_fname (cp, buf, sizeof (buf), &menu->redraw, 1) == -1)
++          {
++            if (menu->menu == MENU_PAGER)
++            {
++              op = OP_DISPLAY_MESSAGE;
++              continue;
++            }
++            else
++              break;
++          }
+ 	  if (!buf[0])
+ 	  {
+             mutt_window_clearline (MuttMessageWindow, 0);
+diff --git a/flags.c b/flags.c
+index 9acf21a..9c987c2 100644
+--- a/flags.c
++++ b/flags.c
+@@ -25,10 +25,6 @@
+ #include "sort.h"
+ #include "mx.h"
+ 
+-#ifdef USE_SIDEBAR
+-#include "sidebar.h"
+-#endif
+-
+ void _mutt_set_flag (CONTEXT *ctx, HEADER *h, int flag, int bf, int upd_ctx)
+ {
+   int changed = h->changed;
+@@ -286,7 +282,12 @@ void _mutt_set_flag (CONTEXT *ctx, HEADER *h, int flag, int bf, int upd_ctx)
+   }
+ 
+   if (update)
++  {
+     mutt_set_header_color(ctx, h);
++#ifdef USE_SIDEBAR
++    SidebarNeedsRedraw = 1;
++#endif
++  }
+ 
+   /* if the message status has changed, we need to invalidate the cached
+    * search results so that any future search will match the current status
+@@ -294,9 +295,6 @@ void _mutt_set_flag (CONTEXT *ctx, HEADER *h, int flag, int bf, int upd_ctx)
+    */
+   if (h->searched && (changed != h->changed || deleted != ctx->deleted || tagged != ctx->tagged || flagged != ctx->flagged))
+     h->searched = 0;
+-#ifdef USE_SIDEBAR
+-  mutt_sb_draw();
+-#endif
+ }
+ 
+ void mutt_tag_set_flag (int flag, int bf)
+diff --git a/globals.h b/globals.h
+index b44a08a..5cae73f 100644
+--- a/globals.h
++++ b/globals.h
+@@ -243,12 +243,11 @@ WHERE short ScoreThresholdDelete;
+ WHERE short ScoreThresholdRead;
+ WHERE short ScoreThresholdFlag;
+ 
+-/* This isn't excluded from the build because it's too entwined in the code.
+- * For now. */
+-WHERE short SidebarWidth;
+ #ifdef USE_SIDEBAR
++WHERE short SidebarWidth;
+ WHERE short SidebarRefreshTime;
+ WHERE LIST *SidebarWhitelist INITVAL(0);
++WHERE int SidebarNeedsRedraw INITVAL (0);
+ #endif
+ 
+ #ifdef USE_IMAP
+diff --git a/keymap.c b/keymap.c
+index 4bbc4d9..ae153a4 100644
+--- a/keymap.c
++++ b/keymap.c
+@@ -451,9 +451,6 @@ int km_dokey (int menu)
+     }
+ #endif
+ 
+-    /* update sidebar stats */
+-    mutt_buffy_check(0);
+-
+     timeout (i * 1000);
+     tmp = mutt_getch();
+     timeout (-1);
+diff --git a/menu.c b/menu.c
+index b4a3947..1d07f8a 100644
+--- a/menu.c
++++ b/menu.c
+@@ -276,6 +276,9 @@ void menu_redraw_full (MUTTMENU *menu)
+   mutt_show_error ();
+ 
+   menu->redraw = REDRAW_INDEX | REDRAW_STATUS;
++#ifdef USE_SIDEBAR
++  menu->redraw |= REDRAW_SIDEBAR;
++#endif
+ }
+ 
+ void menu_redraw_status (MUTTMENU *menu)
+@@ -290,6 +293,14 @@ void menu_redraw_status (MUTTMENU *menu)
+   menu->redraw &= ~REDRAW_STATUS;
+ }
+ 
++#ifdef USE_SIDEBAR
++void menu_redraw_sidebar (MUTTMENU *menu)
++{
++  SidebarNeedsRedraw = 0;
++  mutt_sb_draw ();
++}
++#endif
++
+ void menu_redraw_index (MUTTMENU *menu)
+ {
+   char buf[LONG_STRING];
+@@ -297,9 +308,6 @@ void menu_redraw_index (MUTTMENU *menu)
+   int do_color;
+   int attr;
+ 
+-#ifdef USE_SIDEBAR
+-  mutt_sb_draw();
+-#endif
+   for (i = menu->top; i < menu->top + menu->pagelen; i++)
+   {
+     if (i < menu->max)
+@@ -902,6 +910,10 @@ int menu_redraw (MUTTMENU *menu)
+   
+   if (menu->redraw & REDRAW_STATUS)
+     menu_redraw_status (menu);
++#ifdef USE_SIDEBAR
++  if (menu->redraw & REDRAW_SIDEBAR || SidebarNeedsRedraw)
++    menu_redraw_sidebar (menu);
++#endif
+   if (menu->redraw & REDRAW_INDEX)
+     menu_redraw_index (menu);
+   else if (menu->redraw & (REDRAW_MOTION | REDRAW_MOTION_RESYNCH))
+diff --git a/mutt_menu.h b/mutt_menu.h
+index d728f57..d5c97d0 100644
+--- a/mutt_menu.h
++++ b/mutt_menu.h
+@@ -90,6 +90,9 @@ typedef struct menu_t
+ void mutt_menu_init (void);
+ void menu_jump (MUTTMENU *);
+ void menu_redraw_full (MUTTMENU *);
++#ifdef USE_SIDEBAR
++void menu_redraw_sidebar (MUTTMENU *);
++#endif
+ void menu_redraw_index (MUTTMENU *);
+ void menu_redraw_status (MUTTMENU *);
+ void menu_redraw_motion (MUTTMENU *);
+diff --git a/pager.c b/pager.c
+index ff049dc..14620db 100644
+--- a/pager.c
++++ b/pager.c
+@@ -1787,6 +1787,9 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
+       }
+ 
+       redraw |= REDRAW_BODY | REDRAW_INDEX | REDRAW_STATUS;
++#ifdef USE_SIDEBAR
++      redraw |= REDRAW_SIDEBAR;
++#endif
+       mutt_show_error ();
+     }
+ 
+@@ -1805,6 +1808,14 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
+ 	}
+     }
+ 
++#ifdef USE_SIDEBAR
++    if ((redraw & REDRAW_SIDEBAR) || SidebarNeedsRedraw)
++    {
++      SidebarNeedsRedraw = 0;
++      mutt_sb_draw ();
++    }
++#endif
++
+     if ((redraw & REDRAW_BODY) || topline != oldtopline)
+     {
+       do {
+@@ -2575,12 +2586,8 @@ search_next:
+ 	  ch = 0;
+ 	}
+ 
+-	if (option (OPTFORCEREDRAWPAGER)) {
++	if (option (OPTFORCEREDRAWPAGER))
+ 	  redraw = REDRAW_FULL;
+-#ifdef USE_SIDEBAR
+-	  mutt_sb_draw();
+-#endif
+-	}
+ 	unset_option (OPTFORCEREDRAWINDEX);
+ 	unset_option (OPTFORCEREDRAWPAGER);
+ 	break;
+diff --git a/sidebar.c b/sidebar.c
+index 66aece6..0782cdb 100644
+--- a/sidebar.c
++++ b/sidebar.c
+@@ -898,10 +898,7 @@ void mutt_sb_change_mailbox (int op)
+     default:
+       return;
+   }
+-
+-  /* We can change folder even if the sidebar is hidden */
+-  if (option (OPTSIDEBAR))
+-    mutt_sb_draw();
++  SidebarNeedsRedraw = 1;
+ }
+ 
+ /**
+-- 
+2.8.2
+

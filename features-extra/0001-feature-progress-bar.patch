@@ -1,4 +1,4 @@
-From a202c641c734e113bf743bccffe236fca1be0982 Mon Sep 17 00:00:00 2001
+From f7f20c785df0314bbab53ddd63b2439a18952bcf Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Tue, 24 May 2016 17:17:59 +0100
 Subject: [PATCH 01/11] feature: progress bar

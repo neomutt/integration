@@ -1,4 +1,4 @@
-From 3e96adb72b110ba9ffd8b8f11ee180b6c556a40d Mon Sep 17 00:00:00 2001
+From 0ccfcd0a956267220edb3ea440d60c8a613b6640 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Mon, 30 May 2016 03:56:57 +0100
 Subject: [PATCH 12/13] pgp-display-signature
@@ -21,7 +21,7 @@ index a0c7a0a..98ae520 100644
  dgc.subjrx
  fg.change_folder_next
 diff --git a/init.h b/init.h
-index c2e3580..090d160 100644
+index b8a312b..be93b6f 100644
 --- a/init.h
 +++ b/init.h
 @@ -2355,6 +2355,14 @@ struct option_t MuttVars[] = {
@@ -40,7 +40,7 @@ index c2e3580..090d160 100644
    /*
    ** .pp
 diff --git a/mutt.h b/mutt.h
-index 4dc9d85..8992baf 100644
+index fbd6aaf..2987ba9 100644
 --- a/mutt.h
 +++ b/mutt.h
 @@ -555,6 +555,7 @@ enum

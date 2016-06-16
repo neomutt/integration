@@ -1,7 +1,7 @@
-From 8d6019c779c6a56b3a27095deb109289e2a1cc58 Mon Sep 17 00:00:00 2001
+From 94420826e524e6ebf25cd49b2ec79a3962258083 Mon Sep 17 00:00:00 2001
 From: Vincent Lefevre <vincent@vinc17.net>
 Date: Mon, 11 Apr 2016 21:17:51 +0200
-Subject: [PATCH 08/31] Updated French translation.
+Subject: [PATCH 08/45] Updated French translation.
 
 ---
  po/fr.po | 74 +++++++++++++++++++++++++++++++++++-----------------------------

@@ -1,4 +1,4 @@
-From f6df9e0ed1d69550e9bcb7ea4abc8a817096bcf4 Mon Sep 17 00:00:00 2001
+From f63326dba5c7738319663d863c47caa3859e945d Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 6 May 2016 00:24:10 +0100
 Subject: [PATCH 20/22] upstream/809802_timeout_hook
@@ -12,10 +12,10 @@ Subject: [PATCH 20/22] upstream/809802_timeout_hook
  5 files changed, 37 insertions(+), 5 deletions(-)
 
 diff --git a/curs_main.c b/curs_main.c
-index 4e8208b..000feaa 100644
+index a5f02cc..7335188 100644
 --- a/curs_main.c
 +++ b/curs_main.c
-@@ -931,8 +931,10 @@ int mutt_index_menu (void)
+@@ -930,8 +930,10 @@ int mutt_index_menu (void)
  
        dprint(4, (debugfile, "mutt_index_menu[%d]: Got op %d\n", __LINE__, op));
  
@@ -75,10 +75,10 @@ index 98c2f26..329fb47 100644
  void mutt_account_hook (const char* url)
  {
 diff --git a/init.h b/init.h
-index 1799483..cd46a8b 100644
+index 5e387a0..b61a07e 100644
 --- a/init.h
 +++ b/init.h
-@@ -4309,6 +4309,7 @@ const struct command_t Commands[] = {
+@@ -4310,6 +4310,7 @@ const struct command_t Commands[] = {
    { "spam",		parse_spam_list,	M_SPAM },
    { "nospam",		parse_spam_list,	M_NOSPAM },
    { "subscribe",	parse_subscribe,	0 },
@@ -106,7 +106,7 @@ index aa6a2ee..ec709c1 100644
  
  /* tree characters for linearize_tree and print_enriched_string */
 diff --git a/protos.h b/protos.h
-index 2065d07..21a3b3f 100644
+index 5c898f4..1a63eeb 100644
 --- a/protos.h
 +++ b/protos.h
 @@ -153,6 +153,7 @@ const char *mutt_get_name (ADDRESS *);

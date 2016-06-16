@@ -1,4 +1,4 @@
-From 72a19cb5ff1caf459a2b58c681fcef7910627888 Mon Sep 17 00:00:00 2001
+From 8de7af63ae328bcae4edf6cce18564cc4a5437fa Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Mon, 30 May 2016 03:42:37 +0100
 Subject: [PATCH 04/13] dont-reveal-bbc
@@ -40,10 +40,10 @@ index 07bc983..d546eb8 100644
  
    /* now copy the body of the message. */
 diff --git a/init.h b/init.h
-index e2001f6..c6a2c43 100644
+index b6f4aba..ef3518d 100644
 --- a/init.h
 +++ b/init.h
-@@ -4049,11 +4049,9 @@ struct option_t MuttVars[] = {
+@@ -4050,11 +4050,9 @@ struct option_t MuttVars[] = {
    { "write_bcc",	DT_BOOL, R_NONE, OPTWRITEBCC, 1},
    /*
    ** .pp
@@ -72,7 +72,7 @@ index 85acc90..316425a 100644
            fprintf (fout, "X-Mutt-Resume-Draft: 1\n");
          fputc ('\n', fout);
 diff --git a/protos.h b/protos.h
-index 71a0cd7..6fe0f2d 100644
+index bc03cb2..9606d03 100644
 --- a/protos.h
 +++ b/protos.h
 @@ -387,7 +387,7 @@ int mutt_write_fcc (const char *path, HEADER *hdr, const char *msgid, int, char

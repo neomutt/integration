@@ -1,7 +1,7 @@
-From b493c54f53624acb4d59c06297d7b04de4d6549d Mon Sep 17 00:00:00 2001
+From 3313a118c87d8e8c0e1561d9d1b6926afa1dffe5 Mon Sep 17 00:00:00 2001
 From: Kevin McCarthy <kevin@8t8.us>
 Date: Sat, 30 Apr 2016 10:50:43 -0700
-Subject: [PATCH 26/31] Fix pager layout when $status_on_top with no
+Subject: [PATCH 26/45] Fix pager layout when $status_on_top with no
  mini-index. (closes #3836)
 
 The pager_window->row_offset should only be adjusted when we have a

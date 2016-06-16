@@ -1,4 +1,4 @@
-From 0638e30b5d7e88bf629f416061cade677cf2efbe Mon Sep 17 00:00:00 2001
+From 15e31679b51e453c99880b5e5dab19668527edde Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Tue, 24 May 2016 17:28:23 +0100
 Subject: [PATCH 06/11] feature: quasi-delete
@@ -96,10 +96,10 @@ index 0000000..2a47346
 +    * Richard Russon <rich@flatcap.org>
 +
 diff --git a/curs_main.c b/curs_main.c
-index 0b660ea..56821e9 100644
+index 51a0dd3..dc1b64b 100644
 --- a/curs_main.c
 +++ b/curs_main.c
-@@ -1293,6 +1293,20 @@ int mutt_index_menu (void)
+@@ -1292,6 +1292,20 @@ int mutt_index_menu (void)
  	  menu->redraw = REDRAW_FULL;
  	break;
  

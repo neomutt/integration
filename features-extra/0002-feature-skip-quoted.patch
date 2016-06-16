@@ -1,4 +1,4 @@
-From 704c624598267226af34db127c6a7fa8e00efe02 Mon Sep 17 00:00:00 2001
+From 8ba65a5f504d095a54c30720a7fa41d766a82ccd Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Tue, 24 May 2016 17:19:14 +0100
 Subject: [PATCH 02/11] feature: skip-quoted
@@ -238,10 +238,10 @@ index c4a77ca..94640b3 100644
  WHERE short Timeout;
  WHERE short Wrap;
 diff --git a/init.h b/init.h
-index 71d170c..b46a3ea 100644
+index 0af3a8f..9e6d945 100644
 --- a/init.h
 +++ b/init.h
-@@ -2849,6 +2849,12 @@ struct option_t MuttVars[] = {
+@@ -2850,6 +2850,12 @@ struct option_t MuttVars[] = {
    ** replacing ``%s'' with the supplied string.
    ** For the default value, ``joe'' would be expanded to: ``~f joe | ~s joe''.
    */

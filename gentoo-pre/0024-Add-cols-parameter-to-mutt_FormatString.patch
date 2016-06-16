@@ -1,7 +1,7 @@
-From 201d2420b175f02989fa59327d857dd90bc3befb Mon Sep 17 00:00:00 2001
+From 063ca4849fb0ddb5813b6380084df607db765f18 Mon Sep 17 00:00:00 2001
 From: Kevin McCarthy <kevin@8t8.us>
 Date: Wed, 27 Apr 2016 17:56:59 -0700
-Subject: [PATCH 24/31] Add cols parameter to mutt_FormatString()
+Subject: [PATCH 24/45] Add cols parameter to mutt_FormatString()
 
 Continuing with the conversion to using windows for screen drawing,
 mutt_FormatString() was directly using COLS for right justification
@@ -26,10 +26,10 @@ too, as many of them call mutt_FormatString() back.
  recvattach.c  |  7 ++++---
  remailer.c    |  7 ++++---
  sendlib.c     |  2 +-
- sidebar.c     |  7 ++++---
+ sidebar.c     |  8 ++++----
  smime.c       |  7 ++++---
  status.c      | 14 +++++++-------
- 19 files changed, 88 insertions(+), 77 deletions(-)
+ 19 files changed, 88 insertions(+), 78 deletions(-)
 
 diff --git a/addrbook.c b/addrbook.c
 index 8767a00..aa844f4 100644
@@ -496,7 +496,7 @@ index 80bd7de..cdaa036 100644
  }
  
 diff --git a/protos.h b/protos.h
-index 55d6598..79d877b 100644
+index 99abeeb..4d5b271 100644
 --- a/protos.h
 +++ b/protos.h
 @@ -72,9 +72,9 @@ int _mutt_traverse_thread (CONTEXT *ctx, HEADER *hdr, int flag);
@@ -631,7 +631,7 @@ index 1a2cf89..cbd04dd 100644
      {
        i = nntp_post (msg);
 diff --git a/sidebar.c b/sidebar.c
-index 9500390..bdddefe 100644
+index f1cdd11..50f49e6 100644
 --- a/sidebar.c
 +++ b/sidebar.c
 @@ -149,6 +149,7 @@ static BUFFY *find_prev_new (int wrap)
@@ -642,7 +642,7 @@ index 9500390..bdddefe 100644
   * @op:          printf-like operator, e.g. 'B'
   * @src:         printf-like format string
   * @prefix:      Field formatting string, UNUSED
-@@ -164,7 +165,7 @@ static BUFFY *find_prev_new (int wrap)
+@@ -165,7 +166,7 @@ static BUFFY *find_prev_new (int wrap)
   *
   * Returns: src (unchanged)
   */
@@ -651,7 +651,7 @@ index 9500390..bdddefe 100644
                                   const char *src, const char *prefix, const char *ifstring,
                                   const char *elsestring, unsigned long data, format_flag flags)
  {
-@@ -267,9 +268,9 @@ static const char *cb_format_str(char *dest, size_t destlen, size_t col, char op
+@@ -278,9 +279,9 @@ static const char *cb_format_str(char *dest, size_t destlen, size_t col, char op
    }
  
    if (optional)
@@ -663,6 +663,14 @@ index 9500390..bdddefe 100644
  
    /* We return the format string, unchanged */
    return src;
+@@ -799,7 +800,6 @@ void mutt_sb_draw (void)
+ 
+   if (!get_incoming())
+   {
+-    int w = MIN(COLS, (SidebarWidth - div_width));
+     fill_empty_space (0, num_rows, SidebarWidth - div_width);
+     return;
+   }
 diff --git a/smime.c b/smime.c
 index 7f9a8b5..897c9e0 100644
 --- a/smime.c

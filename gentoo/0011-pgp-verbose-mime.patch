@@ -1,4 +1,4 @@
-From aac8e830a8eb47469ba25fb9b857b0c25fbea330 Mon Sep 17 00:00:00 2001
+From 1f597bb9297f7a06a7bd202b0d38d356d53ea0a7 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Mon, 30 May 2016 03:56:38 +0100
 Subject: [PATCH 11/13] pgp-verbose-mime
@@ -20,10 +20,10 @@ index fedec29..a0c7a0a 100644
  fg.change_folder_next
  vvv.quote
 diff --git a/globals.h b/globals.h
-index 32311bd..ec0ebd8 100644
+index 4329184..22d19ad 100644
 --- a/globals.h
 +++ b/globals.h
-@@ -273,6 +273,8 @@ WHERE REGEXP PgpDecryptionOkay;
+@@ -272,6 +272,8 @@ WHERE REGEXP PgpDecryptionOkay;
  WHERE char *PgpSignAs;
  WHERE short PgpTimeout;
  WHERE char *PgpEntryFormat;
@@ -33,10 +33,10 @@ index 32311bd..ec0ebd8 100644
  WHERE char *PgpDecodeCommand;
  WHERE char *PgpVerifyCommand;
 diff --git a/init.h b/init.h
-index e292e6d..c2e3580 100644
+index 172bcc2..b8a312b 100644
 --- a/init.h
 +++ b/init.h
-@@ -3198,6 +3198,18 @@ struct option_t MuttVars[] = {
+@@ -3199,6 +3199,18 @@ struct option_t MuttVars[] = {
    ** a line quoted text if it also matches $$smileys. This mostly
    ** happens at the beginning of a line.
    */

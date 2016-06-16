@@ -1,4 +1,4 @@
-From 64521615520e6946db9013b7d485445c490fbc55 Mon Sep 17 00:00:00 2001
+From bbd53130b548af5827be33b07489f10dfe3c8b96 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Tue, 24 May 2016 17:05:22 +0100
 Subject: [PATCH 5/7] feature: conditional dates

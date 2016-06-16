@@ -1,7 +1,7 @@
-From d67298d16855aa0f5e83c0878f05a8cd4f6d452d Mon Sep 17 00:00:00 2001
+From 7d71a71bb13593ceb01775cd740f54e119285fa5 Mon Sep 17 00:00:00 2001
 From: Kevin McCarthy <kevin@8t8.us>
 Date: Wed, 27 Apr 2016 17:56:52 -0700
-Subject: [PATCH 16/31] Modify the curs_lib.c to use windows.
+Subject: [PATCH 16/45] Modify the curs_lib.c to use windows.
 
 This changes some of the "prompting" routines to use the MuttMessageWindow.
 ---
@@ -9,7 +9,7 @@ This changes some of the "prompting" routines to use the MuttMessageWindow.
  1 file changed, 16 insertions(+), 16 deletions(-)
 
 diff --git a/curs_lib.c b/curs_lib.c
-index 768b755..cc4a82e 100644
+index 786814f..d9da6f4 100644
 --- a/curs_lib.c
 +++ b/curs_lib.c
 @@ -164,7 +164,7 @@ int _mutt_get_field (const char *field, char *buf, size_t buflen, int complete,

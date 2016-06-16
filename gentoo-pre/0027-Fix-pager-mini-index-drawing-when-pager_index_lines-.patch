@@ -1,7 +1,7 @@
-From d268ec86b9ac49c99f0bf0fba413a3a250339d5a Mon Sep 17 00:00:00 2001
+From a006d7a6cfacc88772951d148496284da3c95cf6 Mon Sep 17 00:00:00 2001
 From: Kevin McCarthy <kevin@8t8.us>
 Date: Sat, 30 Apr 2016 13:05:43 -0700
-Subject: [PATCH 27/31] Fix pager mini-index drawing when $pager_index_lines =
+Subject: [PATCH 27/45] Fix pager mini-index drawing when $pager_index_lines =
  1 and $status_on_top.
 
 When $pager_index_lines is 1, there is room for the index status line,

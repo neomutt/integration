@@ -1,7 +1,7 @@
-From c97720c761af791683c18fc69f729ba78b780fd7 Mon Sep 17 00:00:00 2001
+From 454d687c6d2d019fb70980a26bd9b50d94aebd6a Mon Sep 17 00:00:00 2001
 From: Kevin McCarthy <kevin@8t8.us>
 Date: Wed, 27 Apr 2016 17:56:58 -0700
-Subject: [PATCH 23/31] Fix remaining direct usages of COLS/LINES to use mutt
+Subject: [PATCH 23/45] Fix remaining direct usages of COLS/LINES to use mutt
  window functions.
 
 Most of these were just message update/clearing.
@@ -27,10 +27,10 @@ Most of these were just message update/clearing.
  18 files changed, 67 insertions(+), 184 deletions(-)
 
 diff --git a/buffy.c b/buffy.c
-index 4dc0785..6471b26 100644
+index 8c8a018..87e7d44 100644
 --- a/buffy.c
 +++ b/buffy.c
-@@ -787,7 +787,8 @@ int mutt_buffy_list (void)
+@@ -794,7 +794,8 @@ int mutt_buffy_list (void)
      strfcpy (path, tmp->path, sizeof (path));
      mutt_pretty_mailbox (path, sizeof (path));
      
@@ -82,10 +82,10 @@ index dd067d5..191b4be 100644
        fflush (stdout);
        if (mutt_system (buf) != 0 || option (OPTWAITKEY))
 diff --git a/curs_main.c b/curs_main.c
-index 5dd53e8..dc0c175 100644
+index 24e4791..f56ae3b 100644
 --- a/curs_main.c
 +++ b/curs_main.c
-@@ -1769,7 +1769,7 @@ int mutt_index_menu (void)
+@@ -1768,7 +1768,7 @@ int mutt_index_menu (void)
  	  mutt_enter_vfolder (cp, buf, sizeof (buf), &menu->redraw, 1);
  	  if (!buf[0])
  	  {
@@ -94,7 +94,7 @@ index 5dd53e8..dc0c175 100644
  	    break;
  	  }
  	}
-@@ -2966,6 +2966,7 @@ int mutt_index_menu (void)
+@@ -2965,6 +2965,7 @@ int mutt_index_menu (void)
  
        case OP_SIDEBAR_TOGGLE_VISIBLE:
  	toggle_option (OPTSIDEBAR);
@@ -218,10 +218,10 @@ index 64d3dcf..90240de 100644
    }
  
 diff --git a/init.h b/init.h
-index 0dbaead..113d8ad 100644
+index 6cdbcc1..879081c 100644
 --- a/init.h
 +++ b/init.h
-@@ -3088,7 +3088,7 @@ struct option_t MuttVars[] = {
+@@ -3089,7 +3089,7 @@ struct option_t MuttVars[] = {
    ** You may optionally use the ``reverse-'' prefix to specify reverse sorting
    ** order (example: ``\fCset sort_browser=reverse-date\fP'').
    */
@@ -230,7 +230,7 @@ index 0dbaead..113d8ad 100644
    /*
    ** .pp
    ** This specifies whether or not to show sidebar. The sidebar shows a list of
-@@ -3096,7 +3096,7 @@ struct option_t MuttVars[] = {
+@@ -3097,7 +3097,7 @@ struct option_t MuttVars[] = {
    ** .pp
    ** \fBSee also:\fP $$sidebar_format, $$sidebar_width
    */
@@ -411,7 +411,7 @@ index ccaea8a..1a2cf89 100644
    if (tag)
    {
 diff --git a/sidebar.c b/sidebar.c
-index 823b939..9500390 100644
+index e46682d..f1cdd11 100644
 --- a/sidebar.c
 +++ b/sidebar.c
 @@ -30,8 +30,6 @@
@@ -423,7 +423,7 @@ index 823b939..9500390 100644
  static short  PreviousSort;	/* sidebar_sort_method */
  static time_t LastRefresh;	/* Time of last refresh */
  
-@@ -283,9 +281,7 @@ static const char *cb_format_str(char *dest, size_t destlen, size_t col, char op
+@@ -294,9 +292,7 @@ static const char *cb_format_str(char *dest, size_t destlen, size_t col, char op
   * @buflen:  Buffer length
   * @width:   Desired width in screen cells
   * @box:     Mailbox name
@@ -434,7 +434,7 @@ index 823b939..9500390 100644
   *
   * Take all the relevant mailbox data and the desired screen width and then get
   * mutt_FormatString to do the actual work. mutt_FormatString will callback to
-@@ -302,11 +298,7 @@ static void make_sidebar_entry (char *buf, unsigned int buflen, int width, char
+@@ -313,11 +309,7 @@ static void make_sidebar_entry (char *buf, unsigned int buflen, int width, char
    sbe.buffy = b;
    strfcpy (sbe.box, box, sizeof (sbe.box));
  
@@ -447,7 +447,7 @@ index 823b939..9500390 100644
  
    /* Force string to be exactly the right width */
    int w = mutt_strwidth (buf);
-@@ -574,68 +566,9 @@ static int prepare_sidebar (int page_size)
+@@ -585,68 +577,9 @@ static int prepare_sidebar (int page_size)
  }
  
  /**
@@ -518,7 +518,7 @@ index 823b939..9500390 100644
   *
   * Draw a divider using characters from the config option "sidebar_divider_char".
   * This can be an ASCII or Unicode character.  First we calculate this
-@@ -647,7 +580,7 @@ visible (void)
+@@ -658,7 +591,7 @@ visible (void)
   *	0:  Error: 0 width character
   *	n:  Success: character occupies n screen columns
   */
@@ -527,7 +527,7 @@ index 823b939..9500390 100644
  {
    /* Calculate the width of the delimiter in screen cells */
    int delim_len = mutt_strwidth (SidebarDividerChar);
-@@ -655,18 +588,15 @@ static int draw_divider (int first_row, int num_rows)
+@@ -666,18 +599,15 @@ static int draw_divider (int first_row, int num_rows)
    if (delim_len < 1)
      return delim_len;
  
@@ -548,7 +548,7 @@ index 823b939..9500390 100644
      addstr (NONULL(SidebarDividerChar));
    }
  
-@@ -675,7 +605,7 @@ static int draw_divider (int first_row, int num_rows)
+@@ -686,7 +616,7 @@ static int draw_divider (int first_row, int num_rows)
  
  /**
   * fill_empty_space - Wipe the remaining Sidebar space
@@ -557,7 +557,7 @@ index 823b939..9500390 100644
   * @num_rows:   Number of rows to fill
   * @width:      Width of the Sidebar (minus the divider)
   *
-@@ -689,17 +619,17 @@ static void fill_empty_space (int first_row, int num_rows, int width)
+@@ -700,17 +630,17 @@ static void fill_empty_space (int first_row, int num_rows, int width)
    int r;
    for (r = 0; r < num_rows; r++)
    {
@@ -580,7 +580,7 @@ index 823b939..9500390 100644
   * @div_width:  Width in screen characters taken by the divider
   *
   * Display a list of mailboxes in a panel on the left.  What's displayed will
-@@ -717,13 +647,13 @@ static void fill_empty_space (int first_row, int num_rows, int width)
+@@ -728,13 +658,13 @@ static void fill_empty_space (int first_row, int num_rows, int width)
   * "sidebar_indent_string" and sorted: "sidebar_sort_method".  Finally, they're
   * trimmed to fit the available space.
   */
@@ -596,7 +596,7 @@ index 823b939..9500390 100644
    int row = 0;
    for (b = TopBuffy; b && (row < num_rows); b = b->next)
    {
-@@ -749,7 +679,7 @@ static void draw_sidebar (int first_row, int num_rows, int div_width)
+@@ -760,7 +690,7 @@ static void draw_sidebar (int first_row, int num_rows, int div_width)
      else
        SETCOLOR(MT_COLOR_NORMAL);
  
@@ -605,7 +605,7 @@ index 823b939..9500390 100644
      if (Context && Context->path &&
          (!strcmp (b->path, Context->path)||
           !strcmp (b->realpath, Context->path)))
-@@ -829,32 +759,11 @@ static void draw_sidebar (int first_row, int num_rows, int div_width)
+@@ -840,32 +770,11 @@ static void draw_sidebar (int first_row, int num_rows, int div_width)
      row++;
    }
  
@@ -639,7 +639,7 @@ index 823b939..9500390 100644
   * mutt_sb_draw - Completely redraw the sidebar
   *
   * Completely refresh the sidebar region.  First draw the divider; then, for
-@@ -862,37 +771,29 @@ mutt_sb_init (void)
+@@ -873,40 +782,32 @@ mutt_sb_init (void)
   */
  void mutt_sb_draw (void)
  {
@@ -651,6 +651,9 @@ index 823b939..9500390 100644
 -  /* if (OldVisible == 0) */
 -  /* 	mutt_buffy_check (1); we probably have bad or no numbers */
 -
+   int x = getcurx (stdscr);
+   int y = getcury (stdscr);
+ 
 -  int first_row = 0;
 -  int num_rows  = LINES - 2;
 -
@@ -683,9 +686,9 @@ index 823b939..9500390 100644
  
 -  draw_sidebar (first_row, num_rows, div_width);
 +  draw_sidebar (num_rows, num_cols, div_width);
+   move (y, x);
  }
  
- /**
 -- 
 2.8.2
 

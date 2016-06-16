@@ -1,4 +1,4 @@
-From 8ff13da3f7c341db95ff2adb969c54cde15cb116 Mon Sep 17 00:00:00 2001
+From bcc0888c8547277ba5d6168c27561509f173496a Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 6 May 2016 00:23:58 +0100
 Subject: [PATCH 05/22] debian-specific/Md.etc_mailname_gethostbyname

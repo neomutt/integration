@@ -1,7 +1,7 @@
-From 5d8631ac22164151da34e0f3980485e7c05ec54e Mon Sep 17 00:00:00 2001
+From 63015738e281393936ee5f0324e93ad40a437dd5 Mon Sep 17 00:00:00 2001
 From: Kevin McCarthy <kevin@8t8.us>
 Date: Mon, 9 May 2016 14:06:59 -0700
-Subject: [PATCH 31/31] Back out wrapper sys_socket.h workaround (23334e967dd7)
+Subject: [PATCH 31/45] Back out wrapper sys_socket.h workaround (23334e967dd7)
 
 After renaming all internal macros from M_* to MUTT_*, the
 sys_socket.h workaround is no longer necessary.

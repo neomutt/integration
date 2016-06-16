@@ -1,4 +1,4 @@
-From ba8e124f3be3267b0ef1d1f49b5ceeb1154a2f4c Mon Sep 17 00:00:00 2001
+From 55c0f1735398d4c6b66bd3f03c0dae49384d6d07 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Thu, 21 Apr 2016 02:32:18 +0100
 Subject: [PATCH 13/13] sidebar_on_right
@@ -11,7 +11,7 @@ Subject: [PATCH 13/13] sidebar_on_right
  4 files changed, 37 insertions(+), 10 deletions(-)
 
 diff --git a/curs_lib.c b/curs_lib.c
-index 2267c3c..ce4e56d 100644
+index 5bc4bd2..9a3f5e5 100644
 --- a/curs_lib.c
 +++ b/curs_lib.c
 @@ -594,9 +594,13 @@ void mutt_reflow_windows (void)
@@ -31,10 +31,10 @@ index 2267c3c..ce4e56d 100644
  #endif
  }
 diff --git a/init.h b/init.h
-index 090d160..39abebb 100644
+index be93b6f..24077e7 100644
 --- a/init.h
 +++ b/init.h
-@@ -3080,6 +3080,11 @@ struct option_t MuttVars[] = {
+@@ -3081,6 +3081,11 @@ struct option_t MuttVars[] = {
    ** \fC<sidebar-prev-new>\fP command is similarly affected, wrapping around to
    ** the end of the list.
    */
@@ -47,7 +47,7 @@ index 090d160..39abebb 100644
    /*
    ** .pp
 diff --git a/mutt.h b/mutt.h
-index 8992baf..922c472 100644
+index 2987ba9..86f3ec5 100644
 --- a/mutt.h
 +++ b/mutt.h
 @@ -492,6 +492,7 @@ enum
@@ -59,10 +59,10 @@ index 8992baf..922c472 100644
    OPTSIGDASHES,
    OPTSIGONTOP,
 diff --git a/sidebar.c b/sidebar.c
-index a63034b..7c120b6 100644
+index f1753e7..855018c 100644
 --- a/sidebar.c
 +++ b/sidebar.c
-@@ -594,10 +594,17 @@ static int draw_divider (int num_rows, int num_cols)
+@@ -602,10 +602,17 @@ static int draw_divider (int num_rows, int num_cols)
  
    SETCOLOR(MT_COLOR_DIVIDER);
  
@@ -81,7 +81,7 @@ index a63034b..7c120b6 100644
      addstr (NONULL(SidebarDividerChar));
    }
  
-@@ -608,21 +615,26 @@ static int draw_divider (int num_rows, int num_cols)
+@@ -616,21 +623,26 @@ static int draw_divider (int num_rows, int num_cols)
   * fill_empty_space - Wipe the remaining Sidebar space
   * @first_row:  Window line to start (0-based)
   * @num_rows:   Number of rows to fill
@@ -112,7 +112,7 @@ index a63034b..7c120b6 100644
        addch (' ');
    }
  }
-@@ -680,7 +692,12 @@ static void draw_sidebar (int num_rows, int num_cols, int div_width)
+@@ -688,7 +700,12 @@ static void draw_sidebar (int num_rows, int num_cols, int div_width)
      else
        SETCOLOR(MT_COLOR_NORMAL);
  
@@ -126,7 +126,7 @@ index a63034b..7c120b6 100644
      if (Context && Context->path &&
          (!strcmp (b->path, Context->path)||
           !strcmp (b->realpath, Context->path)))
-@@ -760,7 +777,7 @@ static void draw_sidebar (int num_rows, int num_cols, int div_width)
+@@ -769,7 +786,7 @@ static void draw_sidebar (int num_rows, int num_cols, int div_width)
      row++;
    }
  
@@ -135,10 +135,10 @@ index a63034b..7c120b6 100644
  }
  
  
-@@ -787,7 +804,7 @@ void mutt_sb_draw (void)
+@@ -798,7 +815,7 @@ void mutt_sb_draw (void)
+ 
    if (!get_incoming())
    {
-     int w = MIN(COLS, (SidebarWidth - div_width));
 -    fill_empty_space (0, num_rows, SidebarWidth - div_width);
 +    fill_empty_space (0, num_rows, div_width, num_cols - div_width);
      return;

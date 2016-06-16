@@ -1,7 +1,7 @@
-From e18afbdeeddf3bd961298d85b9625b8446ea61d9 Mon Sep 17 00:00:00 2001
+From 6a6479a2bafc67032522b7d9a419da66a608ffd5 Mon Sep 17 00:00:00 2001
 From: Kevin McCarthy <kevin@8t8.us>
 Date: Wed, 27 Apr 2016 17:56:49 -0700
-Subject: [PATCH 14/31] Add window structures to use for screen layout.
+Subject: [PATCH 14/45] Add window structures to use for screen layout.
 
 This is a series of 11 patches, centralizing Mutt screen drawing
 inside windows (mutt_window_t structures).
@@ -33,7 +33,7 @@ Thanks to Richard Russon for pointing out the slang compilation issue.
  6 files changed, 197 insertions(+), 2 deletions(-)
 
 diff --git a/curs_lib.c b/curs_lib.c
-index e5ecbc8..768b755 100644
+index 0c80b43..786814f 100644
 --- a/curs_lib.c
 +++ b/curs_lib.c
 @@ -67,6 +67,14 @@ static size_t UngetCount = 0;
@@ -227,7 +227,7 @@ index 050f88a..64d3dcf 100644
    }
    return (r);
 diff --git a/init.h b/init.h
-index 47811cd..0dbaead 100644
+index 376a2df..6cdbcc1 100644
 --- a/init.h
 +++ b/init.h
 @@ -62,6 +62,7 @@
@@ -247,7 +247,7 @@ index 47811cd..0dbaead 100644
    /*
    ** .pp
    ** When \fIset\fP, help lines describing the bindings for the major functions
-@@ -3735,7 +3736,7 @@ struct option_t MuttVars[] = {
+@@ -3736,7 +3737,7 @@ struct option_t MuttVars[] = {
    ** will replace any dots in the expansion by underscores. This might be helpful
    ** with IMAP folders that don't like dots in folder names.
    */

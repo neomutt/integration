@@ -1,7 +1,7 @@
-From 067858faf80bccf24e2f94fd55900aa98d1eaa94 Mon Sep 17 00:00:00 2001
+From d58f3b72bf1fffe70714bf7fa17be719862c5b9d Mon Sep 17 00:00:00 2001
 From: Kevin McCarthy <kevin@8t8.us>
 Date: Thu, 14 Apr 2016 12:35:50 -0700
-Subject: [PATCH 11/31] Pre-space softfill multi-column padding.
+Subject: [PATCH 11/45] Pre-space softfill multi-column padding.
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit

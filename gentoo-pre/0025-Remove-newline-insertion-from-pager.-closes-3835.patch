@@ -1,7 +1,7 @@
-From e7d6f53ac646bef68a7e9ce7cb83d34e610f53f0 Mon Sep 17 00:00:00 2001
+From 80fc1f2b0827cfc8cad5d00bdf27c5b95fbadf0d Mon Sep 17 00:00:00 2001
 From: Kevin McCarthy <kevin@8t8.us>
 Date: Fri, 29 Apr 2016 18:00:10 -0700
-Subject: [PATCH 25/31] Remove newline insertion from pager. (closes #3835)
+Subject: [PATCH 25/45] Remove newline insertion from pager. (closes #3835)
 
 The window patches commited now manually move to the next line, so
 there is no need to insert newlines for that purpose.

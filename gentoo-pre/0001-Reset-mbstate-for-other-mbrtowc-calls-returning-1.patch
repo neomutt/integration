@@ -1,7 +1,7 @@
-From 0055dbccd18db6eadeb82fa36e98b9a35e8c875d Mon Sep 17 00:00:00 2001
+From 030f324d64bc03f0aa43b2dd08afc0b82f1c9f44 Mon Sep 17 00:00:00 2001
 From: Kevin McCarthy <kevin@8t8.us>
 Date: Fri, 8 Apr 2016 15:20:53 -0700
-Subject: [PATCH 01/31] Reset mbstate for other mbrtowc() calls returning -1
+Subject: [PATCH 01/45] Reset mbstate for other mbrtowc() calls returning -1
 
 Continue the cleanup started in changesets c8c76a6a1e61 and
 a3450fd50d11.  In those changesets, a bug was occurring due to the
@@ -30,10 +30,10 @@ index cfc35c4..cc941d8 100644
        rv = -1;
      }
 diff --git a/curs_lib.c b/curs_lib.c
-index 9320fdc..e5ecbc8 100644
+index 2145946..0c80b43 100644
 --- a/curs_lib.c
 +++ b/curs_lib.c
-@@ -1107,6 +1107,8 @@ int mutt_strwidth (const char *s)
+@@ -1112,6 +1112,8 @@ int mutt_strwidth (const char *s)
  
      if (k == (size_t)(-1) || k == (size_t)(-2))
      {

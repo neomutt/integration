@@ -1,4 +1,4 @@
-From 7285e297e987b92ca5d66ce23116b9b22fbb7475 Mon Sep 17 00:00:00 2001
+From e729fede0b8200638f4afd0a5959e563d4093b75 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Tue, 24 May 2016 17:26:21 +0100
 Subject: [PATCH 04/11] feature: index-color
@@ -7,7 +7,7 @@ Subject: [PATCH 04/11] feature: index-color
  PATCHES                |   1 +
  README.index-color     |  82 ++++++++++++++++
  color.c                | 151 ++++++++++++++++++----------
- curs_lib.c             |  16 ++-
+ curs_lib.c             |  23 ++++-
  doc/manual.xml.head    | 262 ++++++++++++++++++++++++++++++++++++++++++++++++-
  doc/muttrc.index-color |  37 +++++++
  doc/vimrc.index-color  |  13 +++
@@ -15,7 +15,7 @@ Subject: [PATCH 04/11] feature: index-color
  menu.c                 |  62 ++++++++++--
  mutt.h                 |   2 +
  mutt_curses.h          |  15 ++-
- 11 files changed, 669 insertions(+), 87 deletions(-)
+ 11 files changed, 675 insertions(+), 88 deletions(-)
  create mode 100644 README.index-color
  create mode 100644 doc/muttrc.index-color
  create mode 100644 doc/vimrc.index-color
@@ -335,7 +335,7 @@ index 0efc743..1893b49 100644
    return (r);
  }
 diff --git a/curs_lib.c b/curs_lib.c
-index 1ab6d2d..eb06c36 100644
+index 1ab6d2d..3086ad7 100644
 --- a/curs_lib.c
 +++ b/curs_lib.c
 @@ -826,6 +826,7 @@ void mutt_format_string (char *dest, size_t destlen,
@@ -363,7 +363,21 @@ index 1ab6d2d..eb06c36 100644
      else
      {
  #ifdef HAVE_ISWBLANK
-@@ -1079,6 +1087,12 @@ int mutt_strwidth (const char *s)
+@@ -1021,7 +1029,12 @@ size_t mutt_wstr_trunc (const char *src, size_t maxlen, size_t maxwid, size_t *w
+     cw = wcwidth (wc);
+     /* hack because M_TREE symbols aren't turned into characters
+      * until rendered by print_enriched_string (#3364) */
+-    if (cw < 0 && cl == 1 && src[0] && src[0] < M_TREE_MAX)
++    if ((cw < 0) && (src[0] == M_SPECIAL_INDEX))
++    {
++      cl = 2; /* skip the index coloring sequence */
++      cw = 0;
++    }
++    else if (cw < 0 && cl == 1 && src[0] && src[0] < M_TREE_MAX)
+       cw = 1;
+     else if (cw < 0)
+       cw = 0;			/* unprintable wchar */
+@@ -1079,6 +1092,12 @@ int mutt_strwidth (const char *s)
    memset (&mbstate, 0, sizeof (mbstate));
    for (w=0; n && (k = mbrtowc (&wc, s, n, &mbstate)); s += k, n -= k)
    {

@@ -1,4 +1,4 @@
-From 54fd845364baa66b2c97246c94c2a776735bc734 Mon Sep 17 00:00:00 2001
+From aa36be90bbc1b84cf46b106e64faecdf97c44ce6 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 03:01:54 +0100
 Subject: [PATCH 01/13] mutt-1.6.1
@@ -102,10 +102,10 @@ index 047531a..f125b8f 100644
  
      FREE (&methods);
 diff --git a/init.h b/init.h
-index 47811cd..69194f2 100644
+index 376a2df..0bf1cff 100644
 --- a/init.h
 +++ b/init.h
-@@ -3570,6 +3570,9 @@ struct option_t MuttVars[] = {
+@@ -3571,6 +3571,9 @@ struct option_t MuttVars[] = {
    ** the default from the GNUTLS library.
    */
  # endif /* USE_SSL_GNUTLS */

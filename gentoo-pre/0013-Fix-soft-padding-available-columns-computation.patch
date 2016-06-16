@@ -1,7 +1,7 @@
-From efbfc47db0a06d3496c79a7343fd07d77871d17f Mon Sep 17 00:00:00 2001
+From 863663a1d2549db10a86d1181d06ea76811f9957 Mon Sep 17 00:00:00 2001
 From: Kevin McCarthy <kevin@8t8.us>
 Date: Thu, 14 Apr 2016 12:35:57 -0700
-Subject: [PATCH 13/31] Fix soft-padding available columns computation.
+Subject: [PATCH 13/45] Fix soft-padding available columns computation.
 
 If arrow_cursor is set, it's possible that COLS < offset.  Compute
 avail_cols, floored at 0, and use that instead.

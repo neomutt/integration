@@ -1,4 +1,4 @@
-From f5d1cc53560b2cee2bc406f2b14b4fd69a75c89c Mon Sep 17 00:00:00 2001
+From 566c235c4ad3c14ce10a48c8f97a437c28fad500 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 6 May 2016 00:23:59 +0100
 Subject: [PATCH 09/22] debian-specific/document_debian_defaults
@@ -8,7 +8,7 @@ Subject: [PATCH 09/22] debian-specific/document_debian_defaults
  1 file changed, 22 insertions(+)
 
 diff --git a/init.h b/init.h
-index 67d81f8..339b292 100644
+index 29ebd9f..4364d43 100644
 --- a/init.h
 +++ b/init.h
 @@ -327,6 +327,9 @@ struct option_t MuttVars[] = {
@@ -41,7 +41,7 @@ index 67d81f8..339b292 100644
    */
  #endif
    { "move",		DT_QUAD, R_NONE, OPT_MOVE, M_NO },
-@@ -3188,6 +3197,10 @@ struct option_t MuttVars[] = {
+@@ -3189,6 +3198,10 @@ struct option_t MuttVars[] = {
    ** This variable contains the name of either a directory, or a file which
    ** contains trusted certificates for use with OpenSSL.
    ** (S/MIME only)
@@ -52,7 +52,7 @@ index 67d81f8..339b292 100644
    */
    { "smime_certificates",	DT_PATH, R_NONE, UL &SmimeCertificates, 0 },
    /*
-@@ -3401,6 +3414,9 @@ struct option_t MuttVars[] = {
+@@ -3402,6 +3415,9 @@ struct option_t MuttVars[] = {
    ** .ts
    ** set smtp_authenticators="digest-md5:cram-md5"
    ** .te
@@ -62,7 +62,7 @@ index 67d81f8..339b292 100644
    */
  # endif /* USE_SASL */
    { "smtp_pass", 	DT_STR,  R_NONE, UL &SmtpPass, UL 0 },
-@@ -3448,6 +3464,9 @@ struct option_t MuttVars[] = {
+@@ -3449,6 +3465,9 @@ struct option_t MuttVars[] = {
    ** .pp
    ** You may optionally use the ``reverse-'' prefix to specify reverse sorting
    ** order (example: ``\fCset sort=reverse-date-sent\fP'').
@@ -72,7 +72,7 @@ index 67d81f8..339b292 100644
    */
    { "sort_alias",	DT_SORT|DT_SORT_ALIAS,	R_NONE,	UL &SortAlias, SORT_ALIAS },
    /*
-@@ -4053,6 +4072,9 @@ struct option_t MuttVars[] = {
+@@ -4054,6 +4073,9 @@ struct option_t MuttVars[] = {
    ** is set to deliver directly via SMTP (see $$smtp_url), this
    ** option does nothing: mutt will never write out the ``Bcc:'' header
    ** in this case.

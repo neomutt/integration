@@ -1,4 +1,4 @@
-From 6b15576fc4db2bd1431278264205ef5673938af1 Mon Sep 17 00:00:00 2001
+From 0be66bbf8190870fe2e437122510000566efffac Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 03:03:32 +0100
 Subject: [PATCH 03/13] mutt-1.5.20-sendgroupreplyto
@@ -10,7 +10,7 @@ Subject: [PATCH 03/13] mutt-1.5.20-sendgroupreplyto
  3 files changed, 16 insertions(+)
 
 diff --git a/init.h b/init.h
-index 69194f2..ae28ca8 100644
+index 0bf1cff..3ad6db5 100644
 --- a/init.h
 +++ b/init.h
 @@ -2860,6 +2860,13 @@ struct option_t MuttVars[] = {

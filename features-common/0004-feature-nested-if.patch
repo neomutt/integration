@@ -1,4 +1,4 @@
-From 4b2b8f542ac7544aa06126b2c990bcc1d3c35863 Mon Sep 17 00:00:00 2001
+From 1a7914e9784cd3a5e57c408af2388b31022cb80d Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Tue, 24 May 2016 17:04:53 +0100
 Subject: [PATCH 4/7] feature: nested-if

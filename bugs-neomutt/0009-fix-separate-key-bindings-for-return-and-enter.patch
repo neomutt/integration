@@ -1,4 +1,4 @@
-From 92f20fd212b62b303db0794d759d29e275e9940a Mon Sep 17 00:00:00 2001
+From e6f072b6cef3e14f6ec38f840b56205487fc3182 Mon Sep 17 00:00:00 2001
 From: Mike Frysinger <vapier@gentoo.org>
 Date: Tue, 31 May 2016 21:17:41 +0100
 Subject: [PATCH 09/10] fix: separate key bindings for <return> and <enter>

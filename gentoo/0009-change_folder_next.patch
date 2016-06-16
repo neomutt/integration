@@ -1,4 +1,4 @@
-From 584c7ae70af75b72135269c29937faa3f0be3860 Mon Sep 17 00:00:00 2001
+From 628556ba091224f211a7aca7e81ea2e9526626fa Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Mon, 30 May 2016 03:46:36 +0100
 Subject: [PATCH 09/13] change_folder_next
@@ -20,10 +20,10 @@ index e709cae..2d95814 100644
  patch-1.5.4.lpr.collapse_flagged Lukas P. Ruf <lukas.ruf@lpr.ch>
  patch-ifdef-neo-UNKNOWN
 diff --git a/curs_main.c b/curs_main.c
-index 9e48f7a..1a33113 100644
+index 3021ecc..589e928 100644
 --- a/curs_main.c
 +++ b/curs_main.c
-@@ -1802,7 +1802,14 @@ int mutt_index_menu (void)
+@@ -1797,7 +1797,14 @@ int mutt_index_menu (void)
  	  }
  	  else
  #endif
@@ -36,10 +36,10 @@ index 9e48f7a..1a33113 100644
  	  mutt_buffy (buf, sizeof (buf));
 +	}
  
- #ifdef USE_SIDEBAR
- 	  if (op == OP_SIDEBAR_OPEN) {
+           if (mutt_enter_fname (cp, buf, sizeof (buf), &menu->redraw, 1) == -1)
+           {
 diff --git a/init.h b/init.h
-index d3492b1..9a6320c 100644
+index 723a4e4..23148e7 100644
 --- a/init.h
 +++ b/init.h
 @@ -394,6 +394,13 @@ struct option_t MuttVars[] = {
@@ -57,7 +57,7 @@ index d3492b1..9a6320c 100644
    /*
    ** .pp
 diff --git a/mutt.h b/mutt.h
-index db86be3..c4d851e 100644
+index a508539..ee61212 100644
 --- a/mutt.h
 +++ b/mutt.h
 @@ -375,6 +375,7 @@ enum

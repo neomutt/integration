@@ -1,4 +1,4 @@
-From 028adbd1d14b431e5e8a81fd9a08fcde51e1b9f4 Mon Sep 17 00:00:00 2001
+From 31ec6a92c0395878145b81416d502a63299c596b Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Tue, 24 May 2016 17:29:47 +0100
 Subject: [PATCH 08/11] feature: limit-current-thread
@@ -90,10 +90,10 @@ index 0000000..072413e
 +    * Richard Russon <rich@flatcap.org>
 +
 diff --git a/curs_main.c b/curs_main.c
-index 56821e9..109f42a 100644
+index dc1b64b..79ae14d 100644
 --- a/curs_main.c
 +++ b/curs_main.c
-@@ -1044,12 +1044,14 @@ int mutt_index_menu (void)
+@@ -1043,12 +1043,14 @@ int mutt_index_menu (void)
  	}
          break;
  

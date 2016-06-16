@@ -1,7 +1,7 @@
-From 3a30bbbc70871a14f92bb7eab4eba10bab3b3d88 Mon Sep 17 00:00:00 2001
+From 88f8d9108708e608d9da3fe2172ec981f2de8b31 Mon Sep 17 00:00:00 2001
 From: Kevin McCarthy <kevin@8t8.us>
 Date: Thu, 14 Apr 2016 12:35:53 -0700
-Subject: [PATCH 12/31] Fix right justify buffer-truncated pad calculation in
+Subject: [PATCH 12/45] Fix right justify buffer-truncated pad calculation in
  mutt_FormatString()
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8

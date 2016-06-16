@@ -1,4 +1,4 @@
-From a70fdf7a25630b9c53275214dcf5a816f7fa0b51 Mon Sep 17 00:00:00 2001
+From bef876f8383f4569def23f1fa69ebd6a35095e4c Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Tue, 24 May 2016 17:29:02 +0100
 Subject: [PATCH 07/11] feature: fmemopen

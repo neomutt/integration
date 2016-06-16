@@ -1,4 +1,4 @@
-From f84db73d80000ab78a024de66cfe0428b3930565 Mon Sep 17 00:00:00 2001
+From cbe622585531d9658d7686d71be3f3783c34cbc5 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 03:03:48 +0100
 Subject: [PATCH 04/13] mutt-1.5.15-wrapcolumn
@@ -8,10 +8,10 @@ Subject: [PATCH 04/13] mutt-1.5.15-wrapcolumn
  1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/init.h b/init.h
-index ae28ca8..b54d000 100644
+index 3ad6db5..cff94a4 100644
 --- a/init.h
 +++ b/init.h
-@@ -4021,7 +4021,8 @@ struct option_t MuttVars[] = {
+@@ -4022,7 +4022,8 @@ struct option_t MuttVars[] = {
    ** When \fIset\fP, mutt will weed headers when displaying, forwarding,
    ** printing, or replying to messages.
    */

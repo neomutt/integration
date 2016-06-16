@@ -1,4 +1,4 @@
-From 7fb62e49387dd5c5a59a4e2c9d4d147a565051df Mon Sep 17 00:00:00 2001
+From e206ab0e7316179238cafc8c6d6ad35be02262d4 Mon Sep 17 00:00:00 2001
 From: Karel Zak <kzak@redhat.com>
 Date: Thu, 6 Sep 2012 09:31:54 +0200
 Subject: [PATCH 01/10] fix: add strndup.c strnlen.c
@@ -28,7 +28,7 @@ index 14b6021..e125f1f 100644
  
  AC_CHECK_FUNC(getopt)
 diff --git a/protos.h b/protos.h
-index 195873a..0dc646d 100644
+index 06ec0ad..6792b7e 100644
 --- a/protos.h
 +++ b/protos.h
 @@ -1,5 +1,6 @@

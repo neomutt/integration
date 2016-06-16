@@ -1,4 +1,4 @@
-From 349dd4f9eb2ed19e948eae4759487f65b580bc6e Mon Sep 17 00:00:00 2001
+From 4e4ecee5617289d0347461553de4a798b8639969 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Mon, 30 May 2016 03:55:55 +0100
 Subject: [PATCH 10/13] change_subject
@@ -89,7 +89,7 @@ index a2b5ef8..4888499 100644
  <title>Setting and Querying Variables</title>
  
 diff --git a/globals.h b/globals.h
-index b44a08a..32311bd 100644
+index 5cae73f..4329184 100644
 --- a/globals.h
 +++ b/globals.h
 @@ -199,8 +199,9 @@ WHERE RX_LIST *MailLists INITVAL(0);
@@ -117,7 +117,7 @@ index 912b80a..81b3487 100644
  
      hcachever = HCACHEVER;
 diff --git a/hdrline.c b/hdrline.c
-index d2c1253..5a2016a 100644
+index 85d93ca..a84f110 100644
 --- a/hdrline.c
 +++ b/hdrline.c
 @@ -235,6 +235,91 @@ int mutt_user_is_recipient (HEADER *h)
@@ -496,10 +496,10 @@ index 7ed4f7b..5a68b6a 100644
  
      /* Otherwise, add it to the nospam list. */
 diff --git a/init.h b/init.h
-index 9a6320c..e292e6d 100644
+index 23148e7..172bcc2 100644
 --- a/init.h
 +++ b/init.h
-@@ -4225,6 +4225,10 @@ static int parse_subscribe (BUFFER *, BUFFER *, unsigned long, BUFFER *);
+@@ -4226,6 +4226,10 @@ static int parse_subscribe (BUFFER *, BUFFER *, unsigned long, BUFFER *);
  static int parse_unsubscribe (BUFFER *, BUFFER *, unsigned long, BUFFER *);
  static int parse_attachments (BUFFER *, BUFFER *, unsigned long, BUFFER *);
  static int parse_unattachments (BUFFER *, BUFFER *, unsigned long, BUFFER *);
@@ -510,7 +510,7 @@ index 9a6320c..e292e6d 100644
  
  static int parse_alternates (BUFFER *, BUFFER *, unsigned long, BUFFER *);
  static int parse_unalternates (BUFFER *, BUFFER *, unsigned long, BUFFER *);
-@@ -4314,6 +4318,8 @@ const struct command_t Commands[] = {
+@@ -4315,6 +4319,8 @@ const struct command_t Commands[] = {
    { "spam",		parse_spam_list,	MUTT_SPAM },
    { "nospam",		parse_spam_list,	MUTT_NOSPAM },
    { "subscribe",	parse_subscribe,	0 },
@@ -520,7 +520,7 @@ index 9a6320c..e292e6d 100644
    { "unalias",		parse_unalias,		0 },
    { "unalternative_order",parse_unlist,		UL &AlternativeOrderList },
 diff --git a/mutt.h b/mutt.h
-index c4d851e..4dc9d85 100644
+index ee61212..fbd6aaf 100644
 --- a/mutt.h
 +++ b/mutt.h
 @@ -634,20 +634,20 @@ typedef struct rx_list_t
@@ -602,7 +602,7 @@ index a972df4..78db80a 100644
    static regmatch_t *pmatch = NULL;
    static int nmatch = 0;
 diff --git a/protos.h b/protos.h
-index 16219f0..4157c8e 100644
+index bc41e23..de647f8 100644
 --- a/protos.h
 +++ b/protos.h
 @@ -341,7 +341,7 @@ int mutt_is_valid_mailbox (const char *);

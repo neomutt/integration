@@ -1,4 +1,4 @@
-From 91682f81c5d2a9d980bbfdff302c94998bb67604 Mon Sep 17 00:00:00 2001
+From 4ee6a648fd3868d5531cda8b651aef6b60ea94fb Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 15:17:48 +0100
 Subject: [PATCH 05/21] reverse_reply
@@ -22,7 +22,7 @@ index 441a58b..f3b1426 100644
  patch-ifdef-neo-UNKNOWN
  patch-initials-neo-UNKNOWN
 diff --git a/init.h b/init.h
-index 422c430..aecb750 100644
+index 8d52bcb..aa4d161 100644
 --- a/init.h
 +++ b/init.h
 @@ -2546,6 +2546,13 @@ struct option_t MuttVars[] = {

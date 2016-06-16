@@ -1,7 +1,7 @@
-From 7dc72d755e3c12b2fb1c82d273ed1b75e5876f46 Mon Sep 17 00:00:00 2001
+From d8b781a5ae837dbabd21d1726480e1762a078b06 Mon Sep 17 00:00:00 2001
 From: Kevin McCarthy <kevin@8t8.us>
 Date: Wed, 27 Apr 2016 17:56:53 -0700
-Subject: [PATCH 17/31] Modify enter.c routines to use windows.
+Subject: [PATCH 17/45] Modify enter.c routines to use windows.
 
 This modifies the mutt_enter_string() functions to use MuttMessageWindow.
 
@@ -14,7 +14,7 @@ Thanks to Richard Russon for pointing out slang doesn't support getcurx.
  4 files changed, 18 insertions(+), 18 deletions(-)
 
 diff --git a/curs_lib.c b/curs_lib.c
-index cc4a82e..500c5ca 100644
+index d9da6f4..d5ec823 100644
 --- a/curs_lib.c
 +++ b/curs_lib.c
 @@ -158,7 +158,7 @@ event_t mutt_getch (void)
@@ -137,7 +137,7 @@ index 851d12b..333730a 100644
      mutt_refresh ();
  
 diff --git a/protos.h b/protos.h
-index d28925b..55d6598 100644
+index 4ade804..99abeeb 100644
 --- a/protos.h
 +++ b/protos.h
 @@ -317,10 +317,9 @@ int mutt_prepare_template(FILE*, CONTEXT *, HEADER *, HEADER *, short);

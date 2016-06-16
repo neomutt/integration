@@ -1,4 +1,4 @@
-From a2893c8a66a9991c943ca81117e760376fe5ff05 Mon Sep 17 00:00:00 2001
+From 2f59dd5eb4f815d7856c760841dc85005ff78c87 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 03:09:05 +0100
 Subject: [PATCH 11/13] mutt-1.5.23-cariage-return

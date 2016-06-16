@@ -1,4 +1,4 @@
-From 51b306267c1e656d60c49061fe797e6f19466ce9 Mon Sep 17 00:00:00 2001
+From 5c5243c082bd6b4fac06066d9770aa562fb322e6 Mon Sep 17 00:00:00 2001
 From: Sami Farin <hvtaifwkbgefbaei@gmail.com>
 Date: Wed, 16 Oct 2013 11:34:57 -0700
 Subject: [PATCH 03/10] fix: Bye srandom() and random()
@@ -212,7 +212,7 @@ index 6b4b65a..2c79ad8 100644
    if (n >= slen)
      dprint (1, (debugfile, "%s:%d: ERROR: insufficient buffer space to hold temporary filename! slen=%zu but need %zu\n",
 diff --git a/protos.h b/protos.h
-index 0dc646d..d28925b 100644
+index 6792b7e..4ade804 100644
 --- a/protos.h
 +++ b/protos.h
 @@ -393,6 +393,11 @@ int mutt_yesorno (const char *, int);

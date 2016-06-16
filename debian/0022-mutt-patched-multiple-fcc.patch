@@ -1,4 +1,4 @@
-From f792265b1acb845b84f026250bad57e25b7089ce Mon Sep 17 00:00:00 2001
+From c3e10284d9bb1f43c8304eb27c2d8258269f98d8 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 6 May 2016 00:36:57 +0100
 Subject: [PATCH 22/22] mutt-patched/multiple-fcc
@@ -10,7 +10,7 @@ Subject: [PATCH 22/22] mutt-patched/multiple-fcc
  3 files changed, 34 insertions(+), 1 deletion(-)
 
 diff --git a/protos.h b/protos.h
-index 21a3b3f..5c51adf 100644
+index 1a63eeb..10e2a5f 100644
 --- a/protos.h
 +++ b/protos.h
 @@ -384,6 +384,7 @@ int mutt_user_is_recipient (HEADER *);

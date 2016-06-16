@@ -1,0 +1,335 @@
+From f7d247bcbcaaca57f0fcad8b4b3ae9adfbb1dfd8 Mon Sep 17 00:00:00 2001
+From: Kevin McCarthy <kevin@8t8.us>
+Date: Thu, 26 May 2016 14:45:02 -0700
+Subject: [PATCH 38/45] Fix header file indentation after M_ prefix renaming.
+
+The use of tabs caused misalignment of various macro definitions.
+---
+ copy.h        |  26 ++++++-------
+ group.h       |   4 +-
+ mailbox.h     |  26 ++++++-------
+ mutt.h        | 118 +++++++++++++++++++++++++++++-----------------------------
+ mutt_curses.h |   4 +-
+ pager.h       |  26 ++++++-------
+ 6 files changed, 102 insertions(+), 102 deletions(-)
+
+diff --git a/copy.h b/copy.h
+index 379cb01..b47c7fb 100644
+--- a/copy.h
++++ b/copy.h
+@@ -17,21 +17,21 @@
+  */ 
+ 
+ /* flags to _mutt_copy_message */
+-#define MUTT_CM_NOHEADER	1	/* don't copy the message header */
+-#define MUTT_CM_PREFIX	(1<<1)	/* quote the message */
+-#define MUTT_CM_DECODE	(1<<2)	/* decode the message body into text/plain */
+-#define MUTT_CM_DISPLAY	(1<<3)	/* output is displayed to the user */
+-#define MUTT_CM_UPDATE	(1<<4)  /* update structs on sync */
+-#define MUTT_CM_WEED	(1<<5)  /* weed message/rfc822 attachment headers */
+-#define MUTT_CM_CHARCONV	(1<<6)  /* perform character set conversions */
+-#define MUTT_CM_PRINTING	(1<<7)	/* printing the message - display light */
+-#define MUTT_CM_REPLYING	(1<<8)	/* replying the message */
++#define MUTT_CM_NOHEADER        1       /* don't copy the message header */
++#define MUTT_CM_PREFIX          (1<<1)  /* quote the message */
++#define MUTT_CM_DECODE          (1<<2)  /* decode the message body into text/plain */
++#define MUTT_CM_DISPLAY         (1<<3)  /* output is displayed to the user */
++#define MUTT_CM_UPDATE          (1<<4)  /* update structs on sync */
++#define MUTT_CM_WEED            (1<<5)  /* weed message/rfc822 attachment headers */
++#define MUTT_CM_CHARCONV        (1<<6)  /* perform character set conversions */
++#define MUTT_CM_PRINTING        (1<<7)  /* printing the message - display light */
++#define MUTT_CM_REPLYING        (1<<8)  /* replying the message */
+ 
+-#define MUTT_CM_DECODE_PGP	  (1<<9) /* used for decoding PGP messages */
+-#define MUTT_CM_DECODE_SMIME (1<<10) /* used for decoding S/MIME messages */
+-#define MUTT_CM_DECODE_CRYPT  (MUTT_CM_DECODE_PGP | MUTT_CM_DECODE_SMIME)
++#define MUTT_CM_DECODE_PGP      (1<<9)  /* used for decoding PGP messages */
++#define MUTT_CM_DECODE_SMIME    (1<<10) /* used for decoding S/MIME messages */
++#define MUTT_CM_DECODE_CRYPT    (MUTT_CM_DECODE_PGP | MUTT_CM_DECODE_SMIME)
+ 
+-#define MUTT_CM_VERIFY	(1<<11)	/* do signature verification */
++#define MUTT_CM_VERIFY          (1<<11) /* do signature verification */
+ 
+ /* flags for mutt_copy_header() */
+ #define CH_UPDATE         1       /* update the status and x-status fields? */
+diff --git a/group.h b/group.h
+index 68f01dc..55adcfa 100644
+--- a/group.h
++++ b/group.h
+@@ -20,8 +20,8 @@
+ #ifndef _MUTT_GROUP_H_
+ #define _MUTT_GROUP_H_ 1
+ 
+-#define MUTT_GROUP		0
+-#define MUTT_UNGROUP	1
++#define MUTT_GROUP   0
++#define MUTT_UNGROUP 1
+ 
+ void mutt_group_add_adrlist (group_t *g, ADDRESS *a);
+ 
+diff --git a/mailbox.h b/mailbox.h
+index 579b5ad..704547e 100644
+--- a/mailbox.h
++++ b/mailbox.h
+@@ -20,28 +20,28 @@
+ #define _MAILBOX_H
+ 
+ /* flags for mutt_open_mailbox() */
+-#define MUTT_NOSORT	(1<<0) /* do not sort the mailbox after opening it */
+-#define MUTT_APPEND	(1<<1) /* open mailbox for appending messages */
+-#define MUTT_READONLY	(1<<2) /* open in read-only mode */
+-#define MUTT_QUIET		(1<<3) /* do not print any messages */
+-#define MUTT_NEWFOLDER	(1<<4) /* create a new folder - same as MUTT_APPEND, but uses
+-				* safe_fopen() for mbox-style folders.
+-				*/
++#define MUTT_NOSORT     (1<<0) /* do not sort the mailbox after opening it */
++#define MUTT_APPEND     (1<<1) /* open mailbox for appending messages */
++#define MUTT_READONLY   (1<<2) /* open in read-only mode */
++#define MUTT_QUIET      (1<<3) /* do not print any messages */
++#define MUTT_NEWFOLDER  (1<<4) /* create a new folder - same as MUTT_APPEND, but uses
++                                * safe_fopen() for mbox-style folders.
++                                */
+ #ifdef USE_SIDEBAR
+ #define MUTT_PEEK	(1<<5) /* revert atime back after taking a look (if applicable) */
+ #endif
+ 
+ /* mx_open_new_message() */
+-#define MUTT_ADD_FROM	(1<<0)	/* add a From_ line */
+-#define MUTT_SET_DRAFT	(1<<1)	/* set the message draft flag */
++#define MUTT_ADD_FROM   (1<<0)  /* add a From_ line */
++#define MUTT_SET_DRAFT  (1<<1)  /* set the message draft flag */
+ 
+ /* return values from mx_check_mailbox() */
+ enum
+ {
+-  MUTT_NEW_MAIL = 1,	/* new mail received in mailbox */
+-  MUTT_LOCKED,		/* couldn't lock the mailbox */
+-  MUTT_REOPENED,		/* mailbox was reopened */
+-  MUTT_FLAGS               /* nondestructive flags change (IMAP) */
++  MUTT_NEW_MAIL = 1,    /* new mail received in mailbox */
++  MUTT_LOCKED,          /* couldn't lock the mailbox */
++  MUTT_REOPENED,        /* mailbox was reopened */
++  MUTT_FLAGS            /* nondestructive flags change (IMAP) */
+ };
+ 
+ typedef struct
+diff --git a/mutt.h b/mutt.h
+index 0674107..77831e1 100644
+--- a/mutt.h
++++ b/mutt.h
+@@ -108,13 +108,13 @@
+ #endif
+ 
+ /* flags for mutt_get_token() */
+-#define MUTT_TOKEN_EQUAL		1	/* treat '=' as a special */
+-#define MUTT_TOKEN_CONDENSE	(1<<1)	/* ^(char) to control chars (macros) */
+-#define MUTT_TOKEN_SPACE		(1<<2)  /* don't treat whitespace as a term */
+-#define MUTT_TOKEN_QUOTE		(1<<3)	/* don't interpret quotes */
+-#define MUTT_TOKEN_PATTERN		(1<<4)	/* !)|~ are terms (for patterns) */
+-#define MUTT_TOKEN_COMMENT		(1<<5)	/* don't reap comments */
+-#define MUTT_TOKEN_SEMICOLON	(1<<6)	/* don't treat ; as special */
++#define MUTT_TOKEN_EQUAL      1       /* treat '=' as a special */
++#define MUTT_TOKEN_CONDENSE   (1<<1)  /* ^(char) to control chars (macros) */
++#define MUTT_TOKEN_SPACE      (1<<2)  /* don't treat whitespace as a term */
++#define MUTT_TOKEN_QUOTE      (1<<3)  /* don't interpret quotes */
++#define MUTT_TOKEN_PATTERN    (1<<4)  /* !)|~ are terms (for patterns) */
++#define MUTT_TOKEN_COMMENT    (1<<5)  /* don't reap comments */
++#define MUTT_TOKEN_SEMICOLON  (1<<6)  /* don't treat ; as special */
+ 
+ typedef struct
+ {
+@@ -136,58 +136,58 @@ typedef struct
+ /* flags for mutt_FormatString() */
+ typedef enum
+ {
+-  MUTT_FORMAT_FORCESUBJ	= (1<<0), /* print the subject even if unchanged */
+-  MUTT_FORMAT_TREE		= (1<<1), /* draw the thread tree */
+-  MUTT_FORMAT_MAKEPRINT	= (1<<2), /* make sure that all chars are printable */
+-  MUTT_FORMAT_OPTIONAL	= (1<<3),
+-  MUTT_FORMAT_STAT_FILE	= (1<<4), /* used by mutt_attach_fmt */
+-  MUTT_FORMAT_ARROWCURSOR	= (1<<5), /* reserve space for arrow_cursor */
+-  MUTT_FORMAT_INDEX	= (1<<6), /* this is a main index entry */
+-  MUTT_FORMAT_NOFILTER	= (1<<7)  /* do not allow filtering on this pass */
++  MUTT_FORMAT_FORCESUBJ   = (1<<0), /* print the subject even if unchanged */
++  MUTT_FORMAT_TREE        = (1<<1), /* draw the thread tree */
++  MUTT_FORMAT_MAKEPRINT   = (1<<2), /* make sure that all chars are printable */
++  MUTT_FORMAT_OPTIONAL    = (1<<3),
++  MUTT_FORMAT_STAT_FILE   = (1<<4), /* used by mutt_attach_fmt */
++  MUTT_FORMAT_ARROWCURSOR = (1<<5), /* reserve space for arrow_cursor */
++  MUTT_FORMAT_INDEX       = (1<<6), /* this is a main index entry */
++  MUTT_FORMAT_NOFILTER    = (1<<7)  /* do not allow filtering on this pass */
+ } format_flag;
+ 
+ /* types for mutt_add_hook() */
+-#define MUTT_FOLDERHOOK	1
+-#define MUTT_MBOXHOOK	(1<<1)
+-#define MUTT_SENDHOOK	(1<<2)
+-#define MUTT_FCCHOOK	(1<<3)
+-#define MUTT_SAVEHOOK	(1<<4)
+-#define MUTT_CHARSETHOOK	(1<<5)
+-#define MUTT_ICONVHOOK 	(1<<6)
+-#define MUTT_MESSAGEHOOK	(1<<7)
+-#define MUTT_CRYPTHOOK	(1<<8)
+-#define MUTT_ACCOUNTHOOK	(1<<9)
+-#define MUTT_REPLYHOOK	(1<<10)
+-#define MUTT_SEND2HOOK     (1<<11)
++#define MUTT_FOLDERHOOK  1
++#define MUTT_MBOXHOOK    (1<<1)
++#define MUTT_SENDHOOK    (1<<2)
++#define MUTT_FCCHOOK     (1<<3)
++#define MUTT_SAVEHOOK    (1<<4)
++#define MUTT_CHARSETHOOK (1<<5)
++#define MUTT_ICONVHOOK   (1<<6)
++#define MUTT_MESSAGEHOOK (1<<7)
++#define MUTT_CRYPTHOOK   (1<<8)
++#define MUTT_ACCOUNTHOOK (1<<9)
++#define MUTT_REPLYHOOK   (1<<10)
++#define MUTT_SEND2HOOK   (1<<11)
+ #ifdef USE_COMPRESSED
+-#define MUTT_OPENHOOK	(1<<12)
+-#define MUTT_APPENDHOOK	(1<<13)
+-#define MUTT_CLOSEHOOK	(1<<14)
++#define MUTT_OPENHOOK    (1<<12)
++#define MUTT_APPENDHOOK  (1<<13)
++#define MUTT_CLOSEHOOK   (1<<14)
+ #endif
+ 
+ /* tree characters for linearize_tree and print_enriched_string */
+-#define MUTT_TREE_LLCORNER		1
+-#define MUTT_TREE_ULCORNER		2
+-#define MUTT_TREE_LTEE		3
+-#define MUTT_TREE_HLINE		4
+-#define MUTT_TREE_VLINE		5
+-#define MUTT_TREE_SPACE		6
+-#define MUTT_TREE_RARROW		7
+-#define MUTT_TREE_STAR		8
+-#define MUTT_TREE_HIDDEN		9
+-#define MUTT_TREE_EQUALS		10
+-#define MUTT_TREE_TTEE		11
+-#define MUTT_TREE_BTEE		12
+-#define MUTT_TREE_MISSING		13
+-#define MUTT_TREE_MAX		14
++#define MUTT_TREE_LLCORNER      1
++#define MUTT_TREE_ULCORNER      2
++#define MUTT_TREE_LTEE          3
++#define MUTT_TREE_HLINE         4
++#define MUTT_TREE_VLINE         5
++#define MUTT_TREE_SPACE         6
++#define MUTT_TREE_RARROW        7
++#define MUTT_TREE_STAR          8
++#define MUTT_TREE_HIDDEN        9
++#define MUTT_TREE_EQUALS        10
++#define MUTT_TREE_TTEE          11
++#define MUTT_TREE_BTEE          12
++#define MUTT_TREE_MISSING       13
++#define MUTT_TREE_MAX           14
+ 
+ #define MUTT_SPECIAL_INDEX		MUTT_TREE_MAX
+ 
+-#define MUTT_THREAD_COLLAPSE	(1<<0)
+-#define MUTT_THREAD_UNCOLLAPSE	(1<<1)
+-#define MUTT_THREAD_GET_HIDDEN	(1<<2)
+-#define MUTT_THREAD_UNREAD		(1<<3)
+-#define MUTT_THREAD_NEXT_UNREAD	(1<<4)
++#define MUTT_THREAD_COLLAPSE    (1<<0)
++#define MUTT_THREAD_UNCOLLAPSE  (1<<1)
++#define MUTT_THREAD_GET_HIDDEN  (1<<2)
++#define MUTT_THREAD_UNREAD      (1<<3)
++#define MUTT_THREAD_NEXT_UNREAD (1<<4)
+ 
+ enum
+ {
+@@ -342,10 +342,10 @@ enum
+ #define MUTT_COMPOSE_NOFREEHEADER (1<<0)
+ 
+ /* flags to _mutt_select_file() */
+-#define MUTT_SEL_BUFFY	(1<<0)
+-#define MUTT_SEL_MULTI	(1<<1)
+-#define MUTT_SEL_FOLDER	(1<<2)
+-#define MUTT_SEL_VFOLDER	(1<<3)
++#define MUTT_SEL_BUFFY  (1<<0)
++#define MUTT_SEL_MULTI  (1<<1)
++#define MUTT_SEL_FOLDER (1<<2)
++#define MUTT_SEL_VFOLDER (1<<3)
+ 
+ /* flags for parse_spam_list */
+ #define MUTT_SPAM          1
+@@ -1041,14 +1041,14 @@ typedef struct
+ } ENTER_STATE;
+ 
+ /* flags for the STATE struct */
+-#define MUTT_DISPLAY	(1<<0) /* output is displayed to the user */
+-#define MUTT_VERIFY	(1<<1) /* perform signature verification */
++#define MUTT_DISPLAY       (1<<0) /* output is displayed to the user */
++#define MUTT_VERIFY        (1<<1) /* perform signature verification */
+ #define MUTT_PENDINGPREFIX (1<<2) /* prefix to write, but character must follow */
+ #define MUTT_WEED          (1<<3) /* weed headers even when not in display mode */
+-#define MUTT_CHARCONV	(1<<4) /* Do character set conversions */
+-#define MUTT_PRINTING	(1<<5) /* are we printing? - MUTT_DISPLAY "light" */
+-#define MUTT_REPLYING	(1<<6) /* are we replying? */
+-#define MUTT_FIRSTDONE	(1<<7) /* the first attachment has been done */
++#define MUTT_CHARCONV      (1<<4) /* Do character set conversions */
++#define MUTT_PRINTING      (1<<5) /* are we printing? - MUTT_DISPLAY "light" */
++#define MUTT_REPLYING      (1<<6) /* are we replying? */
++#define MUTT_FIRSTDONE     (1<<7) /* the first attachment has been done */
+ 
+ #define state_set_prefix(s) ((s)->flags |= MUTT_PENDINGPREFIX)
+ #define state_reset_prefix(s) ((s)->flags &= ~MUTT_PENDINGPREFIX)
+diff --git a/mutt_curses.h b/mutt_curses.h
+index 9b8304e..ede2b0f 100644
+--- a/mutt_curses.h
++++ b/mutt_curses.h
+@@ -154,8 +154,8 @@ typedef struct color_line
+   struct color_line *next;
+ } COLOR_LINE;
+ 
+-#define MUTT_PROGRESS_SIZE		(1<<0)	/* traffic-based progress */
+-#define MUTT_PROGRESS_MSG		(1<<1)	/* message-based progress */
++#define MUTT_PROGRESS_SIZE      (1<<0)  /* traffic-based progress */
++#define MUTT_PROGRESS_MSG       (1<<1)  /* message-based progress */
+ 
+ typedef struct
+ {
+diff --git a/pager.h b/pager.h
+index b73e040..36c8725 100644
+--- a/pager.h
++++ b/pager.h
+@@ -19,22 +19,22 @@
+ #include "attach.h"
+ 
+ /* dynamic internal flags */
+-#define MUTT_SHOWFLAT	(1<<0)
+-#define MUTT_SHOWCOLOR	(1<<1)
+-#define MUTT_HIDE		(1<<2)
+-#define MUTT_SEARCH	(1<<3)
+-#define MUTT_TYPES		(1<<4)
+-#define MUTT_SHOW		(MUTT_SHOWCOLOR | MUTT_SHOWFLAT)
++#define MUTT_SHOWFLAT   (1<<0)
++#define MUTT_SHOWCOLOR  (1<<1)
++#define MUTT_HIDE       (1<<2)
++#define MUTT_SEARCH     (1<<3)
++#define MUTT_TYPES      (1<<4)
++#define MUTT_SHOW       (MUTT_SHOWCOLOR | MUTT_SHOWFLAT)
+ 
+ /* exported flags for mutt_(do_)?pager */
+-#define MUTT_PAGER_NSKIP		(1<<5)	/* preserve whitespace with smartwrap */
+-#define MUTT_PAGER_MARKER		(1<<6)	/* use markers if option is set */
+-#define MUTT_PAGER_RETWINCH	(1<<7)	/* need reformatting on SIGWINCH */
+-#define MUTT_PAGER_MESSAGE		(MUTT_SHOWCOLOR | MUTT_PAGER_MARKER)
+-#define MUTT_PAGER_ATTACHMENT	(1<<8)
+-#define MUTT_PAGER_NOWRAP		(1<<9)	/* format for term width, ignore $wrap */
++#define MUTT_PAGER_NSKIP       (1<<5)  /* preserve whitespace with smartwrap */
++#define MUTT_PAGER_MARKER      (1<<6)  /* use markers if option is set */
++#define MUTT_PAGER_RETWINCH    (1<<7)  /* need reformatting on SIGWINCH */
++#define MUTT_PAGER_MESSAGE     (MUTT_SHOWCOLOR | MUTT_PAGER_MARKER)
++#define MUTT_PAGER_ATTACHMENT  (1<<8)
++#define MUTT_PAGER_NOWRAP      (1<<9)  /* format for term width, ignore $wrap */
+ 
+-#define MUTT_DISPLAYFLAGS	(MUTT_SHOW | MUTT_PAGER_NSKIP | MUTT_PAGER_MARKER)
++#define MUTT_DISPLAYFLAGS      (MUTT_SHOW | MUTT_PAGER_NSKIP | MUTT_PAGER_MARKER)
+ 
+ typedef struct
+ {
+-- 
+2.8.2
+

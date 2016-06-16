@@ -1,0 +1,55 @@
+From 2bb84b803e0d89c4cec96ef7380695d2b484fb9d Mon Sep 17 00:00:00 2001
+From: Kevin McCarthy <kevin@8t8.us>
+Date: Sat, 4 Jun 2016 11:32:09 -0700
+Subject: [PATCH 35/45] Various fixes to the sidebar logic.
+
+Use strfcpy instead of strncpy.  The current logic could write past
+the end of the buffer.
+
+Don't mess with BUFFY next pointers during removal.  The
+mutt_parse_mailboxes() is fine, but this is still not something that
+should be done inside sidebar.c.
+
+On removal, set next->prev since we can.
+
+Fix unmailboxes logic:
+  * only fix the prev pointers once.
+  * if we unmailbox the open mailbox, set it to NULL.
+
+Lastly, flag a redraw on mailboxes/unmailboxes.
+---
+ sidebar.c | 9 +++------
+ 1 file changed, 3 insertions(+), 6 deletions(-)
+
+diff --git a/sidebar.c b/sidebar.c
+index f31fd4b..f1753e7 100644
+--- a/sidebar.c
++++ b/sidebar.c
+@@ -403,14 +403,9 @@ static BUFFY *buffy_going (const BUFFY *b)
+   if (!b)
+     return NULL;
+ 
+-  if (b->prev)
+-  {
+-    b->prev->next = NULL;
+-  }
+-
+   if (b->next)
+   {
+-    b->next->prev = NULL;
++    b->next->prev = b->prev;
+     return b->next;
+   }
+ 
+@@ -1042,6 +1037,8 @@ void mutt_sb_notify_mailbox (BUFFY *b, int created)
+     if (Outgoing == b)
+       Outgoing = replacement;
+   }
++
++  SidebarNeedsRedraw = 1;
+ }
+ 
+ /**
+-- 
+2.8.2
+

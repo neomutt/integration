@@ -1,7 +1,7 @@
-From ce4670261a518393e2463b9290142a3db26415ec Mon Sep 17 00:00:00 2001
+From e1fde1110e21cc0200964bd950fb1cfce9e26510 Mon Sep 17 00:00:00 2001
 From: Kevin McCarthy <kevin@8t8.us>
 Date: Wed, 27 Apr 2016 17:56:51 -0700
-Subject: [PATCH 15/31] Modify the menu code to use windows.
+Subject: [PATCH 15/45] Modify the menu code to use windows.
 
 Change menu.c to use the mutt_window_t structures and functions.  The
 index/stats/help/message window pointers are stored inside the menu_t.

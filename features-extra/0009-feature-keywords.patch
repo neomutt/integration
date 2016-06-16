@@ -1,4 +1,4 @@
-From 50dec5d8e869589fc372dbee67b84e4b496a7554 Mon Sep 17 00:00:00 2001
+From 6905a21f0e7bec2a62cbcb0f5d9959e1becf3a26 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Tue, 24 May 2016 17:42:12 +0100
 Subject: [PATCH 09/11] feature: keywords
@@ -307,10 +307,10 @@ index 5f12a3c..9a98d21 100644
  
  int mutt_copy_hdr (FILE *, FILE *, LOFF_T, LOFF_T, int, const char *);
 diff --git a/curs_main.c b/curs_main.c
-index 109f42a..5f07fa3 100644
+index 79ae14d..b21e5c2 100644
 --- a/curs_main.c
 +++ b/curs_main.c
-@@ -1407,6 +1407,9 @@ int mutt_index_menu (void)
+@@ -1406,6 +1406,9 @@ int mutt_index_menu (void)
  	  FREE (&Context);
  	}
  
@@ -320,7 +320,7 @@ index 109f42a..5f07fa3 100644
          mutt_sleep (0);
  
  	/* Set CurrentMenu to MENU_MAIN before executing any folder
-@@ -1421,6 +1424,8 @@ int mutt_index_menu (void)
+@@ -1420,6 +1423,8 @@ int mutt_index_menu (void)
  					(option (OPTREADONLY) || op == OP_MAIN_CHANGE_FOLDER_READONLY) ?
  					M_READONLY : 0, NULL)) != NULL)
  	{
@@ -329,7 +329,7 @@ index 109f42a..5f07fa3 100644
  	  menu->current = ci_first_message ();
  	}
  	else
-@@ -2227,6 +2232,21 @@ int mutt_index_menu (void)
+@@ -2226,6 +2231,21 @@ int mutt_index_menu (void)
  	menu->redraw = REDRAW_FULL;
  	break;
  
@@ -1343,7 +1343,7 @@ index 0113e7d..0c37cc4 100644
 +}
 +
 diff --git a/init.h b/init.h
-index b46a3ea..2577434 100644
+index 9e6d945..2bd5bdd 100644
 --- a/init.h
 +++ b/init.h
 @@ -1389,6 +1389,28 @@ struct option_t MuttVars[] = {
@@ -1375,7 +1375,7 @@ index b46a3ea..2577434 100644
    { "locale",		DT_STR,  R_BOTH, UL &Locale, UL "C" },
    /*
    ** .pp
-@@ -3752,6 +3774,20 @@ struct option_t MuttVars[] = {
+@@ -3753,6 +3775,20 @@ struct option_t MuttVars[] = {
    {"xterm_set_titles",	DT_SYN,  R_NONE, UL "ts_enabled", 0 },
    /*
    */
@@ -1396,7 +1396,7 @@ index b46a3ea..2577434 100644
    /*--*/
    { NULL, 0, 0, 0, 0 }
  };
-@@ -3768,6 +3804,7 @@ const struct mapping_t SortMethods[] = {
+@@ -3769,6 +3805,7 @@ const struct mapping_t SortMethods[] = {
    { "to",		SORT_TO },
    { "score",		SORT_SCORE },
    { "spam",		SORT_SPAM },
@@ -1404,7 +1404,7 @@ index b46a3ea..2577434 100644
    { NULL,               0 }
  };
  
-@@ -3787,6 +3824,7 @@ const struct mapping_t SortAuxMethods[] = {
+@@ -3788,6 +3825,7 @@ const struct mapping_t SortAuxMethods[] = {
    { "to",		SORT_TO },
    { "score",		SORT_SCORE },
    { "spam",		SORT_SPAM },
@@ -1718,7 +1718,7 @@ index 57be53e..8c296ce 100644
        return (pat->not ^ (h->env->spam && h->env->spam->data && patmatch (pat, h->env->spam->data) == 0));
      case M_DUPLICATED:
 diff --git a/protos.h b/protos.h
-index e4c9283..3102509 100644
+index bfe78e4..fb82955 100644
 --- a/protos.h
 +++ b/protos.h
 @@ -185,6 +185,12 @@ void mutt_edit_content_type (HEADER *, BODY *, FILE *);

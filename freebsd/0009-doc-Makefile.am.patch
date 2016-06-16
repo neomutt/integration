@@ -1,4 +1,4 @@
-From 6e318059717a684fb94994ca2ee4022b0e70fe65 Mon Sep 17 00:00:00 2001
+From 0dd38c7a60a3b5067b51270662705b5b555680dc Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 15:19:44 +0100
 Subject: [PATCH 09/21] doc-Makefile.am

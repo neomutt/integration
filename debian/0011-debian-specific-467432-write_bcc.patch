@@ -1,4 +1,4 @@
-From 627039cc886446d05dcf415329238f117d22a85c Mon Sep 17 00:00:00 2001
+From ef3182de19da2d1d2fcd601d08533874e1f0a212 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 6 May 2016 00:24:00 +0100
 Subject: [PATCH 11/22] debian-specific/467432-write_bcc
@@ -26,10 +26,10 @@ index d1343ad..22f851a 100644
  
    /* now copy the body of the message. */
 diff --git a/init.h b/init.h
-index 8e42328..1799483 100644
+index c183399..5e387a0 100644
 --- a/init.h
 +++ b/init.h
-@@ -4070,14 +4070,9 @@ struct option_t MuttVars[] = {
+@@ -4071,14 +4071,9 @@ struct option_t MuttVars[] = {
    { "write_bcc",	DT_BOOL, R_NONE, OPTWRITEBCC, 1},
    /*
    ** .pp
@@ -61,7 +61,7 @@ index 52afbe9..7273b34 100644
            fprintf (fout, "X-Mutt-Resume-Draft: 1\n");
          fputc ('\n', fout);
 diff --git a/protos.h b/protos.h
-index d28925b..2065d07 100644
+index 4ade804..5c898f4 100644
 --- a/protos.h
 +++ b/protos.h
 @@ -387,7 +387,7 @@ int mutt_write_fcc (const char *path, HEADER *hdr, const char *msgid, int, char

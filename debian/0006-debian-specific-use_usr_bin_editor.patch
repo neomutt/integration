@@ -1,4 +1,4 @@
-From 070d4c737c712130dddb88095aa1c8ed4dab5403 Mon Sep 17 00:00:00 2001
+From 3528a4309f045d6401f841f8ed75c8934d42be12 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 6 May 2016 00:23:58 +0100
 Subject: [PATCH 06/22] debian-specific/use_usr_bin_editor
@@ -22,7 +22,7 @@ index b48d8be..613ba15 100644
    Editor = safe_strdup (p);
    Visual = safe_strdup (p);
 diff --git a/init.h b/init.h
-index 47811cd..9b98068 100644
+index 376a2df..668a3b8 100644
 --- a/init.h
 +++ b/init.h
 @@ -741,7 +741,7 @@ struct option_t MuttVars[] = {

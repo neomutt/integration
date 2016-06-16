@@ -1,4 +1,4 @@
-From 6e59ecd7c2d7de13ef00ab60a04f97e836117764 Mon Sep 17 00:00:00 2001
+From 42b3d5dd296522a4771f6965814ddde01e449db9 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 6 May 2016 00:23:44 +0100
 Subject: [PATCH 01/22] misc/am-maintainer-mode

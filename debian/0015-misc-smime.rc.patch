@@ -1,4 +1,4 @@
-From a56314e3f45888bddca669ead45fe59878042e34 Mon Sep 17 00:00:00 2001
+From 7436181fd5be2fd7a755ee7b38108b7d030f16bc Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 6 May 2016 00:24:02 +0100
 Subject: [PATCH 15/22] misc/smime.rc

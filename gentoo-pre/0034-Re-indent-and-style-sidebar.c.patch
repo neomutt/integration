@@ -1,0 +1,112 @@
+From 06966f4fa2b287a14d94d70b0c58472044280df5 Mon Sep 17 00:00:00 2001
+From: Kevin McCarthy <kevin@8t8.us>
+Date: Sat, 4 Jun 2016 11:32:06 -0700
+Subject: [PATCH 34/45] Re-indent and style sidebar.c.
+
+---
+ sidebar.c | 68 ++++++++++++++++++++++++++++++++-------------------------------
+ 1 file changed, 35 insertions(+), 33 deletions(-)
+
+diff --git a/sidebar.c b/sidebar.c
+index 57b7209..f31fd4b 100644
+--- a/sidebar.c
++++ b/sidebar.c
+@@ -51,37 +51,39 @@ struct sidebar_entry
+   BUFFY       *buffy;
+ };
+ 
+-enum {
+-	SB_SRC_NONE = 0,
+-	SB_SRC_VIRT,
+-	SB_SRC_INCOMING
++enum
++{
++  SB_SRC_NONE = 0,
++  SB_SRC_VIRT,
++  SB_SRC_INCOMING
+ };
+ static int sidebar_source = SB_SRC_NONE;
+ 
+ static BUFFY *
+ get_incoming (void)
+ {
+-	switch (sidebar_source) {
+-	case SB_SRC_NONE:
+-		sidebar_source = SB_SRC_INCOMING;
++  switch (sidebar_source)
++  {
++  case SB_SRC_NONE:
++    sidebar_source = SB_SRC_INCOMING;
+ 
+ #ifdef USE_NOTMUCH
+-		if (option (OPTVIRTSPOOLFILE) && VirtIncoming) {
+-			sidebar_source = SB_SRC_VIRT;
+-			return VirtIncoming;
+-		}
+-		break;
+-	case SB_SRC_VIRT:
+-		if (VirtIncoming) {
+-			return VirtIncoming;
+-		}
+-		break;
++    if (option (OPTVIRTSPOOLFILE) && VirtIncoming)
++    {
++      sidebar_source = SB_SRC_VIRT;
++      return VirtIncoming;
++    }
++    break;
++  case SB_SRC_VIRT:
++    if (VirtIncoming)
++      return VirtIncoming;
++    break;
+ #endif
+-	case SB_SRC_INCOMING:
+-		break;
+-	}
++  case SB_SRC_INCOMING:
++    break;
++  }
+ 
+-	return Incoming;	/* default */
++  return Incoming;	/* default */
+ }
+ 
+ /**
+@@ -1048,22 +1050,22 @@ void mutt_sb_notify_mailbox (BUFFY *b, int created)
+ void
+ mutt_sb_toggle_virtual (void)
+ {
+-	if (sidebar_source == -1)
+-		get_incoming();
++  if (sidebar_source == -1)
++    get_incoming();
+ 
+ #ifdef USE_NOTMUCH
+-	if ((sidebar_source == SB_SRC_INCOMING) && VirtIncoming)
+-		sidebar_source = SB_SRC_VIRT;
+-	else
++  if ((sidebar_source == SB_SRC_INCOMING) && VirtIncoming)
++    sidebar_source = SB_SRC_VIRT;
++  else
+ #endif
+-		sidebar_source = SB_SRC_INCOMING;
++    sidebar_source = SB_SRC_INCOMING;
+ 
+-	TopBuffy = NULL;
+-	OpnBuffy = NULL;
+-	HilBuffy = NULL;
+-	BotBuffy = NULL;
+-	Outgoing = NULL;
++  TopBuffy = NULL;
++  OpnBuffy = NULL;
++  HilBuffy = NULL;
++  BotBuffy = NULL;
++  Outgoing = NULL;
+ 
+-	mutt_sb_draw();
++  mutt_sb_draw();
+ }
+ 
+-- 
+2.8.2
+

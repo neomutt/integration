@@ -1,4 +1,4 @@
-From 395ceb16c04f686196a63d7e801c335fd0cd10b5 Mon Sep 17 00:00:00 2001
+From 009ced85b51995358eb1e84a2b26af61539b9b8e Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Tue, 24 May 2016 17:09:22 +0100
 Subject: [PATCH 6/7] feature: compress

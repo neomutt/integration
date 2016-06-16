@@ -1,10 +1,11 @@
-From 26d0b66bd400e4b012dfa515d0bfda94b40451ec Mon Sep 17 00:00:00 2001
+From 8879ed6994ae7fdde86fbea6add635a26cbbae27 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Tue, 24 May 2016 17:12:45 +0100
 Subject: [PATCH 7/7] feature: sidebar
 
 ---
  Makefile.am         |    8 +-
+ OPS.MIX             |   12 +-
  OPS.SIDEBAR         |    8 +
  PATCHES             |    1 +
  README.sidebar      |  145 +++++++
@@ -26,7 +27,7 @@ Subject: [PATCH 7/7] feature: sidebar
  imap/command.c      |    8 +
  imap/imap.c         |    4 +
  init.c              |    3 +
- init.h              |  160 +++++++-
+ init.h              |  161 +++++++-
  keymap.c            |    3 +
  mailbox.h           |    3 +
  main.c              |   22 +
@@ -40,11 +41,11 @@ Subject: [PATCH 7/7] feature: sidebar
  mx.c                |   32 ++
  mx.h                |    4 +
  pager.c             |   78 +++-
- sidebar.c           | 1086 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ sidebar.c           | 1101 ++++++++++++++++++++++++++++++++++++++++++++++++++
  sidebar.h           |   36 ++
  sort.h              |    7 +
  version.c           |    5 +
- 40 files changed, 3321 insertions(+), 56 deletions(-)
+ 41 files changed, 3343 insertions(+), 62 deletions(-)
  create mode 100644 OPS.SIDEBAR
  create mode 100644 README.sidebar
  create mode 100644 doc/muttrc.sidebar
@@ -86,20 +87,38 @@ index 218576c..8d02bb2 100644
  		$(srcdir)/OPS.MIX $(srcdir)/OPS.CRYPT $(srcdir)/OPS.SMIME \
  			> keymap_alldefs.h
  
+diff --git a/OPS.MIX b/OPS.MIX
+index 4988333..a836226 100644
+--- a/OPS.MIX
++++ b/OPS.MIX
+@@ -1,7 +1,7 @@
+-OP_MIX_USE "Accept the chain constructed"
+-OP_MIX_APPEND "Append a remailer to the chain"
+-OP_MIX_INSERT "Insert a remailer into the chain"
+-OP_MIX_DELETE "Delete a remailer from the chain"
+-OP_MIX_CHAIN_PREV "Select the previous element of the chain"
+-OP_MIX_CHAIN_NEXT "Select the next element of the chain"
++OP_MIX_USE "accept the chain constructed"
++OP_MIX_APPEND "append a remailer to the chain"
++OP_MIX_INSERT "insert a remailer into the chain"
++OP_MIX_DELETE "delete a remailer from the chain"
++OP_MIX_CHAIN_PREV "select the previous element of the chain"
++OP_MIX_CHAIN_NEXT "select the next element of the chain"
+ OP_COMPOSE_MIX "send the message through a mixmaster remailer chain"
 diff --git a/OPS.SIDEBAR b/OPS.SIDEBAR
 new file mode 100644
-index 0000000..d09ec1f
+index 0000000..7e5b504
 --- /dev/null
 +++ b/OPS.SIDEBAR
 @@ -0,0 +1,8 @@
-+OP_SIDEBAR_NEXT "Move the highlight to next mailbox"
-+OP_SIDEBAR_NEXT_NEW "Move the highlight to next mailbox with new mail"
-+OP_SIDEBAR_OPEN "Open highlighted mailbox"
-+OP_SIDEBAR_PAGE_DOWN "Scroll the Sidebar down 1 page"
-+OP_SIDEBAR_PAGE_UP "Scroll the Sidebar up 1 page"
-+OP_SIDEBAR_PREV "Move the highlight to previous mailbox"
-+OP_SIDEBAR_PREV_NEW "Move the highlight to previous mailbox with new mail"
-+OP_SIDEBAR_TOGGLE_VISIBLE "Make the Sidebar (in)visible"
++OP_SIDEBAR_NEXT "move the highlight to next mailbox"
++OP_SIDEBAR_NEXT_NEW "move the highlight to next mailbox with new mail"
++OP_SIDEBAR_OPEN "open highlighted mailbox"
++OP_SIDEBAR_PAGE_DOWN "scroll the sidebar down 1 page"
++OP_SIDEBAR_PAGE_UP "scroll the sidebar up 1 page"
++OP_SIDEBAR_PREV "move the highlight to previous mailbox"
++OP_SIDEBAR_PREV_NEW "move the highlight to previous mailbox with new mail"
++OP_SIDEBAR_TOGGLE_VISIBLE "make the sidebar (in)visible"
 diff --git a/PATCHES b/PATCHES
 index b720454..fd6fa32 100644
 --- a/PATCHES
@@ -2466,7 +2485,7 @@ index c10f448..0113e7d 100644
  	  map = SortMethods;
  	  break;
 diff --git a/init.h b/init.h
-index 1412532..71d170c 100644
+index 1412532..0af3a8f 100644
 --- a/init.h
 +++ b/init.h
 @@ -42,11 +42,12 @@
@@ -2483,7 +2502,7 @@ index 1412532..71d170c 100644
  
  /* flags to parse_set() */
  #define M_SET_INV	(1<<0)	/* default is to invert all vars */
-@@ -2669,6 +2670,147 @@ struct option_t MuttVars[] = {
+@@ -2669,6 +2670,148 @@ struct option_t MuttVars[] = {
    ** Command to use when spawning a subshell.  By default, the user's login
    ** shell from \fC/etc/passwd\fP is used.
    */
@@ -2530,6 +2549,7 @@ index 1412532..71d170c 100644
 +  ** .dt %B  .dd Name of the mailbox
 +  ** .dt %S  .dd * Size of mailbox (total number of messages)
 +  ** .dt %N  .dd * Number of New messages in the mailbox
++  ** .dt %n  .dd N if mailbox has new mail, blank otherwise
 +  ** .dt %F  .dd * Number of Flagged messages in the mailbox
 +  ** .dt %!  .dd ``!'' : one flagged message;
 +  **             ``!!'' : two flagged messages;
@@ -2631,7 +2651,7 @@ index 1412532..71d170c 100644
    { "sig_dashes",	DT_BOOL, R_NONE, OPTSIGDASHES, 1 },
    /*
    ** .pp
-@@ -3666,6 +3808,19 @@ const struct mapping_t SortKeyMethods[] = {
+@@ -3666,6 +3809,19 @@ const struct mapping_t SortKeyMethods[] = {
    { NULL,       0 }
  };
  
@@ -2651,7 +2671,7 @@ index 1412532..71d170c 100644
  
  /* functions used to parse commands in a rc file */
  
-@@ -3765,6 +3920,9 @@ const struct command_t Commands[] = {
+@@ -3765,6 +3921,9 @@ const struct command_t Commands[] = {
    { "send-hook",	mutt_parse_hook,	M_SENDHOOK },
    { "send2-hook",	mutt_parse_hook,	M_SEND2HOOK },
    { "set",		parse_set,		0 },
@@ -3357,10 +3377,10 @@ index b9f72c2..b4b8889 100644
  	break;
 diff --git a/sidebar.c b/sidebar.c
 new file mode 100644
-index 0000000..726cfda
+index 0000000..333ec60
 --- /dev/null
 +++ b/sidebar.c
-@@ -0,0 +1,1086 @@
+@@ -0,0 +1,1101 @@
 +/* Copyright (C) 2004 Justin Hibbits <jrh29@po.cwru.edu>
 + * Copyright (C) 2004 Thomer M. Gil <mutt@thomer.com>
 + * Copyright (C) 2015-2016 Richard Russon <rich@flatcap.org>
@@ -3490,9 +3510,10 @@ index 0000000..726cfda
 + * @flags:       Format flags, e.g. M_FORMAT_OPTIONAL
 + *
 + * cb_format_str is a callback function for mutt_FormatString.  It understands
-+ * five operators. '%B' : Mailbox name, '%F' : Number of flagged messages,
++ * six operators. '%B' : Mailbox name, '%F' : Number of flagged messages,
 + * '%N' : Number of new messages, '%S' : Size (total number of messages),
 + * '%!' : Icon denoting number of flagged messages.
++ * '%n' : N if folder has new mail, blank otherwise.
 + *
 + * Returns: src (unchanged)
 + */
@@ -3560,6 +3581,16 @@ index 0000000..726cfda
 +        snprintf (dest, destlen, fmt, b->msg_unread);
 +      }
 +      else if (b->msg_unread == 0)
++        optional = 0;
++      break;
++
++    case 'n':
++      if (!optional)
++      {
++        snprintf (fmt, sizeof (fmt), "%%%sc", prefix);
++        snprintf (dest, destlen, fmt, b->new ? 'N' : ' ');
++      }
++      else if (b->new == 0)
 +        optional = 0;
 +      break;
 +
@@ -4068,7 +4099,7 @@ index 0000000..726cfda
 +    else if ((ColorDefs[MT_COLOR_SB_SPOOLFILE] != 0) &&
 +               (mutt_strcmp (b->path, Spoolfile) == 0))
 +      SETCOLOR(MT_COLOR_SB_SPOOLFILE);
-+    else if (b->msg_unread > 0)
++    else if ((b->msg_unread > 0) || (b->new))
 +      SETCOLOR(MT_COLOR_NEW);
 +    else if (b->msg_flagged > 0)
 +      SETCOLOR(MT_COLOR_FLAGGED);
@@ -4189,6 +4220,9 @@ index 0000000..726cfda
 +  /* if (OldVisible == 0) */
 +  /* 	mutt_buffy_check (1); we probably have bad or no numbers */
 +
++  int x = getcurx (stdscr);
++  int y = getcury (stdscr);
++
 +  int first_row = 0;
 +  int num_rows  = LINES - 2;
 +
@@ -4213,6 +4247,7 @@ index 0000000..726cfda
 +    return;
 +
 +  draw_sidebar (first_row, num_rows, div_width);
++  move (y, x);
 +}
 +
 +/**

@@ -1,7 +1,7 @@
-From 75a1e685e6dec26ce1a6466b42ffa82f75ce00b2 Mon Sep 17 00:00:00 2001
+From cd0e464fcdeb083f07299a6ec165ba4414803f83 Mon Sep 17 00:00:00 2001
 From: Kevin McCarthy <kevin@8t8.us>
 Date: Wed, 27 Apr 2016 17:56:57 -0700
-Subject: [PATCH 22/31] Change remailer to use mutt windows.
+Subject: [PATCH 22/45] Change remailer to use mutt windows.
 
 ---
  remailer.c | 28 ++++++++++++++--------------
