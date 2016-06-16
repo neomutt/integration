@@ -1,4 +1,4 @@
-From 2f59dd5eb4f815d7856c760841dc85005ff78c87 Mon Sep 17 00:00:00 2001
+From 6bcb7bead56fd1120d67689e9838cd3c13f3cfd4 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 03:09:05 +0100
 Subject: [PATCH 11/13] mutt-1.5.23-cariage-return
@@ -11,10 +11,10 @@ Subject: [PATCH 11/13] mutt-1.5.23-cariage-return
  4 files changed, 26 insertions(+), 13 deletions(-)
 
 diff --git a/lib.c b/lib.c
-index c93397d..784ff7c 100644
+index ea24292..3c11499 100644
 --- a/lib.c
 +++ b/lib.c
-@@ -880,6 +880,18 @@ int mutt_strcmp(const char *a, const char *b)
+@@ -884,6 +884,18 @@ int mutt_strcmp(const char *a, const char *b)
    return strcmp(NONULL(a), NONULL(b));
  }
  

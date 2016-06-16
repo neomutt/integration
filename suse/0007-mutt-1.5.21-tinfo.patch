@@ -1,4 +1,4 @@
-From 46b186b9e57f4a31841a99b6c3aca87fe6e5349c Mon Sep 17 00:00:00 2001
+From e3b42da3e45a5dd2c2308909ef107b32cb802395 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 03:05:42 +0100
 Subject: [PATCH 07/13] mutt-1.5.21-tinfo

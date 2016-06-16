@@ -1,4 +1,4 @@
-From 0f20bebce2e1e10df2267bab8148577d72fcddd1 Mon Sep 17 00:00:00 2001
+From 7ff3e63a310ffbdfbb53c2cc8968f7e271e5728f Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Wed, 1 Jun 2016 21:39:26 +0100
 Subject: [PATCH 5/5] mutt-1.6.0-syncdebug

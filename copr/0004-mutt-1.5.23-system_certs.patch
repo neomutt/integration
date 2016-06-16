@@ -1,4 +1,4 @@
-From 66f89bdecb7aff904e603935aedca9ca05e89fd8 Mon Sep 17 00:00:00 2001
+From fe38aa8f829f99c187be518e09aa533df71505ff Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Wed, 1 Jun 2016 21:38:43 +0100
 Subject: [PATCH 4/5] mutt-1.5.23-system_certs
@@ -8,7 +8,7 @@ Subject: [PATCH 4/5] mutt-1.5.23-system_certs
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/init.h b/init.h
-index 92e7388..180d060 100644
+index 92e7388..755e722 100644
 --- a/init.h
 +++ b/init.h
 @@ -3534,7 +3534,7 @@ struct option_t MuttVars[] = {
@@ -16,7 +16,7 @@ index 92e7388..180d060 100644
  #if defined(USE_SSL)
  #ifdef USE_SSL_GNUTLS
 -  { "ssl_ca_certificates_file", DT_PATH, R_NONE, UL &SslCACertFile, 0 },
-+  { "ssl_ca_certificates_file", DT_PATH, R_NONE, UL &SslCACertFile, "/etc/ssl/certs/ca-bundle.crt" },
++  { "ssl_ca_certificates_file", DT_PATH, R_NONE, UL &SslCACertFile, UL "/etc/ssl/certs/ca-bundle.crt" },
    /*
    ** .pp
    ** This variable specifies a file containing trusted CA certificates.

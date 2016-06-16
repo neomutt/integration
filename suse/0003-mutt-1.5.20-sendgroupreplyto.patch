@@ -1,4 +1,4 @@
-From 0be66bbf8190870fe2e437122510000566efffac Mon Sep 17 00:00:00 2001
+From c0dc6b9d28eb9aa63a0fad7033a9a89b319dfe8b Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 03:03:32 +0100
 Subject: [PATCH 03/13] mutt-1.5.20-sendgroupreplyto

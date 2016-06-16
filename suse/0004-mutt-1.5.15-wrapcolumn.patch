@@ -1,4 +1,4 @@
-From cbe622585531d9658d7686d71be3f3783c34cbc5 Mon Sep 17 00:00:00 2001
+From 4a083ce463d18e6a18e6ada42fe6129ee963b169 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 03:03:48 +0100
 Subject: [PATCH 04/13] mutt-1.5.15-wrapcolumn

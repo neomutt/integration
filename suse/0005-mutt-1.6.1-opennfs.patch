@@ -1,17 +1,17 @@
-From cab0cde1586d44ae1207b90a7e35e909746df336 Mon Sep 17 00:00:00 2001
+From a7996dbb17ba988dd4abbe67c59205f884f9f600 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 03:04:29 +0100
 Subject: [PATCH 05/13] mutt-1.6.1-opennfs
 
 ---
  Makefile.am |   4 +-
- lib.c       |   7 +++-
+ lib.c       |  11 +++++-
  mbox.c      |   2 +-
  mh.c        |   9 ++++-
  mutt.h      |   1 +
  opennfs.c   | 122 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  sendlib.c   |   2 +-
- 7 files changed, 141 insertions(+), 6 deletions(-)
+ 7 files changed, 145 insertions(+), 6 deletions(-)
  create mode 100644 opennfs.c
 
 diff --git a/Makefile.am b/Makefile.am
@@ -37,7 +37,7 @@ index 1a03bbb..5d71892 100644
  pgpring_DEPENDENCIES = $(LIBOBJS) $(INTLDEPS)
  
 diff --git a/lib.c b/lib.c
-index fa3067e..c93397d 100644
+index fa3067e..ea24292 100644
 --- a/lib.c
 +++ b/lib.c
 @@ -50,6 +50,7 @@
@@ -48,7 +48,38 @@ index fa3067e..c93397d 100644
  #include "lib.h"
  
  
-@@ -637,6 +638,10 @@ int safe_open (const char *path, int flags)
+@@ -546,6 +547,7 @@ int safe_rename (const char *src, const char *target)
+ 
+ /* Create a temporary directory next to a file name */
+ 
++#if 0
+ static int mutt_mkwrapdir (const char *path, char *newfile, size_t nflen, 
+ 		    char *newdir, size_t ndlen)
+ {
+@@ -581,6 +583,7 @@ static int mutt_mkwrapdir (const char *path, char *newfile, size_t nflen,
+   }
+   return 0;  
+ }
++#endif
+ 
+ /* remove a directory and everything under it */
+ int mutt_rmtree (const char* path)
+@@ -622,6 +625,7 @@ int mutt_rmtree (const char* path)
+   return rc;
+ }
+ 
++#if 0
+ static int mutt_put_file_in_place (const char *path, const char *safe_file, const char *safe_dir)
+ {
+   int rv;
+@@ -631,12 +635,17 @@ static int mutt_put_file_in_place (const char *path, const char *safe_file, cons
+   rmdir (safe_dir);
+   return rv;
+ }
++#endif
+ 
+ int safe_open (const char *path, int flags)
+ {
    struct stat osb, nsb;
    int fd;
  
@@ -59,7 +90,7 @@ index fa3067e..c93397d 100644
    if (flags & O_EXCL) 
    {
      char safe_file[_POSIX_PATH_MAX];
-@@ -660,7 +665,7 @@ int safe_open (const char *path, int flags)
+@@ -660,7 +669,7 @@ int safe_open (const char *path, int flags)
  
    if ((fd = open (path, flags & ~O_EXCL, 0600)) < 0)
      return fd;

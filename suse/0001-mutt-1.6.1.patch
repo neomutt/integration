@@ -1,4 +1,4 @@
-From aa36be90bbc1b84cf46b106e64faecdf97c44ce6 Mon Sep 17 00:00:00 2001
+From 84f9726f8ab28a56adfbc9acc946efe3575634e0 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 03:01:54 +0100
 Subject: [PATCH 01/13] mutt-1.6.1
@@ -64,7 +64,7 @@ index 69e27ca..7833cf6 100644
  # show the incoming mailboxes list (just like "mutt -y") and back when pressing "y"
  macro index,pager y "<change-folder>?<toggle-mailboxes>" "show incoming mailboxes list"
 diff --git a/imap/auth.c b/imap/auth.c
-index 047531a..f125b8f 100644
+index 047531a..64d4d24 100644
 --- a/imap/auth.c
 +++ b/imap/auth.c
 @@ -72,6 +72,23 @@ int imap_authenticate (IMAP_DATA* idata)
@@ -77,7 +77,7 @@ index 047531a..f125b8f 100644
 +      {
 +	while (authenticator->authenticate)
 +	{
-+	  char* identify = authenticator->method;
++	  const char *identify = authenticator->method;
 +	  if (identify && !ascii_strcasecmp(identify, method))
 +	    if ((r = authenticator->authenticate(idata, method)) != IMAP_AUTH_UNAVAIL)
 +	    {
