@@ -3,6 +3,12 @@ From: Richard Russon <rich@flatcap.org>
 Date: Mon, 30 May 2016 03:44:08 +0100
 Subject: [PATCH 06/13] xterm-set-only-window-title
 
+user:        Fabian Groffen <grobian@gentoo.org>
+date:        Sun Oct 27 16:29:18 2013 +0100
+files:       curs_main.c
+description:
+fix xterm-titles patch to not set both window and icon title
+
 ---
  curs_main.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)

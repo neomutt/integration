@@ -3,6 +3,15 @@ From: Richard Russon <rich@flatcap.org>
 Date: Mon, 30 May 2016 03:46:36 +0100
 Subject: [PATCH 09/13] change_folder_next
 
+Fabian Groffen <grobian@gentoo.org>
+* This patch brings back the original behaviour of changer-folder, which
+  some people find more useful.
+  It suggests the next folder in your mailboxes list that has new mail
+  measured from the current folder, instead of the first folder from your
+  mailboxes list in any case.  This prevents starvation of folders
+  defined at the back of your list ;)
+  See discussion: http://thread.gmane.org/gmane.mail.mutt.devel/12457
+
 ---
  PATCHES     | 1 +
  curs_main.c | 7 +++++++

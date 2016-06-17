@@ -3,6 +3,18 @@ From: Richard Russon <rich@flatcap.org>
 Date: Mon, 30 May 2016 03:45:25 +0100
 Subject: [PATCH 07/13] xterm-no-tigetstr-on-tty
 
+user:        Fabian Groffen <grobian@gentoo.org>
+date:        Sun Oct 27 16:31:36 2013 +0100
+files:       curs_main.c
+description:
+xterm: check we're on a tty before calling tigetstr
+
+tigetstr appears to spinlock/hang when called without a tty, which is
+undesirable when mutt is ran from cron or ssh in a scripted fashion,
+e.g. to send mail.  Hence, abort early if stdout doesn't appear to be
+connected to a tty.
+Fixes https://bugs.gentoo.org/show_bug.cgi?id=432562
+
 ---
  curs_main.c | 5 +++++
  1 file changed, 5 insertions(+)

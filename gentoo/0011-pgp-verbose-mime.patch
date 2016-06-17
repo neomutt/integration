@@ -3,6 +3,10 @@ From: Richard Russon <rich@flatcap.org>
 Date: Mon, 30 May 2016 03:56:38 +0100
 Subject: [PATCH 11/13] pgp-verbose-mime
 
+Configurable PGP mime part name path by Vineet Kumar
+
+Orignal patch from http://www.doorstop.net/projects
+
 ---
  PATCHES   |  1 +
  globals.h |  2 ++

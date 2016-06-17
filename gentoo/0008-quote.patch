@@ -3,6 +3,24 @@ From: Richard Russon <rich@flatcap.org>
 Date: Mon, 30 May 2016 03:46:08 +0100
 Subject: [PATCH 08/13] quote
 
+http://www.mutt.org.ua/download/mutt-1.5.21/patch-1.5.21.vvv.quote.gz
+
+Modified for Gentoo for
+https://bugs.gentoo.org/show_bug.cgi?id=532890
+http://dev.mutt.org/trac/ticket/3718
+
+The patch changes behaviour, for OPTQUOTEQUOTED.  It no longer repeats
+the last quote character, but the first.  This because it is it easier
+to do so without having to copy buf, which is the source of the problem
+reported in the bug(s) above.
+
+A discussion about this has been made on the ML
+http://thread.gmane.org/gmane.mail.mutt.devel/22759/focus=22783
+which concluded that this version has some issues/makes no sense.
+In http://thread.gmane.org/gmane.mail.mutt.devel/22759/focus=22783 a
+consensus appeared to have been reached, but no action after that has
+been taken.
+
 ---
  PATCHES   |  1 +
  handler.c | 28 ++++++++++++++++++++++++++--

@@ -3,6 +3,21 @@ From: Richard Russon <rich@flatcap.org>
 Date: Mon, 30 May 2016 03:55:55 +0100
 Subject: [PATCH 10/13] change_subject
 
+# HG changeset patch
+# User David Champion <dgc@uchicago.edu>
+# Date 1227038081 21600
+# Branch HEAD
+# Node ID bd0ea10f5757dc9776c6c661a9fbc8d21903bdac
+# Parent 5c55e8a0dd1547112e82dfb365c4cf7fe123fd1f
+# Parent  bd51297599d8df22577826d247d4632ab3b86a77
+imported patch replacelist
+
+Fabian Groffen <grobian@gentoo.org>
+- fixed a segfault on empty subjects
+- added unsubjrx * support to remove all registered patterns
+- updated for current code
+- adjusted M_* constants to MUTT_*
+
 ---
  PATCHES             |   1 +
  doc/manual.xml.head |  52 ++++++++++++++++++
