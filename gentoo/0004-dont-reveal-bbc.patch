@@ -12,6 +12,8 @@ http://bugs.debian.org/cgi-bin/bugreport.cgi?msg=28;filename=write_bcc.patch.1.
 
 originally adapted for Gentoo patchsets, in NeoMutt however, this should
 be identical to debian/0011-debian-specific-467432-write_bcc.patch
+however, it is NOT.  There is a slight comment difference, and a write
+header call difference.
 
 additional information:
 http://dev.mutt.org/trac/ticket/3337
