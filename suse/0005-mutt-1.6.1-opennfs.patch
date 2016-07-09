@@ -1,7 +1,7 @@
-From a7996dbb17ba988dd4abbe67c59205f884f9f600 Mon Sep 17 00:00:00 2001
+From 6625b2a7956f18e935b4a555beb30c9ec32c408f Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 03:04:29 +0100
-Subject: [PATCH 05/13] mutt-1.6.1-opennfs
+Subject: [PATCH 05/12] mutt-1.6.1-opennfs
 
 ---
  Makefile.am |   4 +-
@@ -15,7 +15,7 @@ Subject: [PATCH 05/13] mutt-1.6.1-opennfs
  create mode 100644 opennfs.c
 
 diff --git a/Makefile.am b/Makefile.am
-index 1a03bbb..5d71892 100644
+index 75dea4e..9e8a35b 100644
 --- a/Makefile.am
 +++ b/Makefile.am
 @@ -28,7 +28,7 @@ mutt_SOURCES = \
@@ -100,10 +100,10 @@ index fa3067e..ea24292 100644
    if (lstat (path, &osb) < 0 || fstat (fd, &nsb) < 0 ||
        compare_stat(&osb, &nsb) == -1)
 diff --git a/mbox.c b/mbox.c
-index 1592870..0aca1d1 100644
+index abdd0b4..e8d0356 100644
 --- a/mbox.c
 +++ b/mbox.c
-@@ -785,7 +785,7 @@ int mbox_sync_mailbox (CONTEXT *ctx, int *index_hint)
+@@ -781,7 +781,7 @@ int mbox_sync_mailbox (CONTEXT *ctx, int *index_hint)
  
    /* Create a temporary file to write the new version of the mailbox in. */
    mutt_mktemp (tempfile, sizeof (tempfile));
@@ -113,10 +113,10 @@ index 1592870..0aca1d1 100644
    {
      if (-1 != i)
 diff --git a/mh.c b/mh.c
-index 54c7467..ab4f512 100644
+index c36b413..e32c60e 100644
 --- a/mh.c
 +++ b/mh.c
-@@ -352,7 +352,11 @@ static int mh_mkstemp (CONTEXT * dest, FILE ** fp, char **tgt)
+@@ -358,7 +358,11 @@ static int mh_mkstemp (CONTEXT * dest, FILE ** fp, char **tgt)
    {
      snprintf (path, _POSIX_PATH_MAX, "%s/.mutt-%s-%d-%" PRIu64,
  	      dest->path, NONULL (Hostname), (int) getpid (), mutt_rand64());
@@ -128,7 +128,7 @@ index 54c7467..ab4f512 100644
      {
        if (errno != EEXIST)
        {
-@@ -1376,8 +1380,11 @@ int maildir_open_new_message (MESSAGE * msg, CONTEXT * dest, HEADER * hdr)
+@@ -1382,8 +1386,11 @@ int maildir_open_new_message (MESSAGE * msg, CONTEXT * dest, HEADER * hdr)
  
      dprint (2, (debugfile, "maildir_open_new_message (): Trying %s.\n",
  		path));
@@ -142,10 +142,10 @@ index 54c7467..ab4f512 100644
        if (errno != EEXIST)
        {
 diff --git a/mutt.h b/mutt.h
-index c309578..3cb3df1 100644
+index b401f86..fba677a 100644
 --- a/mutt.h
 +++ b/mutt.h
-@@ -1079,4 +1079,5 @@ typedef struct
+@@ -1077,4 +1077,5 @@ typedef struct
  #include "lib.h"
  #include "globals.h"
  
@@ -280,7 +280,7 @@ index 0000000..60c0bfd
 +    return open(path, flags, mode);
 +}
 diff --git a/sendlib.c b/sendlib.c
-index ccaea8a..42368f5 100644
+index 449bf0b..c0e7f37 100644
 --- a/sendlib.c
 +++ b/sendlib.c
 @@ -2260,7 +2260,7 @@ send_msg (const char *path, char **args, const char *msg, char **tempfile)
@@ -293,5 +293,5 @@ index ccaea8a..42368f5 100644
  	/* redirect stderr to *tempfile too */
  	if (dup (1) < 0)
 -- 
-2.8.2
+2.9.0
 

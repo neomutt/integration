@@ -1,4 +1,4 @@
-From 2d08b83ac8c2b03bb08aebb7f7e8d252c2321004 Mon Sep 17 00:00:00 2001
+From e98030d47da0dec72ddd66a4e6d1676beb4d2707 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 15:23:10 +0100
 Subject: [PATCH 17/21] smime-self
@@ -54,10 +54,10 @@ index 83bbe96..021c35c 100644
  	/* signed ? free it! */
  	return (-1);
 diff --git a/init.h b/init.h
-index a5f3711..54a7753 100644
+index b621200..6f1dd3b 100644
 --- a/init.h
 +++ b/init.h
-@@ -2973,6 +2973,11 @@ struct option_t MuttVars[] = {
+@@ -2985,6 +2985,11 @@ struct option_t MuttVars[] = {
    ** possible \fCprintf(3)\fP-like sequences.
    ** (S/MIME only)
    */
@@ -70,7 +70,7 @@ index a5f3711..54a7753 100644
    /*
    ** .pp
 diff --git a/mutt.h b/mutt.h
-index 6f0ea0e..72e1c52 100644
+index b252564..1e67ac7 100644
 --- a/mutt.h
 +++ b/mutt.h
 @@ -268,6 +268,7 @@ enum
@@ -82,5 +82,5 @@ index 6f0ea0e..72e1c52 100644
    OPT_MIMEFWD,
    OPT_MIMEFWDREST,
 -- 
-2.8.2
+2.9.0
 

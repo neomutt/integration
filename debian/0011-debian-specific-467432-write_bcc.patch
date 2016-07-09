@@ -1,4 +1,4 @@
-From ef3182de19da2d1d2fcd601d08533874e1f0a212 Mon Sep 17 00:00:00 2001
+From c3d5bbef1a0d408b63a0376eaa85440606d81abf Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 6 May 2016 00:24:00 +0100
 Subject: [PATCH 11/22] debian-specific/467432-write_bcc
@@ -26,10 +26,10 @@ index d1343ad..22f851a 100644
  
    /* now copy the body of the message. */
 diff --git a/init.h b/init.h
-index c183399..5e387a0 100644
+index 8020f09..673e161 100644
 --- a/init.h
 +++ b/init.h
-@@ -4071,14 +4071,9 @@ struct option_t MuttVars[] = {
+@@ -4101,14 +4101,9 @@ struct option_t MuttVars[] = {
    { "write_bcc",	DT_BOOL, R_NONE, OPTWRITEBCC, 1},
    /*
    ** .pp
@@ -48,10 +48,10 @@ index c183399..5e387a0 100644
    { "write_inc",	DT_NUM,	 R_NONE, UL &WriteInc, 10 },
    /*
 diff --git a/main.c b/main.c
-index 52afbe9..7273b34 100644
+index 53c7de7..8c3a9f9 100644
 --- a/main.c
 +++ b/main.c
-@@ -765,7 +765,7 @@ int main (int argc, char **argv)
+@@ -761,7 +761,7 @@ int main (int argc, char **argv)
            mutt_env_to_intl (msg->env, NULL, NULL);
          }
  
@@ -61,10 +61,10 @@ index 52afbe9..7273b34 100644
            fprintf (fout, "X-Mutt-Resume-Draft: 1\n");
          fputc ('\n', fout);
 diff --git a/protos.h b/protos.h
-index 4ade804..5c898f4 100644
+index a9ac086..a295b23 100644
 --- a/protos.h
 +++ b/protos.h
-@@ -387,7 +387,7 @@ int mutt_write_fcc (const char *path, HEADER *hdr, const char *msgid, int, char
+@@ -388,7 +388,7 @@ int mutt_write_fcc (const char *path, HEADER *hdr, const char *msgid, int, char
  int mutt_write_mime_body (BODY *, FILE *);
  int mutt_write_mime_header (BODY *, FILE *);
  int mutt_write_one_header (FILE *fp, const char *tag, const char *value, const char *pfx, int wraplen, int flags);
@@ -74,7 +74,7 @@ index 4ade804..5c898f4 100644
  int mutt_yesorno (const char *, int);
  void mutt_set_header_color(CONTEXT *, HEADER *);
 diff --git a/send.c b/send.c
-index a00ccb4..1a0b35d 100644
+index 43c6476..474c36c 100644
 --- a/send.c
 +++ b/send.c
 @@ -1086,10 +1086,10 @@ static int send_message (HEADER *msg)
@@ -91,7 +91,7 @@ index a00ccb4..1a0b35d 100644
  #ifdef USE_SMTP
    if (old_write_bcc)
 diff --git a/sendlib.c b/sendlib.c
-index ccaea8a..247b33a 100644
+index 449bf0b..5869755 100644
 --- a/sendlib.c
 +++ b/sendlib.c
 @@ -1942,7 +1942,7 @@ out:
@@ -122,5 +122,5 @@ index ccaea8a..247b33a 100644
    /* (postponment) if this was a reply of some sort, <msgid> contians the
     * Message-ID: of message replied to.  Save it using a special X-Mutt-
 -- 
-2.8.2
+2.9.0
 

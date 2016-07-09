@@ -1,7 +1,7 @@
-From bf7a1407d10f4583d10a26585c8105a3b5492c35 Mon Sep 17 00:00:00 2001
+From 72226f6b928e70634416e8f3e1d783a2db851e38 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 03:05:02 +0100
-Subject: [PATCH 06/13] bug-676388-largefile
+Subject: [PATCH 06/12] bug-676388-largefile
 
 ---
  crypt-gpgme.c | 2 +-
@@ -10,7 +10,7 @@ Subject: [PATCH 06/13] bug-676388-largefile
  3 files changed, 5 insertions(+), 5 deletions(-)
 
 diff --git a/crypt-gpgme.c b/crypt-gpgme.c
-index 479b58a..d93866b 100644
+index d7bf305..9138bca 100644
 --- a/crypt-gpgme.c
 +++ b/crypt-gpgme.c
 @@ -496,7 +496,7 @@ static gpgme_data_t body_to_data_object (BODY *a, int convert)
@@ -23,10 +23,10 @@ index 479b58a..d93866b 100644
    int err = 0;
    gpgme_data_t data;
 diff --git a/mh.c b/mh.c
-index ab4f512..29aae16 100644
+index e32c60e..9873c6c 100644
 --- a/mh.c
 +++ b/mh.c
-@@ -1619,9 +1619,9 @@ static int mh_rewrite_message (CONTEXT * ctx, int msgno)
+@@ -1625,9 +1625,9 @@ static int mh_rewrite_message (CONTEXT * ctx, int msgno)
    char newpath[_POSIX_PATH_MAX];
    char partpath[_POSIX_PATH_MAX];
  
@@ -40,10 +40,10 @@ index ab4f512..29aae16 100644
    if ((dest = mx_open_new_message (ctx, h, 0)) == NULL)
      return -1;
 diff --git a/mutt.h b/mutt.h
-index 3cb3df1..ef98bac 100644
+index fba677a..20fb7b3 100644
 --- a/mutt.h
 +++ b/mutt.h
-@@ -730,7 +730,7 @@ typedef struct body
+@@ -732,7 +732,7 @@ typedef struct body
    PARAMETER *parameter;         /* parameters of the content-type */
    char *description;            /* content-description */
    char *form_name;		/* Content-Disposition form-data name param */
@@ -53,5 +53,5 @@ index 3cb3df1..ef98bac 100644
  				 * where we need to send the headers of the
  				 * attachment
 -- 
-2.8.2
+2.9.0
 

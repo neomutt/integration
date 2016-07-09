@@ -1,7 +1,7 @@
-From 31ec6a92c0395878145b81416d502a63299c596b Mon Sep 17 00:00:00 2001
+From 8340925058d9caf8ea231f285f60c52b977c2a8c Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Tue, 24 May 2016 17:29:47 +0100
-Subject: [PATCH 08/11] feature: limit-current-thread
+Subject: [PATCH 08/14] feature: limit-current-thread
 
 ---
  OPS                             |   1 +
@@ -30,14 +30,14 @@ index 8ccc188..f14ff39 100644
  OP_MAIN_COLLAPSE_THREAD "collapse/uncollapse current thread"
  OP_MAIN_COLLAPSE_ALL "collapse/uncollapse all threads"
 diff --git a/PATCHES b/PATCHES
-index 4fad8c6..1021dc0 100644
+index 69d1802..51a610b 100644
 --- a/PATCHES
 +++ b/PATCHES
-@@ -12,3 +12,4 @@ patch-index-color-neo-UNKNOWN
- patch-tls-sni-neo-UNKNOWN
- patch-quasi-delete-neo-UNKNOWN
- patch-fmemopen-neo-UNKNOWN
-+patch-limit-current-thread-neo-UNKNOWN
+@@ -12,3 +12,4 @@ patch-index-color-neo-git
+ patch-tls-sni-neo-git
+ patch-quasi-delete-neo-git
+ patch-fmemopen-neo-git
++patch-limit-current-thread-neo-git
 diff --git a/README.limit-current-thread b/README.limit-current-thread
 new file mode 100644
 index 0000000..072413e
@@ -90,10 +90,10 @@ index 0000000..072413e
 +    * Richard Russon <rich@flatcap.org>
 +
 diff --git a/curs_main.c b/curs_main.c
-index dc1b64b..79ae14d 100644
+index a51d508..81807c6 100644
 --- a/curs_main.c
 +++ b/curs_main.c
-@@ -1043,12 +1043,14 @@ int mutt_index_menu (void)
+@@ -1033,12 +1033,14 @@ int mutt_index_menu (void)
  	}
          break;
  
@@ -110,10 +110,10 @@ index dc1b64b..79ae14d 100644
  	  if (menu->oldcurrent >= 0)
  	  {
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index a1689b2..0e17cf4 100644
+index cddbfa7..9647e9a 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
-@@ -10197,6 +10197,125 @@ <sect1 id="initials">
+@@ -10236,6 +10236,125 @@ <sect1 id="initials">
  	</sect2>
  </sect1>
  
@@ -264,10 +264,10 @@ index fae2ef5..9b00208 100644
    { "list-reply",		OP_LIST_REPLY,			"L" },
    { "mail",			OP_MAIL,			"m" },
 diff --git a/mutt_menu.h b/mutt_menu.h
-index 8cb49db..3a7ae08 100644
+index a486d88..c10171f 100644
 --- a/mutt_menu.h
 +++ b/mutt_menu.h
-@@ -118,4 +118,6 @@ int mutt_menuLoop (MUTTMENU *);
+@@ -121,4 +121,6 @@ int mutt_menuLoop (MUTTMENU *);
  void index_make_entry (char *, size_t, struct menu_t *, int);
  int index_color (int);
  
@@ -354,5 +354,5 @@ index b3f517d..57be53e 100644
  {
    pattern_t *pat;
 -- 
-2.8.2
+2.9.0
 

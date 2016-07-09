@@ -1,14 +1,14 @@
-From c28ce01c5c549cfc3daf2cca175497265e86c7e3 Mon Sep 17 00:00:00 2001
+From d9e1e6236bf3e1e627d8590b592bc3819c066388 Mon Sep 17 00:00:00 2001
 From: Vincent Lefevre <vincent@vinc17.net>
 Date: Mon, 11 Apr 2016 11:28:22 +0200
-Subject: [PATCH 06/45] Updated French translation.
+Subject: [PATCH 06/37] Updated French translation.
 
 ---
  po/fr.po | 126 ++++++++++++++++++++++++++++++++-------------------------------
  1 file changed, 65 insertions(+), 61 deletions(-)
 
 diff --git a/po/fr.po b/po/fr.po
-index 6ccf954..c0fe794 100644
+index f275022..50310c0 100644
 --- a/po/fr.po
 +++ b/po/fr.po
 @@ -41,12 +41,12 @@ msgstr "Nom d'utilisateur sur %s : "
@@ -420,5 +420,5 @@ index 6ccf954..c0fe794 100644
  msgstr "Il n'y a plus de texte non cité après le texte cité."
  
 -- 
-2.8.2
+2.9.0
 

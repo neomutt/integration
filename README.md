@@ -26,6 +26,7 @@ The patchsets apply to the following distros:
 
 Each directory contains a set of patches which should be applied as a set.
 
+- bugs-common/     -- Bug-fixes shared by all distros
 - bugs-neomutt/    -- Bug-fixes specific to NeoMutt
 - debian/          -- Patches specific to Debian
 - features-common/ -- Feature patches used by all distros
@@ -41,40 +42,45 @@ Each directory contains a set of patches which should be applied as a set.
 The following features are available:
 
 Common:
-- compress             -- Read from compressed mailboxes       
-- conditional-dates    -- Use rules to choose date format      
-- ifdef                -- Conditional config options           
-- initials             -- Expando for author's initials        
-- nested-if            -- Allow deeply nested conditions       
-- sidebar              -- Overview of mailboxes                
-- trash-folder         -- Move 'deleted' emails to a trash bin 
+- compress              -- Read from compressed mailboxes
+- conditional-dates     -- Use rules to choose date format
+- ifdef                 -- Conditional config options
+- initials              -- Expando for author's initials
+- nested-if             -- Allow deeply nested conditions
+- sidebar               -- Overview of mailboxes
+- trash-folder          -- Move 'deleted' emails to a trash bin
 
 Extra:
-- fmemopen             -- Use memory buffers instead of files  
-- index-color          -- Theme the email index                
-- keywords             -- Email labels/keywords/tagging        
-- limit-current-thread -- Only show the current thread         
-- nntp                 -- Talk to a usenet news server         
-- notmuch              -- Email search engine                  
-- progress-bar         -- Show a visual progress bar           
-- quasi-delete         -- Mark emails to be hidden             
-- skip-quoted          -- Configure quote lines context        
-- status-color         -- Theming the status bar               
-- tls-sni              -- Negotiate for a certificate          
+- fmemopen              -- Use memory buffers instead of files
+- index-color           -- Theme the email index
+- keywords              -- Email labels/keywords/tagging
+- ldmb                  -- LMDB backend for the header cache
+- limit-current-thread  -- Only show the current thread
+- new-mail              -- Run a command when new mail arrives
+- nntp                  -- Talk to a usenet news server
+- notmuch               -- Email search engine
+- progress-bar          -- Show a visual progress bar
+- quasi-delete          -- Mark emails to be hidden
+- skip-quoted           -- Configure quote lines context
+- smime-encrypt-to-self -- Save an self-encrypted copy of emails
+- status-color          -- Theming the status bar
+- tls-sni               -- Negotiate for a certificate
 
 ## Application of Patches
 
-The patchsets apply cleanly to Mutt-1.6.1.
+The patchsets apply cleanly to Mutt-1.6.2.
 The instructions, below, show the order in which they should be applied.
 
 ### NeoMutt, Arch (AUR), OSX (Homebrew)
 
+- bugs-common/*
 - features-common/*
 - features-extra/*
 - bugs-neomutt/*
 
 ### COPR (Fedora)
 
+- bugs-common/*
 - features-common/*
 - features-extra/*
 - bugs-neomutt/*
@@ -82,6 +88,7 @@ The instructions, below, show the order in which they should be applied.
 
 ### Debian
 
+- bugs-common/*
 - features-common/*
 - features-extra/*
 - bugs-neomutt/*
@@ -93,11 +100,13 @@ The instructions, below, show the order in which they should be applied.
 
 ### FreeBSD
 
+- bugs-common/*
 - features-common/*
 - freebsd/*
 
 ### Gentoo
 
+- bugs-common/*
 - features-common/*
 - features-extra/*
 - bugs-neomutt/*
@@ -106,6 +115,7 @@ The instructions, below, show the order in which they should be applied.
 
 ### Suse
 
+- bugs-common/*
 - features-common/*
 - features-extra/*
 - bugs-neomutt/*

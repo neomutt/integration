@@ -1,7 +1,7 @@
-From c0dc6b9d28eb9aa63a0fad7033a9a89b319dfe8b Mon Sep 17 00:00:00 2001
+From 6646809d4cd6805f15f17ff04aea36eedfdab34f Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 03:03:32 +0100
-Subject: [PATCH 03/13] mutt-1.5.20-sendgroupreplyto
+Subject: [PATCH 03/12] mutt-1.5.20-sendgroupreplyto
 
 ---
  init.h | 7 +++++++
@@ -10,10 +10,10 @@ Subject: [PATCH 03/13] mutt-1.5.20-sendgroupreplyto
  3 files changed, 16 insertions(+)
 
 diff --git a/init.h b/init.h
-index 0bf1cff..3ad6db5 100644
+index 253cd93..d6596e1 100644
 --- a/init.h
 +++ b/init.h
-@@ -2860,6 +2860,13 @@ struct option_t MuttVars[] = {
+@@ -2885,6 +2885,13 @@ struct option_t MuttVars[] = {
    ** .pp
    ** Also see the $$force_name variable.
    */
@@ -28,10 +28,10 @@ index 0bf1cff..3ad6db5 100644
    /*
    ** .pp
 diff --git a/mutt.h b/mutt.h
-index aa6a2ee..c309578 100644
+index ea059ba..b401f86 100644
 --- a/mutt.h
 +++ b/mutt.h
-@@ -480,6 +480,7 @@ enum
+@@ -482,6 +482,7 @@ enum
    OPTSAVEADDRESS,
    OPTSAVEEMPTY,
    OPTSAVENAME,
@@ -40,7 +40,7 @@ index aa6a2ee..c309578 100644
  #ifdef USE_SIDEBAR
    OPTSIDEBAR,
 diff --git a/send.c b/send.c
-index a00ccb4..3ecab19 100644
+index 43c6476..a86f2d1 100644
 --- a/send.c
 +++ b/send.c
 @@ -624,8 +624,16 @@ int mutt_fetch_recips (ENVELOPE *out, ENVELOPE *in, int flags)
@@ -61,5 +61,5 @@ index a00ccb4..3ecab19 100644
    }
    return 0;
 -- 
-2.8.2
+2.9.0
 

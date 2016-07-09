@@ -1,4 +1,4 @@
-From 50ca74a75a138c92eca1a8798b2f4d4a296a3f71 Mon Sep 17 00:00:00 2001
+From a2e53efa5fe2aa932b60f7cec23d80fcecf9a2a2 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Tue, 24 May 2016 17:02:13 +0100
 Subject: [PATCH 2/7] feature: initials
@@ -14,12 +14,12 @@ Subject: [PATCH 2/7] feature: initials
  create mode 100644 doc/muttrc.initials
 
 diff --git a/PATCHES b/PATCHES
-index 558c519..4888981 100644
+index d803941..dee5f40 100644
 --- a/PATCHES
 +++ b/PATCHES
 @@ -1 +1,2 @@
- patch-ifdef-neo-UNKNOWN
-+patch-initials-neo-UNKNOWN
+ patch-ifdef-neo-git
++patch-initials-neo-git
 diff --git a/README.initials b/README.initials
 new file mode 100644
 index 0000000..417545f
@@ -75,10 +75,10 @@ index 0000000..417545f
 +    * Richard Russon <rich@flatcap.org>
 +
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index 4352ef9..7df30bb 100644
+index 407ab29..fde4067 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
-@@ -8252,6 +8252,132 @@ <sect1 id="ifdef">
+@@ -8263,6 +8263,132 @@ <sect1 id="ifdef">
  	</sect2>
  </sect1>
  
@@ -286,5 +286,5 @@ index b844411..ddde2e4 100644
        if (!optional)
        {
 -- 
-2.8.2
+2.9.0
 

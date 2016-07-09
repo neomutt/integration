@@ -1,0 +1,37 @@
+From bb604df03b6044ecda55b03898ae9e35163aea32 Mon Sep 17 00:00:00 2001
+From: Kevin McCarthy <kevin@8t8.us>
+Date: Sat, 4 Jun 2016 11:32:12 -0700
+Subject: [PATCH 31/37] Start to fix sidebar buffy modifications.
+
+The extended buffy for mh had incorrect placement of the loop
+brackets.  The counters weren't being incremented in the loop.
+
+Fix extended buffy for maildir to count a maildir message as new if it
+doesn't have the info delimeter.
+
+Remove shortcircuits added to the basic buffy stating there is new
+mail when (msg_unread > 0).  This is not necessarily true, depending
+on $mail_check_recent.
+
+Note: the extended buffy still needs more fixes, which will be done
+when it is refactored into its own option.
+---
+ sidebar.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/sidebar.c b/sidebar.c
+index bd5449e..0c57ef3 100644
+--- a/sidebar.c
++++ b/sidebar.c
+@@ -961,6 +961,8 @@ void mutt_sb_set_open_buffy (void)
+       break;
+     }
+   }
++
++  SidebarNeedsRedraw = 1;
+ }
+ 
+ /**
+-- 
+2.9.0
+

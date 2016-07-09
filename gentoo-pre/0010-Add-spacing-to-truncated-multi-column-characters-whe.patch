@@ -1,7 +1,7 @@
-From d4fc193cd4271cea0587a48dffe3036b41a900a9 Mon Sep 17 00:00:00 2001
+From 81fb94eeda7652c85f25a6ce282dd37b3799fadc Mon Sep 17 00:00:00 2001
 From: Kevin McCarthy <kevin@8t8.us>
 Date: Thu, 14 Apr 2016 12:35:48 -0700
-Subject: [PATCH 10/45] Add spacing to truncated multi-column characters when
+Subject: [PATCH 10/37] Add spacing to truncated multi-column characters when
  using soft-fill.
 
 First, fix the left-hand side column truncation calculation:
@@ -27,10 +27,10 @@ too).
  1 file changed, 9 insertions(+), 1 deletion(-)
 
 diff --git a/muttlib.c b/muttlib.c
-index 2c79ad8..565b9a8 100644
+index 3d66091..3dbb9ca 100644
 --- a/muttlib.c
 +++ b/muttlib.c
-@@ -1460,8 +1460,16 @@ void mutt_FormatString (char *dest,		/* output buffer */
+@@ -1473,8 +1473,16 @@ void mutt_FormatString (char *dest,		/* output buffer */
  	    /* make sure right part is at most as wide as display */
  	    len = mutt_wstr_trunc (buf, destlen, COLS - offset - SidebarWidth, &wid);
  	    /* truncate left so that right part fits completely in */
@@ -47,7 +47,7 @@ index 2c79ad8..565b9a8 100644
 +            }
  	  }
  	  if (len + wlen > destlen)
- 	    len = mutt_wstr_trunc (buf, destlen - wlen, COLS - SidebarWidth - col, NULL);
+ 	    len = mutt_wstr_trunc (buf, destlen - wlen, cols - col, NULL);
 -- 
-2.8.2
+2.9.0
 

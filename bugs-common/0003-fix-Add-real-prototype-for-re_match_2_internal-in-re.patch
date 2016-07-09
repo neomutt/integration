@@ -1,0 +1,29 @@
+From 9c9ca94fd7048aa46916a832ad315d13f4616689 Mon Sep 17 00:00:00 2001
+From: Olaf Hering <olaf@aepfle.de>
+Date: Fri, 17 Jun 2016 10:33:57 -0700
+Subject: [PATCH 3/6] fix: Add real prototype for re_match_2_internal in
+ regex.c
+
+Fixes compilation warning with -Wunprototyped-calls
+---
+ regex.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/regex.c b/regex.c
+index f46c806..40979af 100644
+--- a/regex.c
++++ b/regex.c
+@@ -381,7 +381,9 @@ typedef char boolean;
+ #define false 0
+ #define true 1
+ 
+-static int re_match_2_internal ();
++static int re_match_2_internal (struct re_pattern_buffer *bufp,
++	const char *string1, int size1, const char *string2, int size2, int pos,
++	struct re_registers *regs, int stop);
+ 
+ /* These are the command codes that appear in compiled regular
+    expressions.  Some opcodes are followed by argument bytes.  A
+-- 
+2.9.0
+

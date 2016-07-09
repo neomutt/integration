@@ -1,0 +1,342 @@
+From b90a75ff92641a30eb75e91412949661e40ba789 Mon Sep 17 00:00:00 2001
+From: Kevin McCarthy <kevin@8t8.us>
+Date: Wed, 27 Apr 2016 17:56:49 -0700
+Subject: [PATCH 12/37] Add window structures to use for screen layout.
+
+This is a series of 11 patches, centralizing Mutt screen drawing
+inside windows (mutt_window_t structures).
+
+Currently, the screen drawing and cursor positioning logic is
+distributed all over the code, resulting in many files having the same
+logic of where the help, status, message windows are.  Additionally,
+the code directly uses move and mvadd*/mvprint* functions, which means
+if the layouts are changed, the row/column computation logic needs to
+be changed all over the place.
+
+The patch creates a (very simple) mutt_window_t structure and
+functions for moving, addch/str/printw, along with clearing the line.
+The windows keep track of where they are on the screen, allowing the
+Mutt code to simply position elements relative to the window.
+
+During curses initalization, and when the window is resized, the
+window sizes and positions and recomputed.  Also, a new option flags,
+R_REFLOW is added for options that need to force a reflow when they are changed.
+
+Thanks to Richard Russon for pointing out the slang compilation issue.
+---
+ curs_lib.c    | 154 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ init.c        |   4 ++
+ init.h        |   4 +-
+ main.c        |   6 +++
+ mutt_curses.h |  29 +++++++++++
+ resize.c      |   1 +
+ 6 files changed, 196 insertions(+), 2 deletions(-)
+
+diff --git a/curs_lib.c b/curs_lib.c
+index 0c80b43..786814f 100644
+--- a/curs_lib.c
++++ b/curs_lib.c
+@@ -67,6 +67,14 @@ static size_t UngetCount = 0;
+ static size_t UngetLen = 0;
+ static event_t *UngetKeyEvents;
+ 
++mutt_window_t *MuttHelpWindow = NULL;
++mutt_window_t *MuttIndexWindow = NULL;
++mutt_window_t *MuttStatusWindow = NULL;
++mutt_window_t *MuttMessageWindow = NULL;
++#ifdef USE_SIDEBAR
++mutt_window_t *MuttSidebarWindow = NULL;
++#endif
++
+ void mutt_refresh (void)
+ {
+   /* don't refresh when we are waiting for a child. */
+@@ -530,6 +538,152 @@ out:
+     mutt_clear_error ();
+ }
+ 
++void mutt_init_windows ()
++{
++  MuttHelpWindow = safe_calloc (sizeof (mutt_window_t), 1);
++  MuttIndexWindow = safe_calloc (sizeof (mutt_window_t), 1);
++  MuttStatusWindow = safe_calloc (sizeof (mutt_window_t), 1);
++  MuttMessageWindow = safe_calloc (sizeof (mutt_window_t), 1);
++#ifdef USE_SIDEBAR
++  MuttSidebarWindow = safe_calloc (sizeof (mutt_window_t), 1);
++#endif
++
++  mutt_reflow_windows ();
++}
++
++void mutt_free_windows ()
++{
++  FREE (&MuttHelpWindow);
++  FREE (&MuttIndexWindow);
++  FREE (&MuttStatusWindow);
++  FREE (&MuttMessageWindow);
++#ifdef USE_SIDEBAR
++  FREE (&MuttSidebarWindow);
++#endif
++}
++
++void mutt_reflow_windows (void)
++{
++  if (option (OPTNOCURSES))
++    return;
++
++  dprint (2, (debugfile, "In mutt_reflow_windows\n"));
++
++  MuttStatusWindow->rows = 1;
++  MuttStatusWindow->cols = COLS;
++  MuttStatusWindow->row_offset = option (OPTSTATUSONTOP) ? 0 : LINES - 2;
++  MuttStatusWindow->col_offset = 0;
++
++  memcpy (MuttHelpWindow, MuttStatusWindow, sizeof (mutt_window_t));
++  if (! option (OPTHELP))
++    MuttHelpWindow->rows = 0;
++  else
++    MuttHelpWindow->row_offset = option (OPTSTATUSONTOP) ? LINES - 2 : 0;
++
++  memcpy (MuttMessageWindow, MuttStatusWindow, sizeof (mutt_window_t));
++  MuttMessageWindow->row_offset = LINES - 1;
++
++  memcpy (MuttIndexWindow, MuttStatusWindow, sizeof (mutt_window_t));
++  MuttIndexWindow->rows = LINES - MuttStatusWindow->rows - MuttHelpWindow->rows -
++                          MuttMessageWindow->rows;
++  MuttIndexWindow->row_offset = option (OPTSTATUSONTOP) ? MuttStatusWindow->rows :
++                                                          MuttHelpWindow->rows;
++
++#ifdef USE_SIDEBAR
++  if (option (OPTSIDEBAR))
++  {
++    memcpy (MuttSidebarWindow, MuttIndexWindow, sizeof (mutt_window_t));
++    MuttSidebarWindow->cols = SidebarWidth;
++
++    MuttIndexWindow->cols -= SidebarWidth;
++    MuttIndexWindow->col_offset += SidebarWidth;
++  }
++#endif
++}
++
++int mutt_window_move (mutt_window_t *win, int row, int col)
++{
++  return move (win->row_offset + row, win->col_offset + col);
++}
++
++int mutt_window_mvaddch (mutt_window_t *win, int row, int col, const chtype ch)
++{
++  return mvaddch (win->row_offset + row, win->col_offset + col, ch);
++}
++
++int mutt_window_mvaddstr (mutt_window_t *win, int row, int col, const char *str)
++{
++  return mvaddstr (win->row_offset + row, win->col_offset + col, str);
++}
++
++#ifdef USE_SLANG_CURSES
++static int vw_printw (SLcurses_Window_Type *win, const char *fmt, va_list ap)
++{
++  char buf[LONG_STRING];
++
++  (void) SLvsnprintf (buf, sizeof (buf), (char *)fmt, ap);
++  SLcurses_waddnstr (win, buf, -1);
++  return 0;
++}
++#endif
++
++int mutt_window_mvprintw (mutt_window_t *win, int row, int col, const char *fmt, ...)
++{
++  va_list ap;
++  int rv;
++
++  if ((rv = mutt_window_move (win, row, col) != ERR))
++  {
++    va_start (ap, fmt);
++    rv = vw_printw (stdscr, fmt, ap);
++    va_end (ap);
++  }
++
++  return rv;
++}
++
++/* Assumes the cursor has already been positioned within the
++ * window.
++ */
++void mutt_window_clrtoeol (mutt_window_t *win)
++{
++  int row, col, curcol;
++
++  if (win->col_offset + win->cols == COLS)
++    clrtoeol ();
++  else
++  {
++    getyx (stdscr, row, col);
++    curcol = col;
++    while (curcol < win->col_offset + win->cols)
++    {
++      addch (' ');
++      curcol++;
++    }
++    move (row, col);
++  }
++}
++
++void mutt_window_clearline (mutt_window_t *win, int row)
++{
++  mutt_window_move (win, row, 0);
++  mutt_window_clrtoeol (win);
++}
++
++/* Assumes the current position is inside the window.
++ * Otherwise it will happily return negative or values outside
++ * the window boundaries
++ */
++void mutt_window_getyx (mutt_window_t *win, int *y, int *x)
++{
++  int row, col;
++
++  getyx (stdscr, row, col);
++  *y = row - win->row_offset;
++  *x = col - win->col_offset;
++}
++
++
+ void mutt_show_error (void)
+ {
+   if (option (OPTKEEPQUIET))
+diff --git a/init.c b/init.c
+index b22e8e9..7eaa1a8 100644
+--- a/init.c
++++ b/init.c
+@@ -1727,6 +1727,8 @@ static void mutt_restore_default (struct option_t *p)
+     set_option (OPTRESORTINIT);
+   if (p->flags & R_TREE)
+     set_option (OPTREDRAWTREE);
++  if (p->flags & R_REFLOW)
++    mutt_reflow_windows ();
+ #ifdef USE_SIDEBAR
+   if (p->flags & R_SIDEBAR)
+     SidebarNeedsRedraw = 1;
+@@ -2349,6 +2351,8 @@ static int parse_set (BUFFER *tmp, BUFFER *s, unsigned long data, BUFFER *err)
+         set_option (OPTRESORTINIT);
+       if (MuttVars[idx].flags & R_TREE)
+         set_option (OPTREDRAWTREE);
++      if (MuttVars[idx].flags & R_REFLOW)
++        mutt_reflow_windows ();
+ #ifdef USE_SIDEBAR
+       if (MuttVars[idx].flags & R_SIDEBAR)
+         SidebarNeedsRedraw = 1;
+diff --git a/init.h b/init.h
+index b2089f6..dcb5225 100644
+--- a/init.h
++++ b/init.h
+@@ -1039,7 +1039,7 @@ struct option_t MuttVars[] = {
+   */
+ #endif /* HAVE_GDBM || HAVE_DB4 */
+ #endif /* USE_HCACHE */
+-  { "help",		DT_BOOL, R_BOTH, OPTHELP, 1 },
++  { "help",		DT_BOOL, R_BOTH|R_REFLOW, OPTHELP, 1 },
+   /*
+   ** .pp
+   ** When \fIset\fP, help lines describing the bindings for the major functions
+@@ -3766,7 +3766,7 @@ struct option_t MuttVars[] = {
+   ** will replace any dots in the expansion by underscores. This might be helpful
+   ** with IMAP folders that don't like dots in folder names.
+   */
+-  { "status_on_top",	DT_BOOL, R_BOTH, OPTSTATUSONTOP, 0 },
++  { "status_on_top",	DT_BOOL, R_BOTH|R_REFLOW, OPTSTATUSONTOP, 0 },
+   /*
+   ** .pp
+   ** Setting this variable causes the ``status bar'' to be displayed on
+diff --git a/main.c b/main.c
+index 53c7de7..325b72a 100644
+--- a/main.c
++++ b/main.c
+@@ -165,6 +165,7 @@ static void start_curses (void)
+   meta (stdscr, TRUE);
+ #endif
+ init_extended_keys();
++  mutt_init_windows ();
+ }
+ 
+ #define M_IGNORE  (1<<0)	/* -z */
+@@ -497,6 +498,7 @@ int main (int argc, char **argv)
+     if (!option (OPTNOCURSES))
+       mutt_flushinp ();
+     ci_send_message (SENDPOSTPONED, NULL, NULL, NULL, NULL);
++    mutt_free_windows ();
+     mutt_endwin (NULL);
+   }
+   else if (subject || msg || sendflags || draftFile || includeFile || attach ||
+@@ -786,7 +788,10 @@ int main (int argc, char **argv)
+     }
+ 
+     if (!option (OPTNOCURSES))
++    {
++      mutt_free_windows ();
+       mutt_endwin (NULL);
++    }
+ 
+     if (rv)
+       exit(1);
+@@ -883,6 +888,7 @@ int main (int argc, char **argv)
+     mutt_sasl_done ();
+ #endif
+     mutt_free_opts ();
++    mutt_free_windows ();
+     mutt_endwin (Errorbuf);
+   }
+ 
+diff --git a/mutt_curses.h b/mutt_curses.h
+index 1d974d8..7ee1eae 100644
+--- a/mutt_curses.h
++++ b/mutt_curses.h
+@@ -180,6 +180,35 @@ void mutt_progress_init (progress_t* progress, const char *msg,
+  * was initialized with positive size, otherwise no percentage is shown */
+ void mutt_progress_update (progress_t* progress, long pos, int percent);
+ 
++/* Windows for different parts of the screen */
++typedef struct
++{
++  int rows;
++  int cols;
++  int row_offset;
++  int col_offset;
++} mutt_window_t;
++
++extern mutt_window_t *MuttHelpWindow;
++extern mutt_window_t *MuttIndexWindow;
++extern mutt_window_t *MuttStatusWindow;
++extern mutt_window_t *MuttMessageWindow;
++#ifdef USE_SIDEBAR
++extern mutt_window_t *MuttSidebarWindow;
++#endif
++
++void mutt_init_windows (void);
++void mutt_free_windows (void);
++void mutt_reflow_windows (void);
++int mutt_window_move (mutt_window_t *, int row, int col);
++int mutt_window_mvaddch (mutt_window_t *, int row, int col, const chtype ch);
++int mutt_window_mvaddstr (mutt_window_t *, int row, int col, const char *str);
++int mutt_window_mvprintw (mutt_window_t *, int row, int col, const char *fmt, ...);
++void mutt_window_clrtoeol (mutt_window_t *);
++void mutt_window_clearline (mutt_window_t *, int row);
++void mutt_window_getyx (mutt_window_t *, int *y, int *x);
++
++
+ static inline int mutt_term_width(short wrap)
+ {
+   int cols = COLS;
+diff --git a/resize.c b/resize.c
+index f9c26b4..2e77d21 100644
+--- a/resize.c
++++ b/resize.c
+@@ -76,4 +76,5 @@ void mutt_resize_screen (void)
+ #else
+   resizeterm (SLtt_Screen_Rows, SLtt_Screen_Cols);
+ #endif
++  mutt_reflow_windows ();
+ }
+-- 
+2.9.0
+

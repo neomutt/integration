@@ -1,4 +1,4 @@
-From 1b2babc20546474578100d62b3991ffbbab4bc15 Mon Sep 17 00:00:00 2001
+From d12aad63492ce8ea8e2b311499cd5e7f068f1e80 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 15:22:55 +0100
 Subject: [PATCH 16/21] mktemp
@@ -8,7 +8,7 @@ Subject: [PATCH 16/21] mktemp
  1 file changed, 6 insertions(+), 7 deletions(-)
 
 diff --git a/muttlib.c b/muttlib.c
-index 2e9efad..285f22a 100644
+index 1cd6342..057ac55 100644
 --- a/muttlib.c
 +++ b/muttlib.c
 @@ -774,16 +774,15 @@ void mutt_merge_envelopes(ENVELOPE* base, ENVELOPE** extra)
@@ -35,5 +35,5 @@ index 2e9efad..285f22a 100644
  
  void mutt_free_alias (ALIAS **p)
 -- 
-2.8.2
+2.9.0
 

@@ -1,4 +1,4 @@
-From 009ced85b51995358eb1e84a2b26af61539b9b8e Mon Sep 17 00:00:00 2001
+From 25243b98f139b586c295444670390ee1a6021aea Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Tue, 24 May 2016 17:09:22 +0100
 Subject: [PATCH 6/7] feature: compress
@@ -57,14 +57,14 @@ index 6b68e25..218576c 100644
  	mailbox.h mapping.h md5.h mime.h mutt.h mutt_curses.h mutt_menu.h \
  	mutt_regex.h mutt_sasl.h mutt_socket.h mutt_ssl.h mutt_tunnel.h \
 diff --git a/PATCHES b/PATCHES
-index 43df8bf..b720454 100644
+index 110af08..7464b8d 100644
 --- a/PATCHES
 +++ b/PATCHES
-@@ -3,3 +3,4 @@ patch-initials-neo-UNKNOWN
- patch-trash-neo-UNKNOWN
- patch-nested-if-neo-UNKNOWN
- patch-cond-date-neo-UNKNOWN
-+patch-compress-neo-UNKNOWN
+@@ -3,3 +3,4 @@ patch-initials-neo-git
+ patch-trash-neo-git
+ patch-nested-if-neo-git
+ patch-cond-date-neo-git
++patch-compress-neo-git
 diff --git a/README.compress b/README.compress
 new file mode 100644
 index 0000000..ffddc2c
@@ -1107,7 +1107,7 @@ index 0000000..adf6a3e
 +
 +#endif /* _COMPRESS_H_ */
 diff --git a/configure.ac b/configure.ac
-index 6096dbb..88700cc 100644
+index 40e4bbd..9106368 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -175,6 +175,14 @@ if test x$have_smime != xno ; then
@@ -1172,7 +1172,7 @@ index 1f7012e..69e27ca 100644
  # set the default here.
  #
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index 1e5ad17..a134c42 100644
+index 4e3e69b..571a452 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
 @@ -5554,12 +5554,24 @@ <sect1 id="hooks">
@@ -1213,7 +1213,7 @@ index 1e5ad17..a134c42 100644
  <link linkend="reply-hook"><command>reply-hook</command></link>
  </para>
  </listitem>
-@@ -8124,6 +8142,383 @@ <sect1 id="sending-mixmaster">
+@@ -8135,6 +8153,383 @@ <sect1 id="sending-mixmaster">
  
  </sect1>
  
@@ -1597,7 +1597,7 @@ index 1e5ad17..a134c42 100644
  <sect1 id="cond-date">
  	<title>Conditional Dates Patch</title>
  	<subtitle>Use rules to choose date format</subtitle>
-@@ -9745,6 +10140,18 @@ <sect1 id="commands">
+@@ -9756,6 +10151,18 @@ <sect1 id="commands">
  
  <listitem>
  <cmdsynopsis>
@@ -1616,7 +1616,7 @@ index 1e5ad17..a134c42 100644
  <command><link linkend="auto-view">auto_view</link></command>
  <arg choice="plain">
  <replaceable>mimetype</replaceable>
-@@ -9806,6 +10213,18 @@ <sect1 id="commands">
+@@ -9817,6 +10224,18 @@ <sect1 id="commands">
  
  <listitem>
  <cmdsynopsis>
@@ -1635,7 +1635,7 @@ index 1e5ad17..a134c42 100644
  <command><link linkend="color">color</link></command>
  <arg choice="plain">
  <replaceable class="parameter">object</replaceable>
-@@ -9875,6 +10294,18 @@ <sect1 id="commands">
+@@ -9886,6 +10305,18 @@ <sect1 id="commands">
  
  <listitem>
  <cmdsynopsis>
@@ -1772,7 +1772,7 @@ index 3a0756e..98c2f26 100644
             && (!WithCrypto || !(data & M_CRYPTHOOK))
        )
 diff --git a/init.h b/init.h
-index 20aac03..1412532 100644
+index 214263e..879c368 100644
 --- a/init.h
 +++ b/init.h
 @@ -3728,6 +3728,11 @@ const struct command_t Commands[] = {
@@ -1972,7 +1972,7 @@ index 2d01add..3654ad1 100644
  crypt.c
  cryptglue.c
 diff --git a/po/de.po b/po/de.po
-index e85a1d2..2c57b33 100644
+index 518a348..f60217f 100644
 --- a/po/de.po
 +++ b/po/de.po
 @@ -2141,6 +2141,10 @@ msgstr "Hilfe f
@@ -2079,5 +2079,5 @@ index f1b6b59..d586aad 100644
  	{ "USE_DOTLOCK", 1 },
  #else
 -- 
-2.8.2
+2.9.0
 

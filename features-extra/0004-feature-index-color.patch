@@ -1,7 +1,7 @@
-From e729fede0b8200638f4afd0a5959e563d4093b75 Mon Sep 17 00:00:00 2001
+From 917126b7d65f7c8559c85b3cebc0133661ad5086 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Tue, 24 May 2016 17:26:21 +0100
-Subject: [PATCH 04/11] feature: index-color
+Subject: [PATCH 04/14] feature: index-color
 
 ---
  PATCHES                |   1 +
@@ -21,14 +21,14 @@ Subject: [PATCH 04/11] feature: index-color
  create mode 100644 doc/vimrc.index-color
 
 diff --git a/PATCHES b/PATCHES
-index f2056f5..a377e52 100644
+index 2aad783..0944b0b 100644
 --- a/PATCHES
 +++ b/PATCHES
-@@ -8,3 +8,4 @@ patch-sidebar-neo-UNKNOWN
- patch-progress-neo-UNKNOWN
- patch-skip-quoted-neo-UNKNOWN
- patch-status-color-neo-UNKNOWN
-+patch-index-color-neo-UNKNOWN
+@@ -8,3 +8,4 @@ patch-sidebar-neo-git
+ patch-progress-neo-git
+ patch-skip-quoted-neo-git
+ patch-status-color-neo-git
++patch-index-color-neo-git
 diff --git a/README.index-color b/README.index-color
 new file mode 100644
 index 0000000..51c0001
@@ -391,7 +391,7 @@ index 1ab6d2d..3086ad7 100644
      {
        k = (k == (size_t)(-1)) ? 1 : n;
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index 633ac6a..acdb199 100644
+index 1d68abc..7dcc22a 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
 @@ -3259,7 +3259,7 @@ <sect1 id="color">
@@ -472,7 +472,7 @@ index 633ac6a..acdb199 100644
  </arg>
  <arg choice="plain">
  <option>header</option>
-@@ -9716,6 +9742,232 @@ <sect1 id="ifdef">
+@@ -9755,6 +9781,232 @@ <sect1 id="ifdef">
  	</sect2>
  </sect1>
  
@@ -768,7 +768,7 @@ index 0000000..8de9c67
 +
 +" vim: syntax=vim
 diff --git a/hdrline.c b/hdrline.c
-index 0d332bd..7fbc357 100644
+index 5434d50..5cedd7d 100644
 --- a/hdrline.c
 +++ b/hdrline.c
 @@ -103,6 +103,38 @@ static int first_mailing_list (char *buf, size_t buflen, ADDRESS *a)
@@ -810,7 +810,7 @@ index 0d332bd..7fbc357 100644
  static void make_from (ENVELOPE *hdr, char *buf, size_t len, int do_lists)
  {
    int me;
-@@ -256,6 +288,7 @@ hdr_format_str (char *dest,
+@@ -257,6 +289,7 @@ hdr_format_str (char *dest,
  #define THREAD_NEW (threads && hdr->collapsed && hdr->num_hidden > 1 && mutt_thread_contains_unread (ctx, hdr) == 1)
  #define THREAD_OLD (threads && hdr->collapsed && hdr->num_hidden > 1 && mutt_thread_contains_unread (ctx, hdr) == 2)
    size_t len;
@@ -818,7 +818,7 @@ index 0d332bd..7fbc357 100644
  
    hdr = hfi->hdr;
    ctx = hfi->ctx;
-@@ -266,7 +299,9 @@ hdr_format_str (char *dest,
+@@ -267,7 +300,9 @@ hdr_format_str (char *dest,
      case 'A':
        if(hdr->env->reply_to && hdr->env->reply_to->mailbox)
        {
@@ -829,7 +829,7 @@ index 0d332bd..7fbc357 100644
  	break;
        }
        /* fall through if 'A' returns nothing */
-@@ -274,7 +309,9 @@ hdr_format_str (char *dest,
+@@ -275,7 +310,9 @@ hdr_format_str (char *dest,
      case 'a':
        if(hdr->env->from && hdr->env->from->mailbox)
        {
@@ -840,7 +840,7 @@ index 0d332bd..7fbc357 100644
        }
        else
          dest[0] = '\0';
-@@ -307,12 +344,16 @@ hdr_format_str (char *dest,
+@@ -308,12 +345,16 @@ hdr_format_str (char *dest,
        break;
      
      case 'c':
@@ -859,7 +859,7 @@ index 0d332bd..7fbc357 100644
        snprintf (dest, destlen, fmt, hdr->msgno + 1);
        break;
  
-@@ -503,7 +544,10 @@ hdr_format_str (char *dest,
+@@ -504,7 +545,10 @@ hdr_format_str (char *dest,
  	if (do_locales)
  	  setlocale (LC_TIME, "C");
  
@@ -871,7 +871,7 @@ index 0d332bd..7fbc357 100644
  	if (len > 0 && op != 'd' && op != 'D') /* Skip ending op */
  	  src = cp + 1;
        }
-@@ -533,8 +577,10 @@ hdr_format_str (char *dest,
+@@ -534,8 +578,10 @@ hdr_format_str (char *dest,
      case 'F':
        if (!optional)
        {
@@ -883,7 +883,7 @@ index 0d332bd..7fbc357 100644
        }
        else if (mutt_addr_is_user (hdr->env->from))
          optional = 0;
-@@ -582,7 +628,9 @@ hdr_format_str (char *dest,
+@@ -583,7 +629,9 @@ hdr_format_str (char *dest,
        if (!optional)
        {
  	snprintf (fmt, sizeof (fmt), "%%%sd", prefix);
@@ -894,7 +894,7 @@ index 0d332bd..7fbc357 100644
        }
        else if (hdr->lines <= 0)
          optional = 0;
-@@ -591,8 +639,10 @@ hdr_format_str (char *dest,
+@@ -592,8 +640,10 @@ hdr_format_str (char *dest,
      case 'L':
        if (!optional)
        {
@@ -906,7 +906,7 @@ index 0d332bd..7fbc357 100644
        }
        else if (!check_for_mailing_list (hdr->env->to, NULL, NULL, 0) &&
  	       !check_for_mailing_list (hdr->env->cc, NULL, NULL, 0))
-@@ -612,7 +662,9 @@ hdr_format_str (char *dest,
+@@ -613,7 +663,9 @@ hdr_format_str (char *dest,
        break;
  
      case 'n':
@@ -917,7 +917,7 @@ index 0d332bd..7fbc357 100644
        break;
  
      case 'N':
-@@ -647,10 +699,15 @@ hdr_format_str (char *dest,
+@@ -648,10 +700,15 @@ hdr_format_str (char *dest,
        snprintf (fmt, sizeof (fmt), "%%%sd", prefix);
        if (!optional)
        {
@@ -937,7 +937,7 @@ index 0d332bd..7fbc357 100644
  	else
  	  *dest = '\0';
        }
-@@ -687,15 +744,20 @@ hdr_format_str (char *dest,
+@@ -688,15 +745,20 @@ hdr_format_str (char *dest,
        {
  	if (flags & M_FORMAT_FORCESUBJ)
  	{
@@ -961,7 +961,7 @@ index 0d332bd..7fbc357 100644
        break;
  
      case 'S':
-@@ -718,8 +780,11 @@ hdr_format_str (char *dest,
+@@ -719,8 +781,11 @@ hdr_format_str (char *dest,
  
        /* FOO - this is probably unsafe, but we are not likely to have such
  	 a short string passed into this routine */
@@ -975,7 +975,7 @@ index 0d332bd..7fbc357 100644
        break;
  
      case 't':
-@@ -791,7 +856,9 @@ hdr_format_str (char *dest,
+@@ -792,7 +857,9 @@ hdr_format_str (char *dest,
  		hdr->tagged ? '*' :
  		(hdr->flagged ? '!' :
  		 (Tochars && ((i = mutt_user_is_recipient (hdr)) < mutt_strlen (Tochars)) ? Tochars[i] : ' ')));
@@ -986,7 +986,7 @@ index 0d332bd..7fbc357 100644
        break;
  
      case 'X':
-@@ -811,7 +878,9 @@ hdr_format_str (char *dest,
+@@ -812,7 +879,9 @@ hdr_format_str (char *dest,
         if (optional)
  	 optional = hdr->env->x_label ? 1 : 0;
  
@@ -997,7 +997,7 @@ index 0d332bd..7fbc357 100644
         break;
   
      case 'Y':
-@@ -837,10 +906,12 @@ hdr_format_str (char *dest,
+@@ -838,10 +907,12 @@ hdr_format_str (char *dest,
        if (optional)
  	optional = i;
  
@@ -1013,7 +1013,7 @@ index 0d332bd..7fbc357 100644
        break;
  
 diff --git a/menu.c b/menu.c
-index 6b58e1f..ab9a066 100644
+index 729200e..0b3229c 100644
 --- a/menu.c
 +++ b/menu.c
 @@ -30,7 +30,39 @@
@@ -1080,7 +1080,7 @@ index 6b58e1f..ab9a066 100644
      else if ((k = mbrtowc (&wc, (char *)s, n, &mbstate)) > 0)
      {
        addnstr ((char *)s, k);
-@@ -271,7 +319,7 @@ void menu_redraw_index (MUTTMENU *menu)
+@@ -279,7 +327,7 @@ void menu_redraw_index (MUTTMENU *menu)
        else if (option(OPTARROWCURSOR))
  	addstr("   ");
  
@@ -1089,7 +1089,7 @@ index 6b58e1f..ab9a066 100644
      }
      else
      {
-@@ -310,7 +358,7 @@ void menu_redraw_motion (MUTTMENU *menu)
+@@ -318,7 +366,7 @@ void menu_redraw_motion (MUTTMENU *menu)
        menu_make_entry (buf, sizeof (buf), menu, menu->oldcurrent);
        menu_pad_string (buf, sizeof (buf));
        move (menu->oldcurrent + menu->offset - menu->top, SidebarWidth + 3);
@@ -1098,7 +1098,7 @@ index 6b58e1f..ab9a066 100644
      }
  
      /* now draw it in the new location */
-@@ -322,14 +370,14 @@ void menu_redraw_motion (MUTTMENU *menu)
+@@ -330,14 +378,14 @@ void menu_redraw_motion (MUTTMENU *menu)
      /* erase the current indicator */
      menu_make_entry (buf, sizeof (buf), menu, menu->oldcurrent);
      menu_pad_string (buf, sizeof (buf));
@@ -1115,7 +1115,7 @@ index 6b58e1f..ab9a066 100644
    }
    menu->redraw &= REDRAW_STATUS;
    NORMAL_COLOR;
-@@ -351,10 +399,10 @@ void menu_redraw_current (MUTTMENU *menu)
+@@ -359,10 +407,10 @@ void menu_redraw_current (MUTTMENU *menu)
      ATTRSET(attr);
      addch (' ');
      menu_pad_string (buf, sizeof (buf));
@@ -1129,7 +1129,7 @@ index 6b58e1f..ab9a066 100644
    NORMAL_COLOR;
  }
 diff --git a/mutt.h b/mutt.h
-index 765f8f5..51c9e51 100644
+index f27d507..7e608e4 100644
 --- a/mutt.h
 +++ b/mutt.h
 @@ -163,6 +163,8 @@ typedef enum
@@ -1182,5 +1182,5 @@ index 69d06c5..9c4eeb1 100644
  void ci_init_color (void);
  void ci_start_color (void);
 -- 
-2.8.2
+2.9.0
 

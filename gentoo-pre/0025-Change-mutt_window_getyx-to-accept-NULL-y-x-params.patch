@@ -1,0 +1,44 @@
+From f7cca863e3cbcac1000482e850cf591f81167c97 Mon Sep 17 00:00:00 2001
+From: Kevin McCarthy <kevin@8t8.us>
+Date: Tue, 3 May 2016 09:46:51 -0700
+Subject: [PATCH 25/37] Change mutt_window_getyx() to accept NULL *y/*x params.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Thanks to Vincent Lefèvre for suggesting this nice cleanup.
+Previously, _mutt_get_field() was employing an ugly hack to avoid an
+unused var warning.
+---
+ curs_lib.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/curs_lib.c b/curs_lib.c
+index d5ec823..cac7aa4 100644
+--- a/curs_lib.c
++++ b/curs_lib.c
+@@ -169,7 +169,7 @@ int _mutt_get_field (const char *field, char *buf, size_t buflen, int complete,
+     addstr ((char *)field); /* cast to get around bad prototypes */
+     NORMAL_COLOR;
+     mutt_refresh ();
+-    mutt_window_getyx (MuttMessageWindow, &ret, &x);  /* don't care about y: avoiding unused var warning */
++    mutt_window_getyx (MuttMessageWindow, NULL, &x);
+     ret = _mutt_enter_string (buf, buflen, x, complete, multiple, files, numfiles, es);
+   }
+   while (ret == 1);
+@@ -679,8 +679,10 @@ void mutt_window_getyx (mutt_window_t *win, int *y, int *x)
+   int row, col;
+ 
+   getyx (stdscr, row, col);
+-  *y = row - win->row_offset;
+-  *x = col - win->col_offset;
++  if (y)
++    *y = row - win->row_offset;
++  if (x)
++    *x = col - win->col_offset;
+ }
+ 
+ 
+-- 
+2.9.0
+

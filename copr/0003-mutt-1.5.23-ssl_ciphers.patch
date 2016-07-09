@@ -1,4 +1,4 @@
-From a9721a788cd03df293edb8f631a39a4034c613ee Mon Sep 17 00:00:00 2001
+From df99e37bb777a039824f17327ffcbb2d6b0e85fd Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Wed, 1 Jun 2016 21:38:22 +0100
 Subject: [PATCH 3/5] mutt-1.5.23-ssl_ciphers
@@ -9,10 +9,10 @@ Subject: [PATCH 3/5] mutt-1.5.23-ssl_ciphers
  2 files changed, 28 insertions(+), 25 deletions(-)
 
 diff --git a/init.h b/init.h
-index 376a2df..92e7388 100644
+index b2089f6..93bc0c8 100644
 --- a/init.h
 +++ b/init.h
-@@ -3637,7 +3637,7 @@ struct option_t MuttVars[] = {
+@@ -3667,7 +3667,7 @@ struct option_t MuttVars[] = {
    ** URL. You should only unset this for particular known hosts, using
    ** the \fC$<account-hook>\fP function.
    */
@@ -86,5 +86,5 @@ index e850fa3..c528668 100644
  
    if ((err = gnutls_priority_set_direct (data->state, priority, NULL)) < 0)
 -- 
-2.8.2
+2.9.0
 

@@ -1,0 +1,36 @@
+From 3fd4a320ad7b2908db1c4e84af0d99be805321a2 Mon Sep 17 00:00:00 2001
+From: Kevin McCarthy <kevin@8t8.us>
+Date: Tue, 7 Jun 2016 13:27:45 -0700
+Subject: [PATCH 35/37] Fix columns used for $status_format and $pager_format
+ in the pager.
+
+The code was hardcoding use of MuttIndexWindow->cols in
+mutt_make_string_info() and MuttStatusWindow->cols in
+menu_status_line().
+
+Add a parameter to mutt_make_info_string().  Change menu_status_line()
+to use menu->statuswin->cols, falling back to MuttStatusWindow if no
+menu is passed in.
+
+Set menu->statuswin appropriately inside pager.c.
+
+Thanks to Richard Russon for tracking down this problem, and for the initial patch.
+---
+ pager.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/pager.c b/pager.c
+index 84c4989..2364fd9 100644
+--- a/pager.c
++++ b/pager.c
+@@ -1770,6 +1770,7 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
+ 	  index->max = Context->vcount;
+ 	  index->current = extra->hdr->virtual;
+           index->indexwin = index_window;
++          index->statuswin = index_status_window;
+ 	}
+ 
+ 	NORMAL_COLOR;
+-- 
+2.9.0
+

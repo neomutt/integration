@@ -1,4 +1,4 @@
-From 5c5243c082bd6b4fac06066d9770aa562fb322e6 Mon Sep 17 00:00:00 2001
+From e7c8f6afe7b3775ca65942754f8ad3fc0433e3df Mon Sep 17 00:00:00 2001
 From: Sami Farin <hvtaifwkbgefbaei@gmail.com>
 Date: Wed, 16 Oct 2013 11:34:57 -0700
 Subject: [PATCH 03/10] fix: Bye srandom() and random()
@@ -18,10 +18,10 @@ characters for boundaries and message-id.
  7 files changed, 91 insertions(+), 58 deletions(-)
 
 diff --git a/globals.h b/globals.h
-index d6992d2..b44a08a 100644
+index 3e3e4da..d4e7fa6 100644
 --- a/globals.h
 +++ b/globals.h
-@@ -217,8 +217,6 @@ unsigned char QuadOptions[(OPT_MAX*2 + 7) / 8];
+@@ -218,8 +218,6 @@ unsigned char QuadOptions[(OPT_MAX*2 + 7) / 8];
  extern unsigned char QuadOptions[];
  #endif
  
@@ -31,10 +31,10 @@ index d6992d2..b44a08a 100644
  WHERE short NewsPollTimeout;
  WHERE short NntpContext;
 diff --git a/init.c b/init.c
-index f87e869..050f88a 100644
+index 7b7c4c5..b22e8e9 100644
 --- a/init.c
 +++ b/init.c
-@@ -3164,23 +3164,6 @@ static int mutt_execute_commands (LIST *p)
+@@ -3172,23 +3172,6 @@ static int mutt_execute_commands (LIST *p)
    return 0;
  }
  
@@ -58,7 +58,7 @@ index f87e869..050f88a 100644
  void mutt_init (int skip_sys_rc, LIST *commands)
  {
    struct passwd *pw;
-@@ -3203,13 +3186,9 @@ void mutt_init (int skip_sys_rc, LIST *commands)
+@@ -3211,13 +3194,9 @@ void mutt_init (int skip_sys_rc, LIST *commands)
  #endif
  
    mutt_menu_init ();
@@ -74,10 +74,10 @@ index f87e869..050f88a 100644
    /* on one of the systems I use, getcwd() does not return the same prefix
       as is listed in the passwd file */
 diff --git a/main.c b/main.c
-index 6987503..f19b920 100644
+index 2255585..05fae87 100644
 --- a/main.c
 +++ b/main.c
-@@ -222,7 +222,7 @@ int main (int argc, char **argv)
+@@ -218,7 +218,7 @@ int main (int argc, char **argv)
  
    mutt_error = mutt_nocurses_error;
    mutt_message = mutt_nocurses_error;
@@ -87,10 +87,10 @@ index 6987503..f19b920 100644
  
    memset (Options, 0, sizeof (Options));
 diff --git a/mh.c b/mh.c
-index 4c0dd83..54c7467 100644
+index cb6967e..c36b413 100644
 --- a/mh.c
 +++ b/mh.c
-@@ -350,8 +350,8 @@ static int mh_mkstemp (CONTEXT * dest, FILE ** fp, char **tgt)
+@@ -356,8 +356,8 @@ static int mh_mkstemp (CONTEXT * dest, FILE ** fp, char **tgt)
    omask = umask (mh_umask (dest));
    FOREVER
    {
@@ -101,7 +101,7 @@ index 4c0dd83..54c7467 100644
      if ((fd = open (path, O_WRONLY | O_EXCL | O_CREAT, 0666)) == -1)
      {
        if (errno != EEXIST)
-@@ -1370,9 +1370,9 @@ int maildir_open_new_message (MESSAGE * msg, CONTEXT * dest, HEADER * hdr)
+@@ -1376,9 +1376,9 @@ int maildir_open_new_message (MESSAGE * msg, CONTEXT * dest, HEADER * hdr)
    omask = umask (mh_umask (dest));
    FOREVER
    {
@@ -114,7 +114,7 @@ index 4c0dd83..54c7467 100644
  
      dprint (2, (debugfile, "maildir_open_new_message (): Trying %s.\n",
  		path));
-@@ -1456,8 +1456,8 @@ int maildir_commit_message (CONTEXT * ctx, MESSAGE * msg, HEADER * hdr)
+@@ -1462,8 +1462,8 @@ int maildir_commit_message (CONTEXT * ctx, MESSAGE * msg, HEADER * hdr)
    /* construct a new file name. */
    FOREVER
    {
@@ -126,7 +126,7 @@ index 4c0dd83..54c7467 100644
      snprintf (full, _POSIX_PATH_MAX, "%s/%s", ctx->path, path);
  
 diff --git a/muttlib.c b/muttlib.c
-index 6b4b65a..2c79ad8 100644
+index 2265e14..3d66091 100644
 --- a/muttlib.c
 +++ b/muttlib.c
 @@ -794,12 +794,79 @@ void mutt_merge_envelopes(ENVELOPE* base, ENVELOPE** extra)
@@ -212,10 +212,10 @@ index 6b4b65a..2c79ad8 100644
    if (n >= slen)
      dprint (1, (debugfile, "%s:%d: ERROR: insufficient buffer space to hold temporary filename! slen=%zu but need %zu\n",
 diff --git a/protos.h b/protos.h
-index 6792b7e..4ade804 100644
+index 4bd4dac..a9ac086 100644
 --- a/protos.h
 +++ b/protos.h
-@@ -393,6 +393,11 @@ int mutt_yesorno (const char *, int);
+@@ -394,6 +394,11 @@ int mutt_yesorno (const char *, int);
  void mutt_set_header_color(CONTEXT *, HEADER *);
  void mutt_sleep (short);
  int mutt_save_confirm (const char  *, struct stat *);
@@ -227,7 +227,7 @@ index 6792b7e..4ade804 100644
  
  int mh_valid_message (const char *);
  
-@@ -440,16 +445,6 @@ void mutt_pattern_free (pattern_t **pat);
+@@ -441,16 +446,6 @@ void mutt_pattern_free (pattern_t **pat);
  #define LONGLONG long
  #endif
  
@@ -245,7 +245,7 @@ index 6792b7e..4ade804 100644
  #ifndef S_ISLNK
  #define S_ISLNK(x) (((x) & S_IFMT) == S_IFLNK ? 1 : 0)
 diff --git a/sendlib.c b/sendlib.c
-index 21e2293..ccaea8a 100644
+index f4c6ac3..449bf0b 100644
 --- a/sendlib.c
 +++ b/sendlib.c
 @@ -77,8 +77,6 @@ const char B64Chars[64] = {
@@ -302,5 +302,5 @@ index 21e2293..ccaea8a 100644
  }
  
 -- 
-2.8.2
+2.9.0
 

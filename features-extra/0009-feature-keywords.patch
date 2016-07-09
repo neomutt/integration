@@ -1,7 +1,7 @@
-From 6905a21f0e7bec2a62cbcb0f5d9959e1becf3a26 Mon Sep 17 00:00:00 2001
+From 7b311a136552fef9ddb6d9b7b8dc99e523ef9d16 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Tue, 24 May 2016 17:42:12 +0100
-Subject: [PATCH 09/11] feature: keywords
+Subject: [PATCH 09/14] feature: keywords
 
 ---
  OPS                 |   1 +
@@ -55,14 +55,14 @@ index f14ff39..61f602f 100644
  OP_EDITOR_BACKSPACE "delete the char in front of the cursor"
  OP_EDITOR_BACKWARD_CHAR "move the cursor one character to the left"
 diff --git a/PATCHES b/PATCHES
-index 1021dc0..0feb437 100644
+index 51a610b..98c8499 100644
 --- a/PATCHES
 +++ b/PATCHES
-@@ -13,3 +13,4 @@ patch-tls-sni-neo-UNKNOWN
- patch-quasi-delete-neo-UNKNOWN
- patch-fmemopen-neo-UNKNOWN
- patch-limit-current-thread-neo-UNKNOWN
-+patch-keywords-neo-UNKNOWN
+@@ -13,3 +13,4 @@ patch-tls-sni-neo-git
+ patch-quasi-delete-neo-git
+ patch-fmemopen-neo-git
+ patch-limit-current-thread-neo-git
++patch-keywords-neo-git
 diff --git a/README.keywords b/README.keywords
 new file mode 100644
 index 0000000..9d14436
@@ -307,10 +307,10 @@ index 5f12a3c..9a98d21 100644
  
  int mutt_copy_hdr (FILE *, FILE *, LOFF_T, LOFF_T, int, const char *);
 diff --git a/curs_main.c b/curs_main.c
-index 79ae14d..b21e5c2 100644
+index 81807c6..55f37c8 100644
 --- a/curs_main.c
 +++ b/curs_main.c
-@@ -1406,6 +1406,9 @@ int mutt_index_menu (void)
+@@ -1391,6 +1391,9 @@ int mutt_index_menu (void)
  	  FREE (&Context);
  	}
  
@@ -320,7 +320,7 @@ index 79ae14d..b21e5c2 100644
          mutt_sleep (0);
  
  	/* Set CurrentMenu to MENU_MAIN before executing any folder
-@@ -1420,6 +1423,8 @@ int mutt_index_menu (void)
+@@ -1405,6 +1408,8 @@ int mutt_index_menu (void)
  					(option (OPTREADONLY) || op == OP_MAIN_CHANGE_FOLDER_READONLY) ?
  					M_READONLY : 0, NULL)) != NULL)
  	{
@@ -329,7 +329,7 @@ index 79ae14d..b21e5c2 100644
  	  menu->current = ci_first_message ();
  	}
  	else
-@@ -2226,6 +2231,21 @@ int mutt_index_menu (void)
+@@ -2215,6 +2220,21 @@ int mutt_index_menu (void)
  	menu->redraw = REDRAW_FULL;
  	break;
  
@@ -352,7 +352,7 @@ index 79ae14d..b21e5c2 100644
  
  	CHECK_ATTACH;
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index 0e17cf4..59f4edc 100644
+index 9647e9a..4429994 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
 @@ -1156,7 +1156,7 @@ <table id="tab-keys-editor">
@@ -525,7 +525,7 @@ index 0e17cf4..59f4edc 100644
  <sect1 id="new-mail">
  <title>New Mail Detection</title>
  
-@@ -10197,6 +10300,211 @@ <sect1 id="initials">
+@@ -10236,6 +10339,211 @@ <sect1 id="initials">
  	</sect2>
  </sect1>
  
@@ -831,7 +831,7 @@ index 9b00208..73a43c1 100644
    { "forward-message",	OP_FORWARD_MESSAGE,		"f" },
    { "flag-message",	OP_FLAG_MESSAGE,		"F" },
 diff --git a/globals.h b/globals.h
-index 94640b3..83e13fe 100644
+index 66a1da1..3c93cce 100644
 --- a/globals.h
 +++ b/globals.h
 @@ -66,6 +66,7 @@ WHERE char *ImapUser INITVAL (NULL);
@@ -944,10 +944,10 @@ index f4c0ecf..d91b9c6 100644
  
  static int
 diff --git a/hdrline.c b/hdrline.c
-index 7fbc357..8c18085 100644
+index 5cedd7d..b0d61cd 100644
 --- a/hdrline.c
 +++ b/hdrline.c
-@@ -876,42 +876,57 @@ hdr_format_str (char *dest,
+@@ -877,42 +877,57 @@ hdr_format_str (char *dest,
  
       case 'y':
         if (optional)
@@ -1238,10 +1238,10 @@ index 0a75998..a7d1036 100644
 +  return dst;
 +}
 diff --git a/imap/imap.c b/imap/imap.c
-index 7655a5f..5c85f0c 100644
+index 2cd64a6..feb06ef 100644
 --- a/imap/imap.c
 +++ b/imap/imap.c
-@@ -1228,7 +1228,7 @@ int imap_sync_mailbox (CONTEXT* ctx, int expunge, int* index_hint)
+@@ -1230,7 +1230,7 @@ int imap_sync_mailbox (CONTEXT* ctx, int expunge, int* index_hint)
         * we delete the message and reupload it.
         * This works better if we're expunging, of course. */
        if ((h->env && (h->env->refs_changed || h->env->irt_changed)) ||
@@ -1250,7 +1250,7 @@ index 7655a5f..5c85f0c 100644
        {
          mutt_message (_("Saving changed messages... [%d/%d]"), n+1,
                        ctx->msgcount);
-@@ -1238,6 +1238,7 @@ int imap_sync_mailbox (CONTEXT* ctx, int expunge, int* index_hint)
+@@ -1240,6 +1240,7 @@ int imap_sync_mailbox (CONTEXT* ctx, int expunge, int* index_hint)
  	  dprint (1, (debugfile, "imap_sync_mailbox: Error opening mailbox in append mode\n"));
  	else
  	  _mutt_save_message (h, appendctx, 1, 0, 0);
@@ -1280,10 +1280,10 @@ index 7a79f44..3280f5d 100644
     * fails. Thanks Sam. */
    short fetched = 0;
 diff --git a/init.c b/init.c
-index 0113e7d..0c37cc4 100644
+index b2023bc..ef87adb 100644
 --- a/init.c
 +++ b/init.c
-@@ -3395,3 +3395,58 @@ static const char* myvar_get (const char* var)
+@@ -3403,3 +3403,58 @@ static const char* myvar_get (const char* var)
  
    return NULL;
  }
@@ -1343,10 +1343,10 @@ index 0113e7d..0c37cc4 100644
 +}
 +
 diff --git a/init.h b/init.h
-index 9e6d945..2bd5bdd 100644
+index 3e53f72..4b75d22 100644
 --- a/init.h
 +++ b/init.h
-@@ -1389,6 +1389,28 @@ struct option_t MuttVars[] = {
+@@ -1391,6 +1391,28 @@ struct option_t MuttVars[] = {
    ** from your spool mailbox to your $$mbox mailbox, or as a result of
    ** a ``$mbox-hook'' command.
    */
@@ -1375,7 +1375,7 @@ index 9e6d945..2bd5bdd 100644
    { "locale",		DT_STR,  R_BOTH, UL &Locale, UL "C" },
    /*
    ** .pp
-@@ -3753,6 +3775,20 @@ struct option_t MuttVars[] = {
+@@ -3765,6 +3787,20 @@ struct option_t MuttVars[] = {
    {"xterm_set_titles",	DT_SYN,  R_NONE, UL "ts_enabled", 0 },
    /*
    */
@@ -1396,7 +1396,7 @@ index 9e6d945..2bd5bdd 100644
    /*--*/
    { NULL, 0, 0, 0, 0 }
  };
-@@ -3769,6 +3805,7 @@ const struct mapping_t SortMethods[] = {
+@@ -3781,6 +3817,7 @@ const struct mapping_t SortMethods[] = {
    { "to",		SORT_TO },
    { "score",		SORT_SCORE },
    { "spam",		SORT_SPAM },
@@ -1404,7 +1404,7 @@ index 9e6d945..2bd5bdd 100644
    { NULL,               0 }
  };
  
-@@ -3788,6 +3825,7 @@ const struct mapping_t SortAuxMethods[] = {
+@@ -3800,6 +3837,7 @@ const struct mapping_t SortAuxMethods[] = {
    { "to",		SORT_TO },
    { "score",		SORT_SCORE },
    { "spam",		SORT_SPAM },
@@ -1413,12 +1413,12 @@ index 9e6d945..2bd5bdd 100644
  };
  
 diff --git a/main.c b/main.c
-index 7e81016..db7268b 100644
+index 5e6b597..a6b4a1e 100644
 --- a/main.c
 +++ b/main.c
-@@ -832,9 +832,13 @@ int main (int argc, char **argv)
+@@ -819,9 +819,13 @@ int main (int argc, char **argv)
  #ifdef USE_SIDEBAR
-       mutt_sb_set_open_buffy (folder);
+       mutt_sb_set_open_buffy ();
  #endif
 +      Labels = hash_create (131, 0);
 +      mutt_scan_labels(Context);
@@ -1431,10 +1431,10 @@ index 7e81016..db7268b 100644
  #ifdef USE_IMAP
      imap_logout_all ();
 diff --git a/mh.c b/mh.c
-index 3e87181..474a7b4 100644
+index ecec925..b75de6d 100644
 --- a/mh.c
 +++ b/mh.c
-@@ -1654,7 +1654,7 @@ static int mh_sync_message (CONTEXT * ctx, int msgno)
+@@ -1660,7 +1660,7 @@ static int mh_sync_message (CONTEXT * ctx, int msgno)
  {
    HEADER *h = ctx->hdrs[msgno];
  
@@ -1443,7 +1443,7 @@ index 3e87181..474a7b4 100644
        (h->env && (h->env->refs_changed || h->env->irt_changed)))
      if (mh_rewrite_message (ctx, msgno) != 0)
        return -1;
-@@ -1666,7 +1666,7 @@ static int maildir_sync_message (CONTEXT * ctx, int msgno)
+@@ -1672,7 +1672,7 @@ static int maildir_sync_message (CONTEXT * ctx, int msgno)
  {
    HEADER *h = ctx->hdrs[msgno];
  
@@ -1452,7 +1452,7 @@ index 3e87181..474a7b4 100644
        (h->env && (h->env->refs_changed || h->env->irt_changed)))
    {
      /* when doing attachment deletion/rethreading, fall back to the MH case. */
-@@ -1788,6 +1788,7 @@ int mh_sync_mailbox (CONTEXT * ctx, int *index_hint)
+@@ -1794,6 +1794,7 @@ int mh_sync_mailbox (CONTEXT * ctx, int *index_hint)
        }
      }
      else if (ctx->hdrs[i]->changed || ctx->hdrs[i]->attach_del ||
@@ -1461,7 +1461,7 @@ index 3e87181..474a7b4 100644
  	      && (option (OPTMAILDIRTRASH) || ctx->hdrs[i]->trash)
  	      && (ctx->hdrs[i]->deleted != ctx->hdrs[i]->trash)))
 diff --git a/mutt.h b/mutt.h
-index 40e2de6..c56991a 100644
+index c761a4d..28744a0 100644
 --- a/mutt.h
 +++ b/mutt.h
 @@ -88,6 +88,7 @@
@@ -1493,8 +1493,8 @@ index 40e2de6..c56991a 100644
 +  OPTKEYWORDSSTANDARD,
    OPTMAILCAPSANITIZE,
    OPTMAILCHECKRECENT,
-   OPTMAILDIRTRASH,
-@@ -615,11 +624,12 @@ typedef struct envelope
+   OPTMAILCHECKSTATS,
+@@ -616,11 +625,12 @@ typedef struct envelope
    char *message_id;
    char *supersedes;
    char *date;
@@ -1508,7 +1508,7 @@ index 40e2de6..c56991a 100644
  
    unsigned int irt_changed : 1; /* In-Reply-To changed to link/break threads */
    unsigned int refs_changed : 1; /* References changed to break thread */
-@@ -755,6 +765,7 @@ typedef struct header
+@@ -756,6 +766,7 @@ typedef struct header
  					 * This flag is used by the maildir_trash
  					 * option.
  					 */
@@ -1517,7 +1517,7 @@ index 40e2de6..c56991a 100644
    /* timezone of the sender of this message */
    unsigned int zhours : 5;
 diff --git a/muttlib.c b/muttlib.c
-index 2e9efad..fd025b8 100644
+index 1cd6342..b0aa8bf 100644
 --- a/muttlib.c
 +++ b/muttlib.c
 @@ -713,13 +713,14 @@ void mutt_free_envelope (ENVELOPE **p)
@@ -1546,10 +1546,10 @@ index 2e9efad..fd025b8 100644
    {
      MOVE_ELEM(references);
 diff --git a/pager.c b/pager.c
-index 227727e..0f5359c 100644
+index db3c85c..48c7bb6 100644
 --- a/pager.c
 +++ b/pager.c
-@@ -2794,6 +2794,18 @@ search_next:
+@@ -2801,6 +2801,18 @@ search_next:
  	redraw = REDRAW_FULL;
  	break;
  
@@ -1718,10 +1718,10 @@ index 57be53e..8c296ce 100644
        return (pat->not ^ (h->env->spam && h->env->spam->data && patmatch (pat, h->env->spam->data) == 0));
      case M_DUPLICATED:
 diff --git a/protos.h b/protos.h
-index bfe78e4..fb82955 100644
+index d06c003..61686bc 100644
 --- a/protos.h
 +++ b/protos.h
-@@ -185,6 +185,12 @@ void mutt_edit_content_type (HEADER *, BODY *, FILE *);
+@@ -186,6 +186,12 @@ void mutt_edit_content_type (HEADER *, BODY *, FILE *);
  void mutt_edit_file (const char *, const char *);
  void mutt_edit_headers (const char *, const char *, HEADER *, char *, size_t);
  int mutt_filter_unprintable (char **);
@@ -1815,17 +1815,17 @@ index 76e9e79..4136545 100644
        return (NULL);
    }
 diff --git a/sort.h b/sort.h
-index f24491b..609677e 100644
+index 26afdc6..3727835 100644
 --- a/sort.h
 +++ b/sort.h
-@@ -36,6 +36,7 @@
- #define SORT_DESC	17
- #define SORT_FLAGGED	18
- #define SORT_PATH	19
-+#define SORT_LABEL	20
+@@ -35,6 +35,7 @@
+ #define SORT_COUNT_NEW	16
+ #define SORT_FLAGGED	17
+ #define SORT_PATH	18
++#define SORT_LABEL	19
  
  /* dgc: Sort & SortAux are shorts, so I'm bumping these bitflags up from
   * bits 4 & 5 to bits 8 & 9 to make room for more sort keys in the future. */
 -- 
-2.8.2
+2.9.0
 

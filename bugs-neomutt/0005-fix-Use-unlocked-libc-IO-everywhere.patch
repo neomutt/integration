@@ -1,4 +1,4 @@
-From c151e24f3130f7dec1aab052df181c8da021d5bc Mon Sep 17 00:00:00 2001
+From e2c5b6b0a382667fe16019ce2c226ad856ae01d8 Mon Sep 17 00:00:00 2001
 From: David Wilson <dw@botanicus.net>
 Date: Tue, 22 Oct 2013 11:34:57 -0700
 Subject: [PATCH 05/10] fix: Use unlocked libc IO everywhere.
@@ -34,10 +34,10 @@ After: 6 seconds
  2 files changed, 9 insertions(+)
 
 diff --git a/configure.ac b/configure.ac
-index e125f1f..87018df 100644
+index 5e2afcd..fc5eefc 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -354,6 +354,7 @@ AC_CHECK_HEADERS(sys/time.h sys/resource.h sys/syscall.h)
+@@ -356,6 +356,7 @@ AC_CHECK_HEADERS(sys/time.h sys/resource.h sys/syscall.h)
  AC_CHECK_HEADERS(unix.h)
  
  AC_CHECK_FUNCS(setrlimit getsid)
@@ -46,7 +46,7 @@ index e125f1f..87018df 100644
  AC_MSG_CHECKING(for sig_atomic_t in signal.h)
  AC_EGREP_HEADER(sig_atomic_t,signal.h,
 diff --git a/mutt.h b/mutt.h
-index f5c1552..7d1ad1e 100644
+index b400e41..f2f87f0 100644
 --- a/mutt.h
 +++ b/mutt.h
 @@ -66,6 +66,14 @@
@@ -65,5 +65,5 @@ index f5c1552..7d1ad1e 100644
  #ifdef MAIN_C
  #define WHERE 
 -- 
-2.8.2
+2.9.0
 

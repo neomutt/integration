@@ -1,4 +1,4 @@
-From ca58718147f630c1b7588141fbff147e664b3fb2 Mon Sep 17 00:00:00 2001
+From bcf1ba811576f4d05f9f8bc360de1de09e1c2841 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 6 May 2016 00:24:02 +0100
 Subject: [PATCH 14/22] misc/gpg.rc-paths
@@ -26,5 +26,5 @@ index 53f3965..eae51d2 100644
  # import a key into the public key ring
  set pgp_import_command="gpg --no-verbose --import %f"
 -- 
-2.8.2
+2.9.0
 

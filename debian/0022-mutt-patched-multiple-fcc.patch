@@ -1,4 +1,4 @@
-From c3e10284d9bb1f43c8304eb27c2d8258269f98d8 Mon Sep 17 00:00:00 2001
+From 976ab23c1b9fbe75bb3583e48a01ee042bdde2ad Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 6 May 2016 00:36:57 +0100
 Subject: [PATCH 22/22] mutt-patched/multiple-fcc
@@ -10,10 +10,10 @@ Subject: [PATCH 22/22] mutt-patched/multiple-fcc
  3 files changed, 34 insertions(+), 1 deletion(-)
 
 diff --git a/protos.h b/protos.h
-index 1a63eeb..10e2a5f 100644
+index 2bc40b7..78d2893 100644
 --- a/protos.h
 +++ b/protos.h
-@@ -384,6 +384,7 @@ int mutt_user_is_recipient (HEADER *);
+@@ -385,6 +385,7 @@ int mutt_user_is_recipient (HEADER *);
  void mutt_update_num_postponed (void);
  int mutt_wait_filter (pid_t);
  int mutt_which_case (const char *);
@@ -22,10 +22,10 @@ index 1a63eeb..10e2a5f 100644
  int mutt_write_mime_body (BODY *, FILE *);
  int mutt_write_mime_header (BODY *, FILE *);
 diff --git a/send.c b/send.c
-index 1a0b35d..e79c1f7 100644
+index 474c36c..bca6673 100644
 --- a/send.c
 +++ b/send.c
-@@ -1974,7 +1974,7 @@ full_fcc:
+@@ -1975,7 +1975,7 @@ full_fcc:
         * message was first postponed.
         */
        msg->received = time (NULL);
@@ -35,7 +35,7 @@ index 1a0b35d..e79c1f7 100644
  	/*
  	 * Error writing FCC, we should abort sending.
 diff --git a/sendlib.c b/sendlib.c
-index 247b33a..59c48fe 100644
+index 5869755..ddd8037 100644
 --- a/sendlib.c
 +++ b/sendlib.c
 @@ -2756,6 +2756,38 @@ static void set_noconv_flags (BODY *b, short flag)
@@ -78,5 +78,5 @@ index 247b33a..59c48fe 100644
  		    int post, char *fcc, char **finalpath)
  {
 -- 
-2.8.2
+2.9.0
 

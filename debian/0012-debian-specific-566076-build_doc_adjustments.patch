@@ -1,4 +1,4 @@
-From 53a833282f54b87014733d0b3012bd1629097a55 Mon Sep 17 00:00:00 2001
+From ecd67a9fe3e410a20e6ea4477bd84b1752dac272 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 6 May 2016 00:24:01 +0100
 Subject: [PATCH 12/22] debian-specific/566076-build_doc_adjustments
@@ -36,5 +36,5 @@ index cd633dc..77c99df 100644
  
  $(CHUNKED_DOCFILES): stamp-doc-chunked
 -- 
-2.8.2
+2.9.0
 

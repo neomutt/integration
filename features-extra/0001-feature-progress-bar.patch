@@ -1,7 +1,7 @@
-From f7f20c785df0314bbab53ddd63b2439a18952bcf Mon Sep 17 00:00:00 2001
+From 53d891481849af79706a7e7a5768107844898345 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Tue, 24 May 2016 17:17:59 +0100
-Subject: [PATCH 01/11] feature: progress bar
+Subject: [PATCH 01/14] feature: progress bar
 
 ---
  PATCHES             |   1 +
@@ -18,14 +18,14 @@ Subject: [PATCH 01/11] feature: progress bar
  create mode 100644 doc/vimrc.progress
 
 diff --git a/PATCHES b/PATCHES
-index fd6fa32..492d894 100644
+index a994654..4f06445 100644
 --- a/PATCHES
 +++ b/PATCHES
-@@ -5,3 +5,4 @@ patch-nested-if-neo-UNKNOWN
- patch-cond-date-neo-UNKNOWN
- patch-compress-neo-UNKNOWN
- patch-sidebar-neo-UNKNOWN
-+patch-progress-neo-UNKNOWN
+@@ -5,3 +5,4 @@ patch-nested-if-neo-git
+ patch-cond-date-neo-git
+ patch-compress-neo-git
+ patch-sidebar-neo-git
++patch-progress-neo-git
 diff --git a/README.progress b/README.progress
 new file mode 100644
 index 0000000..46ac38e
@@ -174,7 +174,7 @@ index 3178f22..1ab6d2d 100644
    }
  
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index 676ed6a..239f955 100644
+index f6e987e..bbaa1ef 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
 @@ -3323,6 +3323,7 @@ <sect1 id="color">
@@ -185,7 +185,7 @@ index 676ed6a..239f955 100644
  <listitem><para>prompt</para></listitem>
  <listitem><para>quoted (text matching <link linkend="quote-regexp">$quote_regexp</link> in the body of a message)</para></listitem>
  <listitem><para>quoted1, quoted2, ..., quoted<emphasis>N</emphasis> (higher levels of quoting)</para></listitem>
-@@ -10057,6 +10058,125 @@ <sect1 id="nested-if">
+@@ -10096,6 +10097,125 @@ <sect1 id="nested-if">
  	</sect2>
  </sect1>
  
@@ -309,8 +309,8 @@ index 676ed6a..239f955 100644
 +</sect1>
 +
  <sect1 id="sidebar">
- 	<title>Sidebar Patch</title>
- 	<subtitle>Overview of mailboxes</subtitle>
+   <title>Sidebar Patch</title>
+   <subtitle>Overview of mailboxes</subtitle>
 diff --git a/doc/muttrc.progress b/doc/muttrc.progress
 new file mode 100644
 index 0000000..7efe45c
@@ -351,5 +351,5 @@ index 2bfa1ae..75ea85a 100644
  };
  
 -- 
-2.8.2
+2.9.0
 

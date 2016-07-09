@@ -1,4 +1,4 @@
-From a7302a7e8998352b98c35a33f073c0bfc9d0c274 Mon Sep 17 00:00:00 2001
+From 2c8103edf430ba68cac1d55a9a461b92d66cb08c Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Sun, 29 May 2016 13:33:55 +0100
 Subject: [PATCH 1/5] mutt-1.5.18-muttrc
@@ -28,5 +28,5 @@ index 1f7012e..39df600 100644
  # set the default here.
  #
 -- 
-2.8.2
+2.9.0
 

@@ -1,7 +1,7 @@
-From 15e31679b51e453c99880b5e5dab19668527edde Mon Sep 17 00:00:00 2001
+From 5edb9927a584e6f38df28150cfd22825fb1f237b Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Tue, 24 May 2016 17:28:23 +0100
-Subject: [PATCH 06/11] feature: quasi-delete
+Subject: [PATCH 06/14] feature: quasi-delete
 
 ---
  OPS                     |   1 +
@@ -32,14 +32,14 @@ index 02cea8e..8ccc188 100644
  OP_MAIN_UNTAG_PATTERN "untag messages matching a pattern"
  OP_MIDDLE_PAGE "move to the middle of the page"
 diff --git a/PATCHES b/PATCHES
-index 7afe94b..763deff 100644
+index df3dfbe..e0283aa 100644
 --- a/PATCHES
 +++ b/PATCHES
-@@ -10,3 +10,4 @@ patch-skip-quoted-neo-UNKNOWN
- patch-status-color-neo-UNKNOWN
- patch-index-color-neo-UNKNOWN
- patch-tls-sni-neo-UNKNOWN
-+patch-quasi-delete-neo-UNKNOWN
+@@ -10,3 +10,4 @@ patch-skip-quoted-neo-git
+ patch-status-color-neo-git
+ patch-index-color-neo-git
+ patch-tls-sni-neo-git
++patch-quasi-delete-neo-git
 diff --git a/README.quasi-delete b/README.quasi-delete
 new file mode 100644
 index 0000000..2a47346
@@ -96,10 +96,10 @@ index 0000000..2a47346
 +    * Richard Russon <rich@flatcap.org>
 +
 diff --git a/curs_main.c b/curs_main.c
-index 51a0dd3..dc1b64b 100644
+index 9114aeb..a51d508 100644
 --- a/curs_main.c
 +++ b/curs_main.c
-@@ -1292,6 +1292,20 @@ int mutt_index_menu (void)
+@@ -1279,6 +1279,20 @@ int mutt_index_menu (void)
  	  menu->redraw = REDRAW_FULL;
  	break;
  
@@ -121,10 +121,10 @@ index 51a0dd3..dc1b64b 100644
        case OP_SIDEBAR_OPEN:
  #endif
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index e5c5098..76022ae 100644
+index b595bf0..04e77a0 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
-@@ -10429,6 +10429,126 @@ <sect1 id="progress">
+@@ -10468,6 +10468,126 @@ <sect1 id="progress">
  	</sect2>
  </sect1>
  
@@ -249,8 +249,8 @@ index e5c5098..76022ae 100644
 +</sect1>
 +
  <sect1 id="sidebar">
- 	<title>Sidebar Patch</title>
- 	<subtitle>Overview of mailboxes</subtitle>
+   <title>Sidebar Patch</title>
+   <subtitle>Overview of mailboxes</subtitle>
 diff --git a/doc/muttrc.quasi-delete b/doc/muttrc.quasi-delete
 new file mode 100644
 index 0000000..67031ff
@@ -296,10 +296,10 @@ index f898717..fae2ef5 100644
  #ifdef USE_SIDEBAR
    { "sidebar-next",		OP_SIDEBAR_NEXT,		NULL },
 diff --git a/mutt.h b/mutt.h
-index 51c9e51..40e2de6 100644
+index 7e608e4..c761a4d 100644
 --- a/mutt.h
 +++ b/mutt.h
-@@ -738,6 +738,7 @@ typedef struct header
+@@ -739,6 +739,7 @@ typedef struct header
    unsigned int appended : 1;		/* has been saved */
    unsigned int purged : 1;   /* bypassing the trash folder */
    unsigned int deleted : 1;
@@ -308,10 +308,10 @@ index 51c9e51..40e2de6 100644
    unsigned int attach_del : 1; 		/* has an attachment marked for deletion */
    unsigned int old : 1;
 diff --git a/mx.c b/mx.c
-index 4a2ca3c..6ee50ad 100644
+index d7218ec..c0a0cd6 100644
 --- a/mx.c
 +++ b/mx.c
-@@ -1137,9 +1137,10 @@ void mx_update_tables(CONTEXT *ctx, int committing)
+@@ -1134,9 +1134,10 @@ void mx_update_tables(CONTEXT *ctx, int committing)
  #define this_body ctx->hdrs[j]->content
    for (i = 0, j = 0; i < ctx->msgcount; i++)
    {
@@ -325,5 +325,5 @@ index 4a2ca3c..6ee50ad 100644
        if (i != j)
        {
 -- 
-2.8.2
+2.9.0
 

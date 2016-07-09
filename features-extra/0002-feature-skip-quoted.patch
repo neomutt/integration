@@ -1,7 +1,7 @@
-From 8ba65a5f504d095a54c30720a7fa41d766a82ccd Mon Sep 17 00:00:00 2001
+From 217d69182264b8d323916bca603b4762a4d26e9b Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Tue, 24 May 2016 17:19:14 +0100
-Subject: [PATCH 02/11] feature: skip-quoted
+Subject: [PATCH 02/14] feature: skip-quoted
 
 ---
  PATCHES                |   1 +
@@ -16,14 +16,14 @@ Subject: [PATCH 02/11] feature: skip-quoted
  create mode 100644 doc/muttrc.skip-quoted
 
 diff --git a/PATCHES b/PATCHES
-index 492d894..9400723 100644
+index 4f06445..75a4f03 100644
 --- a/PATCHES
 +++ b/PATCHES
-@@ -6,3 +6,4 @@ patch-cond-date-neo-UNKNOWN
- patch-compress-neo-UNKNOWN
- patch-sidebar-neo-UNKNOWN
- patch-progress-neo-UNKNOWN
-+patch-skip-quoted-neo-UNKNOWN
+@@ -6,3 +6,4 @@ patch-cond-date-neo-git
+ patch-compress-neo-git
+ patch-sidebar-neo-git
+ patch-progress-neo-git
++patch-skip-quoted-neo-git
 diff --git a/README.skip-quoted b/README.skip-quoted
 new file mode 100644
 index 0000000..e9b0ac3
@@ -78,11 +78,11 @@ index 0000000..e9b0ac3
 +    * Richard Russon <rich@flatcap.org>
 +
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index 239f955..e5c4a66 100644
+index bbaa1ef..761dacf 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
-@@ -10640,6 +10640,127 @@ <sect1 id="sidebar">
- 	</sect2>
+@@ -10676,6 +10676,127 @@ <sect1 id="sidebar">
+   </sect2>
  </sect1>
  
 +<sect1 id="skip-quoted-patch">
@@ -226,7 +226,7 @@ index 0000000..cd13ed4
 + 
 +# vim: syntax=muttrc
 diff --git a/globals.h b/globals.h
-index c4a77ca..94640b3 100644
+index d81166b..66a1da1 100644
 --- a/globals.h
 +++ b/globals.h
 @@ -211,6 +211,7 @@ WHERE short ReflowWrap;
@@ -238,10 +238,10 @@ index c4a77ca..94640b3 100644
  WHERE short Timeout;
  WHERE short Wrap;
 diff --git a/init.h b/init.h
-index 0af3a8f..9e6d945 100644
+index 0b565a8..3e53f72 100644
 --- a/init.h
 +++ b/init.h
-@@ -2850,6 +2850,12 @@ struct option_t MuttVars[] = {
+@@ -2862,6 +2862,12 @@ struct option_t MuttVars[] = {
    ** replacing ``%s'' with the supplied string.
    ** For the default value, ``joe'' would be expanded to: ``~f joe | ~s joe''.
    */
@@ -255,10 +255,10 @@ index 0af3a8f..9e6d945 100644
    /*
    ** .pp
 diff --git a/pager.c b/pager.c
-index b4b8889..d4697ba 100644
+index e8b2b04..226fe15 100644
 --- a/pager.c
 +++ b/pager.c
-@@ -2289,11 +2289,11 @@ search_next:
+@@ -2300,11 +2300,11 @@ search_next:
  	  int dretval = 0;
  	  int new_topline = topline;
  
@@ -272,7 +272,7 @@ index b4b8889..d4697ba 100644
  	    new_topline++;
  
  	  if (dretval < 0)
-@@ -2302,11 +2302,11 @@ search_next:
+@@ -2313,11 +2313,11 @@ search_next:
  	    break;
  	  }
  
@@ -287,5 +287,5 @@ index b4b8889..d4697ba 100644
  
  	  if (dretval < 0)
 -- 
-2.8.2
+2.9.0
 

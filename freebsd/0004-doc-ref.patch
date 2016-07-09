@@ -1,4 +1,4 @@
-From 2887c4bf40a4d3a03b2dce50c4a3759afb99f834 Mon Sep 17 00:00:00 2001
+From 89def311b3a375831ec56ec804e2e5c3a914da6c Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 15:17:31 +0100
 Subject: [PATCH 04/21] doc-ref
@@ -22,5 +22,5 @@ index d29294f..64ac7b7 100644
  .I Note:
  .IR
 -- 
-2.8.2
+2.9.0
 

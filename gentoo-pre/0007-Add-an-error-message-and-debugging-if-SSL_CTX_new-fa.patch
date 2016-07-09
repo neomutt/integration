@@ -1,7 +1,7 @@
-From a2627d0cd7120a343b2d14f9a5acad24373fb0f8 Mon Sep 17 00:00:00 2001
+From 64a616280569095bfdef771d6123750a6865a469 Mon Sep 17 00:00:00 2001
 From: Kevin McCarthy <kevin@8t8.us>
 Date: Mon, 11 Apr 2016 11:55:50 -0700
-Subject: [PATCH 07/45] Add an error message and debugging if SSL_CTX_new()
+Subject: [PATCH 07/37] Add an error message and debugging if SSL_CTX_new()
  fails. (closes #3831)
 
 Generate a mutt_error().  Add a debugging function
@@ -59,5 +59,5 @@ index a8964d6..89bd6de 100644
  {
    static char ret[SHORT_STRING];
 -- 
-2.8.2
+2.9.0
 

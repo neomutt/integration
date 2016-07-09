@@ -1,4 +1,4 @@
-From 566c235c4ad3c14ce10a48c8f97a437c28fad500 Mon Sep 17 00:00:00 2001
+From d4bde757e98d7b6585c28de4f332be6e7a903b9c Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 6 May 2016 00:23:59 +0100
 Subject: [PATCH 09/22] debian-specific/document_debian_defaults
@@ -8,10 +8,10 @@ Subject: [PATCH 09/22] debian-specific/document_debian_defaults
  1 file changed, 22 insertions(+)
 
 diff --git a/init.h b/init.h
-index 29ebd9f..4364d43 100644
+index b7728d7..379004a 100644
 --- a/init.h
 +++ b/init.h
-@@ -327,6 +327,9 @@ struct option_t MuttVars[] = {
+@@ -336,6 +336,9 @@ struct option_t MuttVars[] = {
    ** .pp
    ** When this variable is \fIset\fP, mutt will include Delivered-To headers when
    ** bouncing messages.  Postfix users may wish to \fIunset\fP this variable.
@@ -21,7 +21,7 @@ index 29ebd9f..4364d43 100644
    */
    { "braille_friendly", DT_BOOL, R_NONE, OPTBRAILLEFRIENDLY, 0 },
    /*
-@@ -1129,6 +1132,9 @@ struct option_t MuttVars[] = {
+@@ -1138,6 +1141,9 @@ struct option_t MuttVars[] = {
    ** which case a detected one is not used.
    ** .pp
    ** Also see $$use_domain and $$hidden_host.
@@ -31,7 +31,7 @@ index 29ebd9f..4364d43 100644
    */
  #ifdef HAVE_LIBIDN
    { "idn_decode",	DT_BOOL, R_BOTH, OPTIDNDECODE, 1},
-@@ -1748,6 +1754,9 @@ struct option_t MuttVars[] = {
+@@ -1773,6 +1779,9 @@ struct option_t MuttVars[] = {
    ** system.  It is used with various sets of parameters to gather the
    ** list of known remailers, and to finally send a message through the
    ** mixmaster chain.
@@ -41,7 +41,7 @@ index 29ebd9f..4364d43 100644
    */
  #endif
    { "move",		DT_QUAD, R_NONE, OPT_MOVE, M_NO },
-@@ -3189,6 +3198,10 @@ struct option_t MuttVars[] = {
+@@ -3213,6 +3222,10 @@ struct option_t MuttVars[] = {
    ** This variable contains the name of either a directory, or a file which
    ** contains trusted certificates for use with OpenSSL.
    ** (S/MIME only)
@@ -52,7 +52,7 @@ index 29ebd9f..4364d43 100644
    */
    { "smime_certificates",	DT_PATH, R_NONE, UL &SmimeCertificates, 0 },
    /*
-@@ -3402,6 +3415,9 @@ struct option_t MuttVars[] = {
+@@ -3432,6 +3445,9 @@ struct option_t MuttVars[] = {
    ** .ts
    ** set smtp_authenticators="digest-md5:cram-md5"
    ** .te
@@ -62,7 +62,7 @@ index 29ebd9f..4364d43 100644
    */
  # endif /* USE_SASL */
    { "smtp_pass", 	DT_STR,  R_NONE, UL &SmtpPass, UL 0 },
-@@ -3449,6 +3465,9 @@ struct option_t MuttVars[] = {
+@@ -3479,6 +3495,9 @@ struct option_t MuttVars[] = {
    ** .pp
    ** You may optionally use the ``reverse-'' prefix to specify reverse sorting
    ** order (example: ``\fCset sort=reverse-date-sent\fP'').
@@ -72,7 +72,7 @@ index 29ebd9f..4364d43 100644
    */
    { "sort_alias",	DT_SORT|DT_SORT_ALIAS,	R_NONE,	UL &SortAlias, SORT_ALIAS },
    /*
-@@ -4054,6 +4073,9 @@ struct option_t MuttVars[] = {
+@@ -4084,6 +4103,9 @@ struct option_t MuttVars[] = {
    ** is set to deliver directly via SMTP (see $$smtp_url), this
    ** option does nothing: mutt will never write out the ``Bcc:'' header
    ** in this case.
@@ -83,5 +83,5 @@ index 29ebd9f..4364d43 100644
    { "write_inc",	DT_NUM,	 R_NONE, UL &WriteInc, 10 },
    /*
 -- 
-2.8.2
+2.9.0
 

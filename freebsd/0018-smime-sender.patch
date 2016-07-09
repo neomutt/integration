@@ -1,4 +1,4 @@
-From 29780e1c516e75f47c0885701088429724a9f412 Mon Sep 17 00:00:00 2001
+From feb414ed0a2f800c32cfe95e06f8d000c9498416 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 15:23:22 +0100
 Subject: [PATCH 18/21] smime-sender
@@ -40,10 +40,10 @@ index a735c69..1be22bc 100644
  set smime_timeout=300
  
 diff --git a/init.h b/init.h
-index 54a7753..26e4f33 100644
+index 6f1dd3b..acdd4a5 100644
 --- a/init.h
 +++ b/init.h
-@@ -2948,6 +2948,15 @@ struct option_t MuttVars[] = {
+@@ -2960,6 +2960,15 @@ struct option_t MuttVars[] = {
    ** the \fCshare/examples/mutt/\fP subdirectory which has been installed on
    ** your system. (S/MIME only)
    */
@@ -60,10 +60,10 @@ index 54a7753..26e4f33 100644
    /*
    ** .pp
 diff --git a/mutt.h b/mutt.h
-index 72e1c52..163ef0b 100644
+index 1e67ac7..86a2b27 100644
 --- a/mutt.h
 +++ b/mutt.h
-@@ -494,6 +494,7 @@ enum
+@@ -495,6 +495,7 @@ enum
    OPTCRYPTTIMESTAMP,
    OPTSMIMEISDEFAULT,
    OPTASKCERTLABEL,
@@ -72,5 +72,5 @@ index 72e1c52..163ef0b 100644
    OPTPGPIGNORESUB,
    OPTPGPCHECKEXIT,
 -- 
-2.8.2
+2.9.0
 

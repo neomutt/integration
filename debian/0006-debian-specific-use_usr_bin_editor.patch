@@ -1,4 +1,4 @@
-From 3528a4309f045d6401f841f8ed75c8934d42be12 Mon Sep 17 00:00:00 2001
+From e0db94e04ccc5ee70cf8e1490f91070d3306b66f Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 6 May 2016 00:23:58 +0100
 Subject: [PATCH 06/22] debian-specific/use_usr_bin_editor
@@ -9,10 +9,10 @@ Subject: [PATCH 06/22] debian-specific/use_usr_bin_editor
  2 files changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/init.c b/init.c
-index b48d8be..613ba15 100644
+index b34fa91..d6cbfbe 100644
 --- a/init.c
 +++ b/init.c
-@@ -3361,7 +3361,7 @@ void mutt_init (int skip_sys_rc, LIST *commands)
+@@ -3369,7 +3369,7 @@ void mutt_init (int skip_sys_rc, LIST *commands)
    {
      p = getenv ("EDITOR");
      if (!p)
@@ -22,10 +22,10 @@ index b48d8be..613ba15 100644
    Editor = safe_strdup (p);
    Visual = safe_strdup (p);
 diff --git a/init.h b/init.h
-index 376a2df..668a3b8 100644
+index b2089f6..bc6e7a4 100644
 --- a/init.h
 +++ b/init.h
-@@ -741,7 +741,7 @@ struct option_t MuttVars[] = {
+@@ -750,7 +750,7 @@ struct option_t MuttVars[] = {
    ** .pp
    ** This variable specifies which editor is used by mutt.
    ** It defaults to the value of the \fC$$$VISUAL\fP, or \fC$$$EDITOR\fP, environment
@@ -35,5 +35,5 @@ index 376a2df..668a3b8 100644
    ** The \fC$$editor\fP string may contain a \fI%s\fP escape, which will be replaced by the name
    ** of the file to be edited.  If the \fI%s\fP escape does not appear in \fC$$editor\fP, a
 -- 
-2.8.2
+2.9.0
 

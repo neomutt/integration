@@ -1,4 +1,4 @@
-From 7ff3e63a310ffbdfbb53c2cc8968f7e271e5728f Mon Sep 17 00:00:00 2001
+From d1f9c79f2153a45c9d4bc83fd4348a9a7f952d99 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Wed, 1 Jun 2016 21:39:26 +0100
 Subject: [PATCH 5/5] mutt-1.6.0-syncdebug
@@ -8,10 +8,10 @@ Subject: [PATCH 5/5] mutt-1.6.0-syncdebug
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/imap/imap.c b/imap/imap.c
-index 5c85f0c..27e3311 100644
+index feb06ef..4ed560a 100644
 --- a/imap/imap.c
 +++ b/imap/imap.c
-@@ -1131,7 +1131,7 @@ static int sync_helper (IMAP_DATA* idata, int right, int flag, const char* name)
+@@ -1133,7 +1133,7 @@ static int sync_helper (IMAP_DATA* idata, int right, int flag, const char* name)
    if (!idata->ctx)
      return -1;
  
@@ -21,5 +21,5 @@ index 5c85f0c..27e3311 100644
  
    if (right == M_ACL_WRITE && !imap_has_flag (idata->flags, name))
 -- 
-2.8.2
+2.9.0
 

@@ -1,4 +1,4 @@
-From 7def1d1fc2d9c669e0c8c27a542956c82d3f5225 Mon Sep 17 00:00:00 2001
+From 7b75fb87ee1af128ff201a9b22633db605e743b5 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 6 May 2016 00:24:01 +0100
 Subject: [PATCH 13/22] misc/define-pgp_getkeys_command
@@ -21,5 +21,5 @@ index 2ef0ae2..53f3965 100644
  # pattern for good signature - may need to be adapted to locale!
  
 -- 
-2.8.2
+2.9.0
 

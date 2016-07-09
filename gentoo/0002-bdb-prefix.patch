@@ -1,0 +1,42 @@
+From a68e8a3a53e3cc27d226f768201f6c4979e0a22f Mon Sep 17 00:00:00 2001
+From: Richard Russon <rich@flatcap.org>
+Date: Mon, 30 May 2016 03:42:21 +0100
+Subject: [PATCH 02/12] bdb-prefix
+
+# User Fabian Groffen <grobian@gentoo.org>
+# Date 1279821247 -7200
+
+berkely db check is completely broken, but mess with it just enough such
+that it works for Gentoo Prefix
+
+In particular make it NOT find magic libs from random locations, instead
+require to be in given paths.  Add some versions to detect.
+---
+ configure.ac | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/configure.ac b/configure.ac
+index fc5eefc..b0ea123 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -1053,7 +1053,7 @@ then
+     then
+         if test x$ac_bdb_prefix = xyes || test x$ac_bdb_prefix = x
+         then
+-          ac_bdb_prefix="$mutt_cv_prefix /opt/csw/bdb4 /opt /usr/local /usr"
++          ac_bdb_prefix="$mutt_cv_prefix"
+         fi
+         for d in $ac_bdb_prefix; do
+             bdbpfx="$bdbpfx $d"
+@@ -1061,7 +1061,7 @@ then
+                 bdbpfx="$bdbpfx $d/$v"
+             done
+         done
+-        BDB_VERSIONS="db-4 db4 db-5 db5 db-5.2 db5.2 db52 db-5.1 db5.1 db51 db-5.0 db5.0 db50 db-4.8 db4.8 db48 db-4.7 db4.7 db47 db-4.6 db4.6 db46 db-4.5 db4.5 db45 db-4.4 db4.4 db44 db-4.3 db4.3 db43 db-4.2 db4.2 db42 db-4.1 db4.1 db41 db ''"
++        BDB_VERSIONS="db db-4 db4 db-5 db5 db-5.2 db5.2 db52 db-5.1 db5.1 db51 db-5.0 db5.0 db50 db-4.8 db4.8 db48 db-4.7 db4.7 db47 db-4.6 db4.6 db46 db-4.5 db4.5 db45 db-4.4 db4.4 db44 db-4.3 db4.3 db43 db-4.2 db4.2 db42 db-4.1 db4.1 db41 db ''"
+         AC_MSG_CHECKING([for BerkeleyDB > 4.0])
+         for d in $bdbpfx; do
+             BDB_INCLUDE_DIR=""
+-- 
+2.9.0
+

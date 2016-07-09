@@ -1,0 +1,345 @@
+From 94d25f31fb4b7fb18e2350f82da0c3209dfd7fad Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Yoshiki=20V=C3=A1zquez=20Baeza?= <yoshiki89@gmail.com>
+Date: Sat, 23 Apr 2016 13:33:50 -0700
+Subject: [PATCH 13/14] feature: new-mail
+
+This setting executes a command when new mail is received.
+---
+ curs_main.c         |  12 ++++
+ doc/manual.xml.head | 185 +++++++++++++++++++++++++++++++++++++++++++++++++++-
+ doc/muttrc.new-mail |  35 ++++++++++
+ doc/vimrc.new-mail  |  15 +++++
+ globals.h           |   1 +
+ init.h              |   7 ++
+ 6 files changed, 254 insertions(+), 1 deletion(-)
+ create mode 100644 doc/muttrc.new-mail
+ create mode 100644 doc/vimrc.new-mail
+
+diff --git a/curs_main.c b/curs_main.c
+index 27e1448..795fc1f 100644
+--- a/curs_main.c
++++ b/curs_main.c
+@@ -793,6 +793,12 @@ int mutt_index_menu (void)
+ 	  mutt_message _("New mail in this mailbox.");
+ 	  if (option (OPTBEEPNEW))
+ 	    beep ();
++    if (NewMailCmd)
++    {
++      char cmd[LONG_STRING];
++      menu_status_line(cmd, sizeof(cmd), menu, NONULL(NewMailCmd));
++      mutt_system(cmd);
++    }
+ 	} else if (check == M_FLAGS)
+ 	  mutt_message _("Mailbox was externally modified.");
+ 
+@@ -819,6 +825,12 @@ int mutt_index_menu (void)
+          menu->redraw |= REDRAW_STATUS;
+          if (option (OPTBEEPNEW))
+            beep();
++         if (NewMailCmd)
++         {
++           char cmd[LONG_STRING];
++           menu_status_line(cmd, sizeof(cmd), menu, NONULL(NewMailCmd));
++           mutt_system(cmd);
++         }
+        }
+      }
+      else
+diff --git a/doc/manual.xml.head b/doc/manual.xml.head
+index f4f59b6..94dc96e 100644
+--- a/doc/manual.xml.head
++++ b/doc/manual.xml.head
+@@ -6845,7 +6845,10 @@ <sect2 id="new-mail-formats">
+ <link linkend="maildir-trash">$maildir_trash</link>). For MH folders, a
+ mailbox is considered having new mail if there's at least one message in
+ the <quote>unseen</quote> sequence as specified by <link
+-linkend="mh-seq-unseen">$mh_seq_unseen</link>.
++linkend="mh-seq-unseen">$mh_seq_unseen</link>. Optionally, <link
++linkend="new_mail_command">$new_mail_command</link> can be configured to
++execute an external program every time new mail is detected in the current
++inbox.
+ </para>
+ 
+ <para>
+@@ -8332,6 +8335,186 @@ <sect1 id="lmdb">
+ 	</sect2>
+ </sect1>
+ 
++<sect1 id="FEATURE-NAME">
++	<title>FEATURE-NAME Patch</title>
++	<subtitle>DESCRIPTION</subtitle>
++
++	<sect2 id="FEATURE-NAME-patch">
++		<title>Patch</title>
++
++		<para>
++			To check if Mutt supports <quote>FEATURE-NAME</quote>, look for
++			<quote>patch-FEATURE-NAME</quote> in the mutt version.
++			See: <xref linkend="mutt-patches"/>.
++		</para>
++
++		<itemizedlist>
++			<title>Dependencies:</title>
++			<listitem><para>mutt-1.6.0</para></listitem>
++		</itemizedlist>
++
++		<para>This patch is part of the <ulink url="http://www.neomutt.org/">NeoMutt Project</ulink>.</para>
++	</sect2>
++
++	<sect2 id="FEATURE-NAME-intro">
++		<title>Introduction</title>
++
++		<para>
++			SIMPLE DESCRIPTION OF FEATURE
++		</para>
++	</sect2>
++
++	<sect2 id="FEATURE-NAME-variables">
++		<title>Variables</title>
++
++		<table id="table-FEATURE-NAME-variables">
++			<title>FEATURE-NAME Variables</title>
++			<tgroup cols="3">
++				<thead>
++					<row>
++						<entry>Name</entry>
++						<entry>Type</entry>
++						<entry>Default</entry>
++					</row>
++				</thead>
++				<tbody>
++					<row>
++						<entry><literal>VARIABLE-NAME</literal></entry>
++						<entry>TYPE</entry>
++						<entry><literal>DEFAULT-VALUE</literal></entry>
++					</row>
++				</tbody>
++			</tgroup>
++		</table>
++	</sect2>
++
++	<sect2 id="FEATURE-NAME-functions">
++		<title>Functions</title>
++
++		<para>
++			FEATURE-NAME adds the following functions to Mutt.
++			By default, none of them are bound to keys.
++		</para>
++
++		<table id="table-FEATURE-NAME-functions">
++			<title>FEATURE-NAME Functions</title>
++			<tgroup cols="3">
++				<thead>
++					<row>
++						<entry>Menus</entry>
++						<entry>Function</entry>
++						<entry>Description</entry>
++					</row>
++				</thead>
++				<tbody>
++					<row>
++						<entry>index,pager</entry>
++						<entry><literal>&lt;FUNCTION-NAME&gt;</literal></entry>
++						<entry>DESCRIPTION</entry>
++					</row>
++				</tbody>
++			</tgroup>
++		</table>
++	</sect2>
++
++	<sect2 id="FEATURE-NAME-commands">
++		<title>Commands</title>
++		<cmdsynopsis>
++			<command>COMMAND-NAME</command>
++			<arg choice="plain">
++				<replaceable class="parameter">PARAM1</replaceable>
++			</arg>
++			<arg choice="opt" rep="repeat">
++				<replaceable class="parameter">PARAM2</replaceable>
++			</arg>
++		</cmdsynopsis>
++	</sect2>
++
++	<sect2 id="FEATURE-NAME-colors">
++		<title>Colors</title>
++
++		<table id="table-FEATURE-NAME-colors">
++			<title>FEATURE-NAME Colors</title>
++			<tgroup cols="3">
++				<thead>
++					<row>
++						<entry>Name</entry>
++						<entry>Default Color</entry>
++						<entry>Description</entry>
++					</row>
++				</thead>
++				<tbody>
++					<row>
++						<entry><literal>COLOR-NAME</literal></entry>
++						<entry>default</entry>
++						<entry>DESCRIPTION</entry>
++					</row>
++				</tbody>
++			</tgroup>
++		</table>
++	</sect2>
++
++	<sect2 id="FEATURE-NAME-sort">
++		<title>Sort</title>
++
++		<table id="table-FEATURE-NAME-sort">
++			<title>FEATURE-NAME Sort</title>
++			<tgroup cols="2">
++				<thead>
++					<row>
++						<entry>Sort</entry>
++						<entry>Description</entry>
++					</row>
++				</thead>
++				<tbody>
++					<row>
++						<entry><literal>SORT-NAME</literal></entry>
++						<entry>DESCRIPTION</entry>
++					</row>
++				</tbody>
++			</tgroup>
++		</table>
++	</sect2>
++
++	<sect2 id="FEATURE-NAME-muttrc">
++		<title>Muttrc</title>
++<screen>
++<emphasis role="comment"># This is a complete list of FEATURE-NAME-related configuration.
++ 
++# --------------------------------------------------------------------------
++# VARIABLES - shown with their default values
++# --------------------------------------------------------------------------
++ 
++# DESCRIPTION</emphasis>
++set VARIABLE_NAME = "DEFAULT-VALUE"
++
++INSERT YOUR MUTTRC HERE
++ 
++<emphasis role="comment"># vim: syntax=muttrc</emphasis>
++</screen>
++	</sect2>
++
++	<sect2 id="FEATURE-NAME-see-also">
++		<title>See Also</title>
++
++		<itemizedlist>
++			<listitem><para><link linkend="regexp">LINK-DESCRIPTION</link></para></listitem>
++		</itemizedlist>
++	</sect2>
++
++	<sect2 id="FEATURE-NAME-known-bugs">
++		<title>Known Bugs</title>
++		<para>None</para>
++	</sect2>
++
++	<sect2 id="FEATURE-NAME-credits">
++		<title>Credits</title>
++		<itemizedlist>
++		<listitem><para>FIRST LAST <email>EMAIL_ADDRESS</email></para></listitem>
++		</itemizedlist>
++	</sect2>
++</sect1>
++
+ </chapter>
+ 
+ <chapter id="optionalfeatures">
+diff --git a/doc/muttrc.new-mail b/doc/muttrc.new-mail
+new file mode 100644
+index 0000000..412c544
+--- /dev/null
++++ b/doc/muttrc.new-mail
+@@ -0,0 +1,35 @@
++# This is a complete list of FEATURE-NAME configuration.
++
++# --------------------------------------------------------------------------
++# VARIABLES - shown with their default values
++# --------------------------------------------------------------------------
++
++# DESCRIPTION
++set VARIABLE = "DEFAULT_VALUE"
++
++# --------------------------------------------------------------------------
++# COMMANDS - shown with an example arguments
++# --------------------------------------------------------------------------
++
++# DESCRIPTION
++COMMAND_NAME 'ARGUMENTS'
++
++# --------------------------------------------------------------------------
++# FUNCTIONS - shown with an example mapping
++# --------------------------------------------------------------------------
++
++# DESCRIPTON
++bind index,pager KEY FUNCTION-NAME
++
++# --------------------------------------------------------------------------
++# COLORS - some unpleasant examples are given
++# --------------------------------------------------------------------------
++# Note: All color operations are of the form:
++#       color OBJECT FOREGROUND BACKGROUND
++
++# DESCRIPTON
++color COLOR_NAME cyan black
++
++# --------------------------------------------------------------------------
++
++# vim: syntax=muttrc
+diff --git a/doc/vimrc.new-mail b/doc/vimrc.new-mail
+new file mode 100644
+index 0000000..1d96d30
+--- /dev/null
++++ b/doc/vimrc.new-mail
+@@ -0,0 +1,15 @@
++" Vim syntax file for the mutt FEATURE-NAME patch
++
++syntax keyword muttrcVarBool    skipwhite contained VARIABLE_NAME         nextgroup=muttrcSetBoolAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
++
++syntax keyword muttrcVarNum     skipwhite contained VARIABLE_NAME         nextgroup=muttrcSetNumAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
++
++syntax keyword muttrcVarStr     contained skipwhite VARIABLE_NAME         nextgroup=muttrcVarEqualsIdxFmt
++
++syntax keyword muttrcCommand    COMMAND_NAME
++
++syntax match muttrcFunction     contained "\<FUNCTION-NAME\>"
++
++syntax keyword muttrcColorField contained COLOR_NAME
++
++" vim: syntax=vim
+diff --git a/globals.h b/globals.h
+index 07e77ed..3e3e4da 100644
+--- a/globals.h
++++ b/globals.h
+@@ -123,6 +123,7 @@ WHERE char *Postponed;
+ WHERE char *PostponeEncryptAs;
+ WHERE char *Prefix;
+ WHERE char *PrintCmd;
++WHERE char *NewMailCmd;
+ WHERE char *QueryCmd;
+ WHERE char *QueryFormat;
+ WHERE char *Realname;
+diff --git a/init.h b/init.h
+index 806ee72..e5cc842 100644
+--- a/init.h
++++ b/init.h
+@@ -307,6 +307,13 @@ struct option_t MuttVars[] = {
+   { "beep",		DT_BOOL, R_NONE, OPTBEEP, 1 },
+   /*
+   ** .pp
++  ** If \fIset\fP, Mutt will call this command after a new message is received.
++  ** See the $$status_format documentation for the values that can be formatted
++  ** into this command.
++  */
++  { "new_mail_command",	DT_PATH, R_NONE, UL &NewMailCmd, UL NULL },
++  /*
++  ** .pp
+   ** When this variable is \fIset\fP, mutt will beep when an error occurs.
+   */
+   { "beep_new",		DT_BOOL, R_NONE, OPTBEEPNEW, 0 },
+-- 
+2.9.0
+

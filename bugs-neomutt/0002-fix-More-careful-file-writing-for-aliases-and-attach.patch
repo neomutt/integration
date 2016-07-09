@@ -1,4 +1,4 @@
-From 38776f69b3d782cd33a76601921bf3b0253f8a96 Mon Sep 17 00:00:00 2001
+From 5abad3e69cabf16697799d46f797095fb04bdab7 Mon Sep 17 00:00:00 2001
 From: Sami Farin <hvtaifwkbgefbaei@gmail.com>
 Date: Wed, 16 Oct 2013 11:34:57 -0700
 Subject: [PATCH 02/10] fix: More careful file writing for aliases and
@@ -125,7 +125,7 @@ index 2f500bc..fa3067e 100644
  }
  
 diff --git a/sendlib.c b/sendlib.c
-index d528599..21e2293 100644
+index b661e71..f4c6ac3 100644
 --- a/sendlib.c
 +++ b/sendlib.c
 @@ -2627,9 +2627,12 @@ static int _mutt_bounce_message (FILE *fp, HEADER *h, ADDRESS *to, const char *r
@@ -144,5 +144,5 @@ index d528599..21e2293 100644
      if (SmtpUrl)
        ret = mutt_smtp_send (env_from, to, NULL, NULL, tempfile,
 -- 
-2.8.2
+2.9.0
 

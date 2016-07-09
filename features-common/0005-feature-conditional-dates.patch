@@ -1,4 +1,4 @@
-From bbd53130b548af5827be33b07489f10dfe3c8b96 Mon Sep 17 00:00:00 2001
+From 3bb0fdf6b41d82f3a3be076acf24359b935c7243 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Tue, 24 May 2016 17:05:22 +0100
 Subject: [PATCH 5/7] feature: conditional dates
@@ -16,14 +16,14 @@ Subject: [PATCH 5/7] feature: conditional dates
  create mode 100644 doc/muttrc.cond-date
 
 diff --git a/PATCHES b/PATCHES
-index 3b10a9b..43df8bf 100644
+index 8bfe0ae..110af08 100644
 --- a/PATCHES
 +++ b/PATCHES
-@@ -2,3 +2,4 @@ patch-ifdef-neo-UNKNOWN
- patch-initials-neo-UNKNOWN
- patch-trash-neo-UNKNOWN
- patch-nested-if-neo-UNKNOWN
-+patch-cond-date-neo-UNKNOWN
+@@ -2,3 +2,4 @@ patch-ifdef-neo-git
+ patch-initials-neo-git
+ patch-trash-neo-git
+ patch-nested-if-neo-git
++patch-cond-date-neo-git
 diff --git a/README.cond-date b/README.cond-date
 new file mode 100644
 index 0000000..858dddd
@@ -194,7 +194,7 @@ index 0000000..858dddd
 +    * Richard Russon <rich@flatcap.org>
 +
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index a8cac31..1e5ad17 100644
+index e737178..4e3e69b 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
 @@ -4713,6 +4713,27 @@ <sect2 id="formatstrings-padding">
@@ -225,7 +225,7 @@ index a8cac31..1e5ad17 100644
  </sect1>
  
  <sect1 id="mailto-allow">
-@@ -8103,6 +8124,413 @@ <sect1 id="sending-mixmaster">
+@@ -8114,6 +8135,413 @@ <sect1 id="sending-mixmaster">
  
  </sect1>
  
@@ -765,7 +765,7 @@ index ddde2e4..0d332bd 100644
  	p = dest;
  
 diff --git a/init.h b/init.h
-index df449af..20aac03 100644
+index cb1c9d0..214263e 100644
 --- a/init.h
 +++ b/init.h
 @@ -1361,6 +1361,10 @@ struct option_t MuttVars[] = {
@@ -817,5 +817,5 @@ index 7029e95..5dc7b87 100644
        if (flags & M_FORMAT_OPTIONAL)
        {
 -- 
-2.8.2
+2.9.0
 

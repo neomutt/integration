@@ -1,4 +1,4 @@
-From fd4fa42397b00166c4da3a64bc464d6d29b5944a Mon Sep 17 00:00:00 2001
+From bb6b800abd84386aec744b2617605c055e2ca173 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 6 May 2016 00:24:03 +0100
 Subject: [PATCH 17/22] upstream/228671-pipe-mime
@@ -40,5 +40,5 @@ index 3280f5d..7933a1e 100644
  	  /* pick up trailing line */
  	  if ((rc = imap_cmd_step (idata)) != IMAP_CMD_CONTINUE)
 -- 
-2.8.2
+2.9.0
 

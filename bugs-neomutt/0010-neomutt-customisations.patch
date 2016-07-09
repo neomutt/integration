@@ -1,4 +1,4 @@
-From 155a65c1310e3b0d19a0735de0a7586f8643a1c7 Mon Sep 17 00:00:00 2001
+From 9c03c872b5a7b82d2045755da7dc2df8ee951410 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 25 Mar 2016 18:30:01 +0000
 Subject: [PATCH 10/10] neomutt customisations
@@ -9,9 +9,11 @@ Subject: [PATCH 10/10] neomutt customisations
  README.neomutt    | 79 ++++++++++++++++++++++++++++++++++++++++++++
  VERSION.neo       |  1 +
  doc/Makefile.am   |  4 +--
+ globals.h         |  1 +
+ init.h            |  9 ++++--
  version.c         | 12 ++++---
- version.sh        |  2 +-
- 7 files changed, 191 insertions(+), 9 deletions(-)
+ version.sh        |  7 +++-
+ 9 files changed, 204 insertions(+), 11 deletions(-)
  create mode 100644 ChangeLog.neomutt
  create mode 100644 README.neomutt
  create mode 100644 VERSION.neo
@@ -121,7 +123,7 @@ index 0000000..41c2f40
 +  - trash        - move 'deleted' emails to a trash bin
 +
 diff --git a/Makefile.am b/Makefile.am
-index 857f018..1a03bbb 100644
+index cfdb258..75dea4e 100644
 --- a/Makefile.am
 +++ b/Makefile.am
 @@ -147,8 +147,9 @@ keymap_alldefs.h: $(srcdir)/OPS $(srcdir)/OPS.SIDEBAR $(srcdir)/OPS.NOTMUCH $(sr
@@ -243,6 +245,52 @@ index 6021626..cd633dc 100644
  	  sed -e "s/@VERSION\@/`cat $(top_srcdir)/VERSION` ($$date)/" $(srcdir)/manual.xml.head && \
  	  $(MAKEDOC_CPP) $(top_srcdir)/init.h | ./makedoc$(EXEEXT) -s && \
  	  $(MAKEDOC_CPP) $(top_srcdir)/functions.h | \
+diff --git a/globals.h b/globals.h
+index d4e7fa6..336fa64 100644
+--- a/globals.h
++++ b/globals.h
+@@ -246,6 +246,7 @@ WHERE short ScoreThresholdFlag;
+ 
+ WHERE short SidebarWidth INITVAL(0);
+ #ifdef USE_SIDEBAR
++WHERE short SidebarRefreshTime;
+ WHERE LIST *SidebarWhitelist INITVAL(0);
+ WHERE int SidebarNeedsRedraw INITVAL (0);
+ #endif
+diff --git a/init.h b/init.h
+index d76e664..b2089f6 100644
+--- a/init.h
++++ b/init.h
+@@ -1518,7 +1518,7 @@ struct option_t MuttVars[] = {
+   ** When \fI$$mark_old\fP is set, Mutt does not consider the mailbox to contain new
+   ** mail if only old messages exist.
+   */
+-  { "mail_check_stats", DT_BOOL, R_NONE, OPTMAILCHECKSTATS, 0 },
++  { "mail_check_stats", DT_BOOL, R_NONE, OPTMAILCHECKSTATS, 1 },
+   /*
+   ** .pp
+   ** When \fIset\fP, mutt will periodically calculate message
+@@ -3020,7 +3020,7 @@ struct option_t MuttVars[] = {
+   ** .pp
+   ** \fBSee also:\fP $$sidebar_short_path, $$sidebar_indent_string, $$sidebar_delim_chars.
+   */
+-  { "sidebar_format", DT_STR, R_SIDEBAR, UL &SidebarFormat, UL "%B%*  %n" },
++  { "sidebar_format", DT_STR, R_SIDEBAR, UL &SidebarFormat, UL "%B%?F? [%F]?%* %?N?%N/?%S" },
+   /*
+   ** .pp
+   ** This variable allows you to customize the sidebar display. This string is
+@@ -3075,6 +3075,11 @@ struct option_t MuttVars[] = {
+   ** \fC<sidebar-prev-new>\fP command is similarly affected, wrapping around to
+   ** the end of the list.
+   */
++  { "sidebar_refresh_time", DT_NUM, R_BOTH, UL &SidebarRefreshTime, 60 },
++  /*
++  ** .pp
++  ** This option is obsolete and will be removed in the next release.
++  */
+   { "sidebar_short_path", DT_BOOL, R_SIDEBAR, OPTSIDEBARSHORTPATH, 0 },
+   /*
+   ** .pp
 diff --git a/version.c b/version.c
 index f67ae3c..ea5859f 100644
 --- a/version.c
@@ -277,10 +325,21 @@ index f67ae3c..ea5859f 100644
 diff --git a/version.sh b/version.sh
 old mode 100644
 new mode 100755
-index d7988df..4f67822
+index d7988df..e4d5c2c
 --- a/version.sh
 +++ b/version.sh
-@@ -10,7 +10,7 @@ srcdir=`dirname "$0"` && cd "$srcdir" || exit 1
+@@ -1,5 +1,10 @@
+ #!/bin/sh
+ 
++# Switch to directory where this script lives so that further commands are run
++# from the root directory of the source.  The script path and srcdir are double
++# quoted to allow the space character to appear in the path.
++srcdir=`dirname "$0"` && cd "$srcdir" || exit 1
++
+ HG=hg
+ 
+ # Switch to directory where this script lives so that further commands are run
+@@ -10,7 +15,7 @@ srcdir=`dirname "$0"` && cd "$srcdir" || exit 1
  # Ensure that we have a repo here and that mercurial is installed.  If
  # not, just cat the VERSION file; it contains the latest release number.
  { [ -d ".hg" ] && $HG >/dev/null 2>&1; } \
@@ -290,5 +349,5 @@ index d7988df..4f67822
  # This is a mercurial repo and we have the hg command.
  
 -- 
-2.8.2
+2.9.0
 

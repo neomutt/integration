@@ -1,14 +1,14 @@
-From 94420826e524e6ebf25cd49b2ec79a3962258083 Mon Sep 17 00:00:00 2001
+From a2fb3364f6135282dd20cc962ac4b6e4ae4f9354 Mon Sep 17 00:00:00 2001
 From: Vincent Lefevre <vincent@vinc17.net>
 Date: Mon, 11 Apr 2016 21:17:51 +0200
-Subject: [PATCH 08/45] Updated French translation.
+Subject: [PATCH 08/37] Updated French translation.
 
 ---
  po/fr.po | 74 +++++++++++++++++++++++++++++++++++-----------------------------
  1 file changed, 41 insertions(+), 33 deletions(-)
 
 diff --git a/po/fr.po b/po/fr.po
-index c0fe794..99d7a30 100644
+index 50310c0..2545546 100644
 --- a/po/fr.po
 +++ b/po/fr.po
 @@ -59,7 +59,7 @@ msgid "Select"
@@ -219,5 +219,5 @@ index c0fe794..99d7a30 100644
  msgstr "Certificat sauvé"
  
 -- 
-2.8.2
+2.9.0
 

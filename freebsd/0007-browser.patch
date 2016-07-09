@@ -1,4 +1,4 @@
-From 76bc055159baa4ac4f8fb7a7cacf75cc6ace5136 Mon Sep 17 00:00:00 2001
+From db3dc34cb45011da820ddc7b397bf8bbde1783cb Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 15:18:48 +0100
 Subject: [PATCH 07/21] browser
@@ -8,7 +8,7 @@ Subject: [PATCH 07/21] browser
  1 file changed, 18 insertions(+)
 
 diff --git a/browser.c b/browser.c
-index 46919a0..62fae18 100644
+index 11980e5..6b23562 100644
 --- a/browser.c
 +++ b/browser.c
 @@ -81,6 +81,12 @@ static int browser_compare_subject (const void *a, const void *b)
@@ -51,5 +51,5 @@ index 46919a0..62fae18 100644
  
    return ((BrowserSort & SORT_REVERSE) ? -r : r);
 -- 
-2.8.2
+2.9.0
 

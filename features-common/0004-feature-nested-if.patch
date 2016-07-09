@@ -1,4 +1,4 @@
-From 1a7914e9784cd3a5e57c408af2388b31022cb80d Mon Sep 17 00:00:00 2001
+From 66ed48e790aef8de07d4bf37c70ccee6f50e0855 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Tue, 24 May 2016 17:04:53 +0100
 Subject: [PATCH 4/7] feature: nested-if
@@ -14,14 +14,14 @@ Subject: [PATCH 4/7] feature: nested-if
  create mode 100644 doc/muttrc.nested-if
 
 diff --git a/PATCHES b/PATCHES
-index 0646e88..3b10a9b 100644
+index 47a7695..8bfe0ae 100644
 --- a/PATCHES
 +++ b/PATCHES
 @@ -1,3 +1,4 @@
- patch-ifdef-neo-UNKNOWN
- patch-initials-neo-UNKNOWN
- patch-trash-neo-UNKNOWN
-+patch-nested-if-neo-UNKNOWN
+ patch-ifdef-neo-git
+ patch-initials-neo-git
+ patch-trash-neo-git
++patch-nested-if-neo-git
 diff --git a/README.nested-if b/README.nested-if
 new file mode 100644
 index 0000000..3eb00af
@@ -154,7 +154,7 @@ index 0000000..3eb00af
 +    * Richard Russon <rich@flatcap.org>
 +
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index 01de46a..a8cac31 100644
+index 8bc6bf1..e737178 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
 @@ -4595,6 +4595,18 @@ <sect2 id="formatstrings-conditionals">
@@ -176,7 +176,7 @@ index 01de46a..a8cac31 100644
  </sect2>
  
  <sect2 id="formatstrings-filters">
-@@ -8378,6 +8390,222 @@ <sect1 id="initials">
+@@ -8389,6 +8401,222 @@ <sect1 id="initials">
  	</sect2>
  </sect1>
  
@@ -524,5 +524,5 @@ index 7a2d849..7029e95 100644
  
        /* handle generic cases first */
 -- 
-2.8.2
+2.9.0
 

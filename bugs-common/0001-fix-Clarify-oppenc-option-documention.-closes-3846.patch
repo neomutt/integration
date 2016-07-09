@@ -1,0 +1,46 @@
+From 726e6d8ae6ac15588ecf0c259a5d1975de0860a7 Mon Sep 17 00:00:00 2001
+From: Kevin McCarthy <kevin@8t8.us>
+Date: Wed, 29 Jun 2016 12:25:34 -0700
+Subject: [PATCH 1/6] fix: Clarify oppenc option documention. (closes #3846)
+
+Rephrase the option description to try and make it clearer what the
+option does, and how to enable/disable it within a message.
+---
+ init.h | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/init.h b/init.h
+index 5a12ec0..272edb8 100644
+--- a/init.h
++++ b/init.h
+@@ -504,19 +504,19 @@ struct option_t MuttVars[] = {
+   ** .pp
+   ** Setting this variable will cause Mutt to automatically enable and
+   ** disable encryption, based on whether all message recipient keys
+-  ** can be located by mutt.
++  ** can be located by Mutt.
+   ** .pp
+-  ** When this option is enabled, mutt will determine the encryption
+-  ** setting each time the TO, CC, and BCC lists are edited.  If
+-  ** $$edit_headers is set, mutt will also do so each time the message
++  ** When this option is enabled, Mutt will enable/disable encryption
++  ** each time the TO, CC, and BCC lists are edited.  If
++  ** $$edit_headers is set, Mutt will also do so each time the message
+   ** is edited.
+   ** .pp
+-  ** While this is set, encryption settings can't be manually changed.
+-  ** The pgp or smime menus provide an option to disable the option for
+-  ** a particular message.
++  ** While this is set, encryption can't be manually enabled/disabled.
++  ** The pgp or smime menus provide a selection to temporarily disable
++  ** this option for the current message.
+   ** .pp
+   ** If $$crypt_autoencrypt or $$crypt_replyencrypt enable encryption for
+-  ** a message, this option will be disabled for the message.  It can
++  ** a message, this option will be disabled for that message.  It can
+   ** be manually re-enabled in the pgp or smime menus.
+   ** (Crypto only)
+    */
+-- 
+2.9.0
+

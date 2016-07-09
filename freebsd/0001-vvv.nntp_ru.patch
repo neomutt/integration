@@ -1,4 +1,4 @@
-From 41e20a3dd64d705feb1bf0fbf224a5b99d729621 Mon Sep 17 00:00:00 2001
+From bcbdd42e194a26b3125964d70a71bdb2c9fa84a9 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 15:15:43 +0100
 Subject: [PATCH 01/21] vvv.nntp_ru
@@ -8,7 +8,7 @@ Subject: [PATCH 01/21] vvv.nntp_ru
  1 file changed, 306 insertions(+), 5 deletions(-)
 
 diff --git a/po/ru.po b/po/ru.po
-index 5a39585..e0d555a 100644
+index 370cfe3..2e75645 100644
 --- a/po/ru.po
 +++ b/po/ru.po
 @@ -206,11 +206,37 @@ msgstr "Перейти в: "
@@ -335,7 +335,7 @@ index 5a39585..e0d555a 100644
 +msgid "Article not posted."
 +msgstr "Сообщение не отправлено."
 +
- #: send.c:1657
+ #: send.c:1658
  msgid "Message postponed."
  msgstr "Сообщение отложено."
 @@ -4199,6 +4416,10 @@ msgstr "Нет темы сообщения, прервать отправку?"
@@ -346,7 +346,7 @@ index 5a39585..e0d555a 100644
 +msgid "No newsgroup specified."
 +msgstr "Не указана группа новостей."
 +
- #: send.c:1755 smtp.c:188
+ #: send.c:1756 smtp.c:188
  msgid "Sending message..."
  msgstr "Сообщение отправляется..."
 @@ -4219,6 +4440,10 @@ msgstr "Сообщение отправлено."
@@ -555,5 +555,5 @@ index 5a39585..e0d555a 100644
  msgid "show the Mutt version number and date"
  msgstr "вывести номер версии Mutt и дату"
 -- 
-2.8.2
+2.9.0
 

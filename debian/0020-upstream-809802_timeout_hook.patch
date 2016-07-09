@@ -1,4 +1,4 @@
-From f63326dba5c7738319663d863c47caa3859e945d Mon Sep 17 00:00:00 2001
+From 96e48530c035c5114d48f4d0dcb8e1c99e7dbb15 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 6 May 2016 00:24:10 +0100
 Subject: [PATCH 20/22] upstream/809802_timeout_hook
@@ -12,10 +12,10 @@ Subject: [PATCH 20/22] upstream/809802_timeout_hook
  5 files changed, 37 insertions(+), 5 deletions(-)
 
 diff --git a/curs_main.c b/curs_main.c
-index a5f02cc..7335188 100644
+index f08d765..bdf5786 100644
 --- a/curs_main.c
 +++ b/curs_main.c
-@@ -930,8 +930,10 @@ int mutt_index_menu (void)
+@@ -933,8 +933,10 @@ int mutt_index_menu (void)
  
        dprint(4, (debugfile, "mutt_index_menu[%d]: Got op %d\n", __LINE__, op));
  
@@ -75,10 +75,10 @@ index 98c2f26..329fb47 100644
  void mutt_account_hook (const char* url)
  {
 diff --git a/init.h b/init.h
-index 5e387a0..b61a07e 100644
+index 673e161..1aef4bc 100644
 --- a/init.h
 +++ b/init.h
-@@ -4310,6 +4310,7 @@ const struct command_t Commands[] = {
+@@ -4339,6 +4339,7 @@ const struct command_t Commands[] = {
    { "spam",		parse_spam_list,	M_SPAM },
    { "nospam",		parse_spam_list,	M_NOSPAM },
    { "subscribe",	parse_subscribe,	0 },
@@ -87,7 +87,7 @@ index 5e387a0..b61a07e 100644
    { "unalias",		parse_unalias,		0 },
    { "unalternative_order",parse_unlist,		UL &AlternativeOrderList },
 diff --git a/mutt.h b/mutt.h
-index aa6a2ee..ec709c1 100644
+index ea059ba..1856119 100644
 --- a/mutt.h
 +++ b/mutt.h
 @@ -159,10 +159,11 @@ typedef enum
@@ -106,10 +106,10 @@ index aa6a2ee..ec709c1 100644
  
  /* tree characters for linearize_tree and print_enriched_string */
 diff --git a/protos.h b/protos.h
-index 5c898f4..1a63eeb 100644
+index a295b23..2bc40b7 100644
 --- a/protos.h
 +++ b/protos.h
-@@ -153,6 +153,7 @@ const char *mutt_get_name (ADDRESS *);
+@@ -154,6 +154,7 @@ const char *mutt_get_name (ADDRESS *);
  char *mutt_get_parameter (const char *, PARAMETER *);
  LIST *mutt_crypt_hook (ADDRESS *);
  char *mutt_make_date (char *, size_t);
@@ -118,5 +118,5 @@ index 5c898f4..1a63eeb 100644
  const char *mutt_make_version (void);
  
 -- 
-2.8.2
+2.9.0
 

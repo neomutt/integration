@@ -1,7 +1,7 @@
-From 2660e3529e84c9c617c88657bf74ee75fb3b50d7 Mon Sep 17 00:00:00 2001
+From 5ab1e99077b3834e9a7b9d578aa4ad51ddb8e226 Mon Sep 17 00:00:00 2001
 From: Kevin McCarthy <kevin@8t8.us>
 Date: Fri, 8 Apr 2016 15:27:17 -0700
-Subject: [PATCH 02/45] Fix pager.c format_line() to use size_t for mbrtowc()
+Subject: [PATCH 02/37] Fix pager.c format_line() to use size_t for mbrtowc()
  retvals.
 
 While fixing up the error checking for mbrtowc(), I noticed the uses
@@ -22,7 +22,7 @@ loop.
  1 file changed, 18 insertions(+), 12 deletions(-)
 
 diff --git a/pager.c b/pager.c
-index bce402c..bdddfde 100644
+index 76cf6ba..9f8d4e7 100644
 --- a/pager.c
 +++ b/pager.c
 @@ -1104,7 +1104,8 @@ static int format_line (struct line_t **lineInfo, int n, unsigned char *buf,
@@ -88,5 +88,5 @@ index bce402c..bdddfde 100644
      }
  
 -- 
-2.8.2
+2.9.0
 

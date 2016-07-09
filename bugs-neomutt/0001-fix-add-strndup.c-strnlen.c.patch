@@ -1,4 +1,4 @@
-From e206ab0e7316179238cafc8c6d6ad35be02262d4 Mon Sep 17 00:00:00 2001
+From 8534bb1b2f53c7a73085b170dc1c6f0c7085d413 Mon Sep 17 00:00:00 2001
 From: Karel Zak <kzak@redhat.com>
 Date: Thu, 6 Sep 2012 09:31:54 +0200
 Subject: [PATCH 01/10] fix: add strndup.c strnlen.c
@@ -15,10 +15,10 @@ Signed-off-by: Karel Zak <kzak@redhat.com>
  create mode 100644 strnlen.c
 
 diff --git a/configure.ac b/configure.ac
-index 14b6021..e125f1f 100644
+index 17931dd..5e2afcd 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -395,7 +395,7 @@ AC_CHECK_TYPE(ssize_t, int)
+@@ -397,7 +397,7 @@ AC_CHECK_TYPE(ssize_t, int)
  
  AC_CHECK_FUNCS(fgetpos memmove setegid srand48 strerror)
  
@@ -28,7 +28,7 @@ index 14b6021..e125f1f 100644
  
  AC_CHECK_FUNC(getopt)
 diff --git a/protos.h b/protos.h
-index 06ec0ad..6792b7e 100644
+index bfe2ad0..4bd4dac 100644
 --- a/protos.h
 +++ b/protos.h
 @@ -1,5 +1,6 @@
@@ -38,7 +38,7 @@ index 06ec0ad..6792b7e 100644
   * 
   *     This program is free software; you can redistribute it and/or modify
   *     it under the terms of the GNU General Public License as published by
-@@ -582,3 +583,11 @@ char *strcasestr (const char *, const char *);
+@@ -583,3 +584,11 @@ char *strcasestr (const char *, const char *);
  #ifndef HAVE_MKDTEMP
  char *mkdtemp (char *tmpl);
  #endif
@@ -102,5 +102,5 @@ index 0000000..278a988
 +        return maxlen;
 +}
 -- 
-2.8.2
+2.9.0
 

@@ -1,7 +1,7 @@
-From 909739306781a5a81637585b2b30653f9fc137aa Mon Sep 17 00:00:00 2001
+From 8558b96dce0a52d413dba7b239e50aa6d9b61631 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Tue, 24 May 2016 17:27:07 +0100
-Subject: [PATCH 05/11] feature: tls sni
+Subject: [PATCH 05/14] feature: tls sni
 
 ---
  PATCHES             |   1 +
@@ -15,14 +15,14 @@ Subject: [PATCH 05/11] feature: tls sni
  create mode 100644 doc/muttrc.tls-sni
 
 diff --git a/PATCHES b/PATCHES
-index a377e52..7afe94b 100644
+index 0944b0b..df3dfbe 100644
 --- a/PATCHES
 +++ b/PATCHES
-@@ -9,3 +9,4 @@ patch-progress-neo-UNKNOWN
- patch-skip-quoted-neo-UNKNOWN
- patch-status-color-neo-UNKNOWN
- patch-index-color-neo-UNKNOWN
-+patch-tls-sni-neo-UNKNOWN
+@@ -9,3 +9,4 @@ patch-progress-neo-git
+ patch-skip-quoted-neo-git
+ patch-status-color-neo-git
+ patch-index-color-neo-git
++patch-tls-sni-neo-git
 diff --git a/README.SSL b/README.SSL
 index 75cac80..90290e0 100644
 --- a/README.SSL
@@ -125,10 +125,10 @@ index 0000000..7ff94d8
 +    * Richard Russon <rich@flatcap.org>
 +
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index acdb199..e5c5098 100644
+index 7dcc22a..b595bf0 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
-@@ -11216,6 +11216,113 @@ <sect1 id="status-color">
+@@ -11252,6 +11252,113 @@ <sect1 id="status-color">
  	</sect2>
  </sect1>
  
@@ -269,5 +269,5 @@ index a6cdd10..8cadc4f 100644
    {
      switch (SSL_get_error (ssldata->ssl, err))
 -- 
-2.8.2
+2.9.0
 

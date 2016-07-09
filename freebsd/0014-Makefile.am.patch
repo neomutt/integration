@@ -1,4 +1,4 @@
-From aa537cb8dc2a8297f116c6f79bb0f8b7226c689e Mon Sep 17 00:00:00 2001
+From 8625afa495e1d284aca68a1ef03dddea6c20ac65 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 15:22:12 +0100
 Subject: [PATCH 14/21] Makefile.am
@@ -8,7 +8,7 @@ Subject: [PATCH 14/21] Makefile.am
  1 file changed, 4 deletions(-)
 
 diff --git a/Makefile.am b/Makefile.am
-index 8d02bb2..fc4b0a5 100644
+index 3783fe6..ee579ca 100644
 --- a/Makefile.am
 +++ b/Makefile.am
 @@ -165,10 +165,6 @@ install-exec-hook:
@@ -23,5 +23,5 @@ index 8d02bb2..fc4b0a5 100644
  uninstall-local:
  	for i in mime.types ; do \
 -- 
-2.8.2
+2.9.0
 

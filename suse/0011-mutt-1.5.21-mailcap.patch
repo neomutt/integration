@@ -1,0 +1,27 @@
+From 89db07bde0244978bc84b03ab3a018d3e0c35b1d Mon Sep 17 00:00:00 2001
+From: Richard Russon <rich@flatcap.org>
+Date: Fri, 27 May 2016 03:09:37 +0100
+Subject: [PATCH 11/12] mutt-1.5.21-mailcap
+
+---
+ init.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/init.c b/init.c
+index b22e8e9..4681732 100644
+--- a/init.c
++++ b/init.c
+@@ -3330,8 +3330,8 @@ void mutt_init (int skip_sys_rc, LIST *commands)
+     MailcapPath = safe_strdup (p);
+   else
+   {
+-    /* Default search path from RFC1524 */
+-    MailcapPath = safe_strdup ("~/.mailcap:" PKGDATADIR "/mailcap:" SYSCONFDIR "/mailcap:/etc/mailcap:/usr/etc/mailcap:/usr/local/etc/mailcap");
++    /* Default search path from RFC1524 plus fallback for mutt specific defaults */
++    MailcapPath = safe_strdup ("~/.mailcap:" PKGDATADIR "/mailcap:" SYSCONFDIR "/mailcap:/etc/mailcap:/usr/etc/mailcap:/usr/local/etc/mailcap:" SYSCONFDIR "/mutt/mailcap");
+   }
+ 
+   Tempdir = safe_strdup ((p = getenv ("TMPDIR")) ? p : "/tmp");
+-- 
+2.9.0
+

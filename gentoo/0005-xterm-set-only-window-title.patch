@@ -1,0 +1,30 @@
+From 3cf999532f8d96085987933b34a16c3e6e70ee4f Mon Sep 17 00:00:00 2001
+From: Richard Russon <rich@flatcap.org>
+Date: Mon, 30 May 2016 03:44:08 +0100
+Subject: [PATCH 05/12] xterm-set-only-window-title
+
+user:        Fabian Groffen <grobian@gentoo.org>
+date:        Sun Oct 27 16:29:18 2013 +0100
+files:       curs_main.c
+description:
+fix xterm-titles patch to not set both window and icon title
+---
+ curs_main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/curs_main.c b/curs_main.c
+index e6b53b8..febd5d0 100644
+--- a/curs_main.c
++++ b/curs_main.c
+@@ -129,7 +129,7 @@ static const char *No_visible = N_("No visible messages.");
+    (option (OPTCOLLAPSEFLAGGED) || FLAGGED(header) == 0))
+ 
+ /* de facto standard escapes for tsl/fsl */
+-static char *tsl = "\033]0;";
++static char *tsl = "\033]2;";
+ static char *fsl = "\007";
+ 
+ /* terminal status capability check. terminfo must have been initialized. */
+-- 
+2.9.0
+

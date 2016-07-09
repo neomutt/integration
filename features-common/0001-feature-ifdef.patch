@@ -1,10 +1,9 @@
-From 788cd0e6d8316a9a03f6fa809873757bbcca5888 Mon Sep 17 00:00:00 2001
+From f8a0063e88adb3260580c4103827e19a83ab5421 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Tue, 24 May 2016 16:50:02 +0100
 Subject: [PATCH 1/7] feature: ifdef
 
 ---
- .travis.yml         |  30 ++++
  Makefile.am         |   4 +-
  PATCHES             |   1 +
  README.ifdef        |  57 ++++++
@@ -17,50 +16,13 @@ Subject: [PATCH 1/7] feature: ifdef
  main.c              | 404 +-----------------------------------------
  version.c           | 492 ++++++++++++++++++++++++++++++++++++++++++++++++++++
  version.h           |  26 +++
- 13 files changed, 964 insertions(+), 417 deletions(-)
- create mode 100644 .travis.yml
+ 12 files changed, 934 insertions(+), 417 deletions(-)
  create mode 100644 README.ifdef
  create mode 100644 doc/muttrc.ifdef
  create mode 100644 doc/vimrc.ifdef
  create mode 100644 version.c
  create mode 100644 version.h
 
-diff --git a/.travis.yml b/.travis.yml
-new file mode 100644
-index 0000000..e61a1e8
---- /dev/null
-+++ b/.travis.yml
-@@ -0,0 +1,30 @@
-+notifications:
-+  email:
-+    recipients:
-+      - rich@flatcap.org
-+    on_success: change
-+    on_failure: always
-+
-+sudo: required
-+dist: trusty
-+
-+language: c
-+compiler: gcc
-+cache: ccache
-+
-+env:
-+    # Default config
-+  - OPTS=""
-+
-+before_script:
-+  - ccache -z
-+  - autoreconf -i
-+
-+script:
-+  - ./configure $OPTS
-+  - make
-+  - ./mutt -v
-+
-+after_script:
-+  - ccache -s
-+
 diff --git a/Makefile.am b/Makefile.am
 index 9ee3fae..6b68e25 100644
 --- a/Makefile.am
@@ -84,11 +46,11 @@ index 9ee3fae..6b68e25 100644
  EXTRA_SCRIPTS = smime_keys
  
 diff --git a/PATCHES b/PATCHES
-index e69de29..558c519 100644
+index e69de29..d803941 100644
 --- a/PATCHES
 +++ b/PATCHES
 @@ -0,0 +1 @@
-+patch-ifdef-neo-UNKNOWN
++patch-ifdef-neo-git
 diff --git a/README.ifdef b/README.ifdef
 new file mode 100644
 index 0000000..4b54d11
@@ -153,10 +115,10 @@ index 0000000..4b54d11
 +    * Richard Russon <rich@flatcap.org>
 +
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index b90908f..4352ef9 100644
+index a3711d0..407ab29 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
-@@ -7467,6 +7467,16 @@ <sect2 id="compile-time-features">
+@@ -7478,6 +7478,16 @@ <sect2 id="compile-time-features">
  
  </sect2>
  
@@ -173,7 +135,7 @@ index b90908f..4352ef9 100644
  <sect2 id="url-syntax">
  <title>URL Syntax</title>
  
-@@ -8081,6 +8091,167 @@ <sect1 id="sending-mixmaster">
+@@ -8092,6 +8102,167 @@ <sect1 id="sending-mixmaster">
  
  </sect1>
  
@@ -341,7 +303,7 @@ index b90908f..4352ef9 100644
  </chapter>
  
  <chapter id="security">
-@@ -8874,6 +9045,18 @@ <sect1 id="commands">
+@@ -8885,6 +9056,18 @@ <sect1 id="commands">
  
  <listitem>
  <cmdsynopsis>
@@ -632,7 +594,7 @@ index 69e2f76..c10f448 100644
        fprintf (stderr, _("Error in command line: %s\n"), err.data);
        FREE (&token.data);
 diff --git a/init.h b/init.h
-index 5a12ec0..8e87aa0 100644
+index 272edb8..12d02e7 100644
 --- a/init.h
 +++ b/init.h
 @@ -3665,6 +3665,8 @@ static int parse_lists (BUFFER *, BUFFER *, unsigned long, BUFFER *);
@@ -1622,5 +1584,5 @@ index 0000000..b46ebf8
 +
 +#endif /* _VERSION_H_ */
 -- 
-2.8.2
+2.9.0
 

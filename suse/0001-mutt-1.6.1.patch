@@ -1,7 +1,7 @@
-From 84f9726f8ab28a56adfbc9acc946efe3575634e0 Mon Sep 17 00:00:00 2001
+From ae517b00a2a8d9f72b18c1a058b13a3acee7a035 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 03:01:54 +0100
-Subject: [PATCH 01/13] mutt-1.6.1
+Subject: [PATCH 01/12] mutt-1.6.1
 
 ---
  configure.ac    | 10 +++++++++-
@@ -12,7 +12,7 @@ Subject: [PATCH 01/13] mutt-1.6.1
  5 files changed, 36 insertions(+), 2 deletions(-)
 
 diff --git a/configure.ac b/configure.ac
-index 87018df..0653bc6 100644
+index fc5eefc..e23b7cd 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -281,7 +281,7 @@ main ()
@@ -24,7 +24,7 @@ index 87018df..0653bc6 100644
                                  CPPFLAGS="$CPPFLAGS -I${withval}/include"
                          fi
                          LDFLAGS="$LDFLAGS -L${withval}/lib"
-@@ -720,8 +720,12 @@ AC_ARG_WITH(ssl, AS_HELP_STRING([--with-ssl@<:@=PFX@:>@],[Enable TLS support usi
+@@ -722,8 +722,12 @@ AC_ARG_WITH(ssl, AS_HELP_STRING([--with-ssl@<:@=PFX@:>@],[Enable TLS support usi
  	  else
              if test "$with_ssl" != "yes"
              then
@@ -37,7 +37,7 @@ index 87018df..0653bc6 100644
              fi
              saved_LIBS="$LIBS"
  
-@@ -800,8 +804,12 @@ AC_ARG_WITH(sasl, AS_HELP_STRING([--with-sasl@<:@=PFX@:>@],[Use SASL network sec
+@@ -802,8 +806,12 @@ AC_ARG_WITH(sasl, AS_HELP_STRING([--with-sasl@<:@=PFX@:>@],[Use SASL network sec
  
            if test "$with_sasl" != "yes"
            then
@@ -102,10 +102,10 @@ index 047531a..64d4d24 100644
  
      FREE (&methods);
 diff --git a/init.h b/init.h
-index 376a2df..0bf1cff 100644
+index b2089f6..253cd93 100644
 --- a/init.h
 +++ b/init.h
-@@ -3571,6 +3571,9 @@ struct option_t MuttVars[] = {
+@@ -3601,6 +3601,9 @@ struct option_t MuttVars[] = {
    ** the default from the GNUTLS library.
    */
  # endif /* USE_SSL_GNUTLS */
@@ -116,10 +116,10 @@ index 376a2df..0bf1cff 100644
    /*
    ** .pp
 diff --git a/mx.c b/mx.c
-index 5af78c4..dc04430 100644
+index 96ee564..97e050f 100644
 --- a/mx.c
 +++ b/mx.c
-@@ -1834,6 +1834,9 @@ void mx_update_context (CONTEXT *ctx, int new_messages)
+@@ -1831,6 +1831,9 @@ void mx_update_context (CONTEXT *ctx, int new_messages)
    {
      h = ctx->hdrs[msgno];
  
@@ -130,5 +130,5 @@ index 5af78c4..dc04430 100644
      {
        /* NOTE: this _must_ be done before the check for mailcap! */
 -- 
-2.8.2
+2.9.0
 

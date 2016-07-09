@@ -1,7 +1,7 @@
-From 030f324d64bc03f0aa43b2dd08afc0b82f1c9f44 Mon Sep 17 00:00:00 2001
+From 84a1a844c83646e0a5d8a58950d0f27e8ee4845d Mon Sep 17 00:00:00 2001
 From: Kevin McCarthy <kevin@8t8.us>
 Date: Fri, 8 Apr 2016 15:20:53 -0700
-Subject: [PATCH 01/45] Reset mbstate for other mbrtowc() calls returning -1
+Subject: [PATCH 01/37] Reset mbstate for other mbrtowc() calls returning -1
 
 Continue the cleanup started in changesets c8c76a6a1e61 and
 a3450fd50d11.  In those changesets, a bug was occurring due to the
@@ -65,7 +65,7 @@ index c804274..c48c68f 100644
        wc = replacement_char ();
      }
 diff --git a/pager.c b/pager.c
-index 7c9d9de..bce402c 100644
+index 1bd1620..76cf6ba 100644
 --- a/pager.c
 +++ b/pager.c
 @@ -1014,10 +1014,14 @@ trim_incomplete_mbyte(unsigned char *buf, size_t len)
@@ -95,5 +95,5 @@ index 7c9d9de..bce402c 100644
  		  __FILE__, __LINE__, k, errno));
        if (col + 4 > wrap_cols)
 -- 
-2.8.2
+2.9.0
 

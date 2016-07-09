@@ -1,4 +1,4 @@
-From 313a9d84667700a2609e9924cc7cdc7825251641 Mon Sep 17 00:00:00 2001
+From e2b19d364ccdb0f61908a07f00d8fdb3a1d47a75 Mon Sep 17 00:00:00 2001
 From: Tim Stoakes <tim@stoakes.net>
 Date: Sun, 16 Sep 2012 09:31:54 +0200
 Subject: [PATCH 06/10] fix: Add browser sort by description, message count and
@@ -13,7 +13,7 @@ new message count.
  3 files changed, 75 insertions(+), 6 deletions(-)
 
 diff --git a/browser.c b/browser.c
-index f6cd181..3ffcd13 100644
+index 895acff..ab83698 100644
 --- a/browser.c
 +++ b/browser.c
 @@ -106,6 +106,16 @@ static int browser_compare_subject (const void *a, const void *b)
@@ -76,7 +76,7 @@ index f6cd181..3ffcd13 100644
      case SORT_SUBJECT:
      default:
        f = browser_compare_subject;
-@@ -294,7 +333,16 @@ folder_format_str (char *dest, size_t destlen, size_t col, char op, const char *
+@@ -294,7 +333,16 @@ folder_format_str (char *dest, size_t destlen, size_t col, int cols, char op, co
        else
  	mutt_format_s (dest, destlen, fmt, "");
        break;
@@ -153,10 +153,10 @@ index ad89ab2..a41e0d5 100644
    char delim;
    
 diff --git a/init.h b/init.h
-index d01db5c..376a2df 100644
+index 730259c..d76e664 100644
 --- a/init.h
 +++ b/init.h
-@@ -3491,7 +3491,10 @@ struct option_t MuttVars[] = {
+@@ -3516,7 +3516,10 @@ struct option_t MuttVars[] = {
    ** entries are sorted alphabetically.  Valid values:
    ** .il
    ** .dd alpha (alphabetically)
@@ -167,7 +167,7 @@ index d01db5c..376a2df 100644
    ** .dd size
    ** .dd unsorted
    ** .ie
-@@ -4136,7 +4139,10 @@ const struct mapping_t SortAuxMethods[] = {
+@@ -4161,7 +4164,10 @@ const struct mapping_t SortAuxMethods[] = {
  
  const struct mapping_t SortBrowserMethods[] = {
    { "alpha",	SORT_SUBJECT },
@@ -179,5 +179,5 @@ index d01db5c..376a2df 100644
    { "unsorted",	SORT_ORDER },
    { NULL,       0 }
 -- 
-2.8.2
+2.9.0
 

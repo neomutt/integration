@@ -1,4 +1,4 @@
-From 0dd38c7a60a3b5067b51270662705b5b555680dc Mon Sep 17 00:00:00 2001
+From 1b4b4bf3b53fa929bcdf70926ac99645c7e24c80 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 15:19:44 +0100
 Subject: [PATCH 09/21] doc-Makefile.am
@@ -39,5 +39,5 @@ index 6021626..3a23105 100644
  Muttrc: stamp-doc-rc
  
 -- 
-2.8.2
+2.9.0
 

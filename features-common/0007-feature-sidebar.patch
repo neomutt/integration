@@ -1,4 +1,4 @@
-From 8879ed6994ae7fdde86fbea6add635a26cbbae27 Mon Sep 17 00:00:00 2001
+From f1cbf94a97af2f5658772038b9a01db0ac34c2be Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Tue, 24 May 2016 17:12:45 +0100
 Subject: [PATCH 7/7] feature: sidebar
@@ -9,43 +9,58 @@ Subject: [PATCH 7/7] feature: sidebar
  OPS.SIDEBAR         |    8 +
  PATCHES             |    1 +
  README.sidebar      |  145 +++++++
- buffy.c             |  175 +++++++-
- buffy.h             |   20 +
+ addrbook.c          |    5 +-
+ browser.c           |    8 +-
+ buffy.c             |  214 +++++++---
+ buffy.h             |   17 +-
  color.c             |   11 +
- compose.c           |   39 +-
+ compose.c           |   57 +--
+ compress.c          |    4 +-
  configure.ac        |    8 +
  copy.c              |    3 +-
- curs_main.c         |   72 +++-
- doc/manual.xml.head | 1102 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ crypt-gpgme.c       |    7 +-
+ curs_main.c         |   81 +++-
+ doc/makedoc-defs.h  |    3 +
+ doc/manual.xml.head | 1127 +++++++++++++++++++++++++++++++++++++++++++++++++++
  doc/mutt.css        |   17 +-
  doc/muttrc.sidebar  |  116 ++++++
  doc/vimrc.sidebar   |   35 ++
- filter.c            |    5 +
- flags.c             |    7 +
+ filter.c            |    2 +-
+ flags.c             |    5 +
  functions.h         |   21 +
- globals.h           |   14 +
- imap/command.c      |    8 +
- imap/imap.c         |    4 +
- init.c              |    3 +
- init.h              |  161 +++++++-
- keymap.c            |    3 +
- mailbox.h           |    3 +
- main.c              |   22 +
- mbox.c              |    6 +
- menu.c              |   26 +-
- mh.c                |   42 ++
- mutt.h              |   13 +
+ globals.h           |   12 +
+ hdrline.c           |    9 +-
+ imap/command.c      |   19 +-
+ imap/imap.c         |   12 +-
+ imap/imap.h         |    2 +-
+ init.c              |   11 +
+ init.h              |  172 +++++++-
+ mailbox.h           |   14 +-
+ main.c              |    9 +
+ mbox.c              |    2 +
+ menu.c              |   38 +-
+ mh.c                |   80 +++-
+ mutt.h              |   12 +-
  mutt_curses.h       |   21 +-
- mutt_menu.h         |    3 +
- muttlib.c           |    8 +-
- mx.c                |   32 ++
- mx.h                |    4 +
- pager.c             |   78 +++-
- sidebar.c           | 1101 ++++++++++++++++++++++++++++++++++++++++++++++++++
- sidebar.h           |   36 ++
- sort.h              |    7 +
+ mutt_menu.h         |    6 +
+ muttlib.c           |   47 ++-
+ mx.c                |   31 +-
+ mx.h                |    1 +
+ pager.c             |   83 +++-
+ pgpinvoke.c         |    7 +-
+ pgpkey.c            |    7 +-
+ pop.c               |    2 +
+ protos.h            |    5 +-
+ query.c             |    9 +-
+ recvattach.c        |    7 +-
+ remailer.c          |    7 +-
+ sidebar.c           | 1077 ++++++++++++++++++++++++++++++++++++++++++++++++
+ sidebar.h           |   34 ++
+ smime.c             |    7 +-
+ sort.h              |    6 +
+ status.c            |   14 +-
  version.c           |    5 +
- 41 files changed, 3343 insertions(+), 62 deletions(-)
+ 56 files changed, 3457 insertions(+), 226 deletions(-)
  create mode 100644 OPS.SIDEBAR
  create mode 100644 README.sidebar
  create mode 100644 doc/muttrc.sidebar
@@ -54,7 +69,7 @@ Subject: [PATCH 7/7] feature: sidebar
  create mode 100644 sidebar.h
 
 diff --git a/Makefile.am b/Makefile.am
-index 218576c..8d02bb2 100644
+index 218576c..3783fe6 100644
 --- a/Makefile.am
 +++ b/Makefile.am
 @@ -56,7 +56,7 @@ EXTRA_mutt_SOURCES = account.c bcache.c compress.c crypt-gpgme.c crypt-mod-pgp-c
@@ -71,7 +86,7 @@ index 218576c..8d02bb2 100644
  	README.SSL smime.h group.h \
  	muttbug pgppacket.h depcomp ascii.h BEWARE PATCHES patchlist.sh \
 -	ChangeLog mkchangelog.sh mutt_idna.h \
-+	ChangeLog mkchangelog.sh mutt_idna.h sidebar.h OPS.sidebar \
++	ChangeLog mkchangelog.sh mutt_idna.h sidebar.h OPS.SIDEBAR \
  	snprintf.c regex.c crypt-gpgme.h hcachever.sh.in sys_socket.h \
  	txt2c.c txt2c.sh version.sh check_sec.sh version.h
  
@@ -120,14 +135,14 @@ index 0000000..7e5b504
 +OP_SIDEBAR_PREV_NEW "move the highlight to previous mailbox with new mail"
 +OP_SIDEBAR_TOGGLE_VISIBLE "make the sidebar (in)visible"
 diff --git a/PATCHES b/PATCHES
-index b720454..fd6fa32 100644
+index 7464b8d..a994654 100644
 --- a/PATCHES
 +++ b/PATCHES
-@@ -4,3 +4,4 @@ patch-trash-neo-UNKNOWN
- patch-nested-if-neo-UNKNOWN
- patch-cond-date-neo-UNKNOWN
- patch-compress-neo-UNKNOWN
-+patch-sidebar-neo-UNKNOWN
+@@ -4,3 +4,4 @@ patch-trash-neo-git
+ patch-nested-if-neo-git
+ patch-cond-date-neo-git
+ patch-compress-neo-git
++patch-sidebar-neo-git
 diff --git a/README.sidebar b/README.sidebar
 new file mode 100644
 index 0000000..53f56c1
@@ -279,8 +294,72 @@ index 0000000..53f56c1
 +    * Tyler Earnest <tylere@rne.st>
 +    * Richard Russon <rich@flatcap.org>
 +
+diff --git a/addrbook.c b/addrbook.c
+index 8767a00..345fe87 100644
+--- a/addrbook.c
++++ b/addrbook.c
+@@ -24,6 +24,7 @@
+ #include "mutt_menu.h"
+ #include "mapping.h"
+ #include "sort.h"
++#include "mutt_curses.h"
+ 
+ #include "mutt_idna.h"
+ 
+@@ -43,7 +44,7 @@ static const struct mapping_t AliasHelp[] = {
+ };
+ 
+ static const char *
+-alias_format_str (char *dest, size_t destlen, size_t col, char op, const char *src,
++alias_format_str (char *dest, size_t destlen, size_t col, int cols, char op, const char *src,
+ 		  const char *fmt, const char *ifstring, const char *elsestring,
+ 		  unsigned long data, format_flag flags)
+ {
+@@ -80,7 +81,7 @@ alias_format_str (char *dest, size_t destlen, size_t col, char op, const char *s
+ 
+ static void alias_entry (char *s, size_t slen, MUTTMENU *m, int num)
+ {
+-  mutt_FormatString (s, slen, 0, NONULL (AliasFmt), alias_format_str, (unsigned long) ((ALIAS **) m->data)[num], M_FORMAT_ARROWCURSOR);
++  mutt_FormatString (s, slen, 0, COLS - SidebarWidth, NONULL (AliasFmt), alias_format_str, (unsigned long) ((ALIAS **) m->data)[num], M_FORMAT_ARROWCURSOR);
+ }
+ 
+ static int alias_tag (MUTTMENU *menu, int n, int m)
+diff --git a/browser.c b/browser.c
+index 46919a0..11980e5 100644
+--- a/browser.c
++++ b/browser.c
+@@ -142,7 +142,7 @@ static int link_is_dir (const char *folder, const char *path)
+ }
+ 
+ static const char *
+-folder_format_str (char *dest, size_t destlen, size_t col, char op, const char *src,
++folder_format_str (char *dest, size_t destlen, size_t col, int cols, char op, const char *src,
+ 		   const char *fmt, const char *ifstring, const char *elsestring,
+ 		   unsigned long data, format_flag flags)
+ {
+@@ -317,9 +317,9 @@ folder_format_str (char *dest, size_t destlen, size_t col, char op, const char *
+   }
+ 
+   if (optional)
+-    mutt_FormatString (dest, destlen, col, ifstring, folder_format_str, data, 0);
++    mutt_FormatString (dest, destlen, col, cols, ifstring, folder_format_str, data, 0);
+   else if (flags & M_FORMAT_OPTIONAL)
+-    mutt_FormatString (dest, destlen, col, elsestring, folder_format_str, data, 0);
++    mutt_FormatString (dest, destlen, col, cols, elsestring, folder_format_str, data, 0);
+ 
+   return (src);
+ }
+@@ -515,7 +515,7 @@ static void folder_entry (char *s, size_t slen, MUTTMENU *menu, int num)
+   folder.ff = &((struct folder_file *) menu->data)[num];
+   folder.num = num;
+   
+-  mutt_FormatString (s, slen, 0, NONULL(FolderFormat), folder_format_str, 
++  mutt_FormatString (s, slen, 0, COLS - SidebarWidth, NONULL(FolderFormat), folder_format_str, 
+       (unsigned long) &folder, M_FORMAT_ARROWCURSOR);
+ }
+ 
 diff --git a/buffy.c b/buffy.c
-index c713d16..dfec46f 100644
+index c713d16..4ae879e 100644
 --- a/buffy.c
 +++ b/buffy.c
 @@ -27,6 +27,10 @@
@@ -294,37 +373,40 @@ index c713d16..dfec46f 100644
  #ifdef USE_IMAP
  #include "imap.h"
  #endif
-@@ -196,9 +200,17 @@ void mutt_update_mailbox (BUFFY * b)
+@@ -41,6 +45,7 @@
+ #include <stdio.h>
+ 
+ static time_t BuffyTime = 0;	/* last time we started checking for mail */
++static time_t BuffyStatsTime = 0; /* last time we check performed mail_check_stats */
+ time_t BuffyDoneTime = 0;	/* last time we knew for sure how much mail there was. */
+ static short BuffyCount = 0;	/* how many boxes with new mail */
+ static short BuffyNotify = 0;	/* # of unnotified new boxes */
+@@ -196,9 +201,13 @@ void mutt_update_mailbox (BUFFY * b)
  static BUFFY *buffy_new (const char *path)
  {
    BUFFY* buffy;
-+#ifdef USE_SIDEBAR
 +  char rp[PATH_MAX] = "";
 +  char *r = NULL;
-+#endif
  
    buffy = (BUFFY *) safe_calloc (1, sizeof (BUFFY));
    strfcpy (buffy->path, path, sizeof (buffy->path));
-+#ifdef USE_SIDEBAR
 +  r = realpath (path, rp);
 +  strfcpy (buffy->realpath, r ? rp : path, sizeof (buffy->realpath));
-+#endif
    buffy->next = NULL;
    buffy->magic = 0;
  
-@@ -215,7 +227,10 @@ int mutt_parse_mailboxes (BUFFER *path, BUFFER *s, unsigned long data, BUFFER *e
+@@ -215,8 +224,8 @@ int mutt_parse_mailboxes (BUFFER *path, BUFFER *s, unsigned long data, BUFFER *e
    BUFFY **tmp,*tmp1;
    char buf[_POSIX_PATH_MAX];
    struct stat sb;
 -  char f1[PATH_MAX], f2[PATH_MAX];
+-  char *p, *q;
 +  char f1[PATH_MAX];
-+#ifndef USE_SIDEBAR
-+  char f2[PATH_MAX];
-+#endif
-   char *p, *q;
++  char *p;
  
    while (MoreArgs (s))
-@@ -228,6 +243,9 @@ int mutt_parse_mailboxes (BUFFER *path, BUFFER *s, unsigned long data, BUFFER *e
+   {
+@@ -228,6 +237,9 @@ int mutt_parse_mailboxes (BUFFER *path, BUFFER *s, unsigned long data, BUFFER *e
        for (tmp = &Incoming; *tmp;)
        {
          tmp1=(*tmp)->next;
@@ -334,21 +416,17 @@ index c713d16..dfec46f 100644
          buffy_free (tmp);
          *tmp=tmp1;
        }
-@@ -243,8 +261,13 @@ int mutt_parse_mailboxes (BUFFER *path, BUFFER *s, unsigned long data, BUFFER *e
+@@ -243,8 +255,7 @@ int mutt_parse_mailboxes (BUFFER *path, BUFFER *s, unsigned long data, BUFFER *e
      p = realpath (buf, f1);
      for (tmp = &Incoming; *tmp; tmp = &((*tmp)->next))
      {
-+#ifdef USE_SIDEBAR
-+      q = (*tmp)->realpath;
-+      if (mutt_strcmp (p ? p : buf, q) == 0)
-+#else
-       q = realpath ((*tmp)->path, f2);
-       if (mutt_strcmp (p ? p : buf, q ? q : (*tmp)->path) == 0)
-+#endif
+-      q = realpath ((*tmp)->path, f2);
+-      if (mutt_strcmp (p ? p : buf, q ? q : (*tmp)->path) == 0)
++      if (mutt_strcmp (p ? p : buf, (*tmp)->realpath) == 0)
        {
  	dprint(3,(debugfile,"mailbox '%s' already registered as '%s'\n", buf, (*tmp)->path));
  	break;
-@@ -256,14 +279,21 @@ int mutt_parse_mailboxes (BUFFER *path, BUFFER *s, unsigned long data, BUFFER *e
+@@ -256,14 +267,21 @@ int mutt_parse_mailboxes (BUFFER *path, BUFFER *s, unsigned long data, BUFFER *e
        if(*tmp)
        {
          tmp1=(*tmp)->next;
@@ -371,195 +449,294 @@ index c713d16..dfec46f 100644
  
      (*tmp)->new = 0;
      (*tmp)->notified = 1;
-@@ -306,6 +336,13 @@ static int buffy_maildir_dir_hasnew(BUFFY* mailbox, const char *dir_name)
-       return 0;
+@@ -285,10 +303,16 @@ int mutt_parse_mailboxes (BUFFER *path, BUFFER *s, unsigned long data, BUFFER *e
+   return 0;
+ }
+ 
+-/* returns 1 if the specified dir (cur or new) has new mail */
+-static int buffy_maildir_dir_hasnew(BUFFY* mailbox, const char *dir_name)
++/* Checks the specified maildir subdir (cur or new) for new mail or mail counts.
++ * check_new:   if true, check for new mail.
++ * check_stats: if true, count total, new, and flagged mesages.
++ * Returns 1 if the dir has new mail.
++ */
++static int buffy_maildir_check_dir (BUFFY* mailbox, const char *dir_name, int check_new,
++                                    int check_stats)
+ {
+   char path[_POSIX_PATH_MAX];
++  char msgpath[_POSIX_PATH_MAX];
+   DIR *dirp;
+   struct dirent *de;
+   char *p;
+@@ -300,12 +324,18 @@ static int buffy_maildir_dir_hasnew(BUFFY* mailbox, const char *dir_name)
+   /* when $mail_check_recent is set, if the new/ directory hasn't been modified since
+    * the user last exited the mailbox, then we know there is no recent mail.
+    */
+-  if (option(OPTMAILCHECKRECENT))
++  if (check_new && option(OPTMAILCHECKRECENT))
+   {
+     if (stat(path, &sb) == 0 && sb.st_mtime < mailbox->last_visited)
+-      return 0;
++    {
++      rc = 0;
++      check_new = 0;
++    }
    }
  
-+#ifdef USE_SIDEBAR
-+  if (option (OPTSIDEBAR) && mailbox->msg_unread > 0) {
-+    mailbox->new = 1;
-+    return 1;
-+  }
-+#endif
++  if (! (check_new || check_stats))
++    return rc;
 +
    if ((dirp = opendir (path)) == NULL)
    {
      mailbox->magic = 0;
-@@ -357,6 +394,92 @@ static int buffy_maildir_hasnew (BUFFY* mailbox)
+@@ -317,21 +347,35 @@ static int buffy_maildir_dir_hasnew(BUFFY* mailbox, const char *dir_name)
+     if (*de->d_name == '.')
+       continue;
  
-   return 0;
- }
-+
-+#ifdef USE_SIDEBAR
-+/**
-+ * buffy_maildir_update_dir - Update counts for one directory
-+ * @mailbox: BUFFY representing a maildir mailbox
-+ * @dir:     Which directory to search
-+ *
-+ * Look through one directory of a maildir mailbox.  The directory could
-+ * be either "new" or "cur".
-+ *
-+ * Count how many new, or flagged, messages there are.
-+ */
-+static void
-+buffy_maildir_update_dir (BUFFY *mailbox, const char *dir)
-+{
-+  char path[_POSIX_PATH_MAX] = "";
-+  DIR *dirp = NULL;
-+  struct dirent *de = NULL;
-+  char *p = NULL;
-+  int read;
-+
-+  snprintf (path, sizeof (path), "%s/%s", mailbox->path, dir);
-+
-+  dirp = opendir (path);
-+  if (!dirp)
-+  {
-+    mailbox->magic = 0;
-+    return;
-+  }
-+
-+  while ((de = readdir (dirp)) != NULL)
-+  {
-+    if (*de->d_name == '.')
+-    if (!(p = strstr (de->d_name, ":2,")) || !(strchr (p + 3, 'T') || strchr(p + 3, 'S')))
++    p = strstr (de->d_name, ":2,");
++    if (p && strchr (p + 3, 'T'))
 +      continue;
 +
-+    /* Matches maildir_parse_flags logic */
-+    read = 0;
-+    mailbox->msg_count++;
-+    p = strstr (de->d_name, ":2,");
-+    if (p)
-+    {
-+      p += 3;
-+      if (strchr (p, 'S'))
-+        read = 1;
-+      if (strchr (p, 'F'))
++    if (check_stats)
+     {
+-      if (option(OPTMAILCHECKRECENT))
++      mailbox->msg_count++;
++      if (p && strchr (p + 3, 'F'))
 +        mailbox->msg_flagged++;
 +    }
-+    if (!read) {
-+      mailbox->msg_unread++;
-+    }
-+  }
-+
-+  closedir (dirp);
-+}
-+
-+/**
-+ * buffy_maildir_update - Update messages counts for a maildir mailbox
-+ * @mailbox: BUFFY representing a maildir mailbox
-+ *
-+ * Open a mailbox directories and update our record of how many new, or
-+ * flagged, messages there are.
-+ */
-+void
-+buffy_maildir_update (BUFFY *mailbox)
-+{
-+	if (!option (OPTSIDEBAR))
-+		return;
-+
-+	mailbox->msg_count   = 0;
-+	mailbox->msg_unread  = 0;
-+	mailbox->msg_flagged = 0;
-+
-+	buffy_maildir_update_dir (mailbox, "new");
-+	if (mailbox->msg_count) {
-+		mailbox->new = 1;
-+	}
-+	buffy_maildir_update_dir (mailbox, "cur");
-+
-+	mailbox->sb_last_checked = time (NULL);
-+
-+	/* make sure the updates are actually put on screen */
-+	mutt_sb_draw();
-+}
-+
-+#endif
-+
- /* returns 1 if mailbox has new mail */ 
- static int buffy_mbox_hasnew (BUFFY* mailbox, struct stat *sb)
- {
-@@ -368,7 +491,11 @@ static int buffy_mbox_hasnew (BUFFY* mailbox, struct stat *sb)
-   else
-     statcheck = sb->st_mtime > sb->st_atime
-       || (mailbox->newly_created && sb->st_ctime == sb->st_mtime && sb->st_ctime == sb->st_atime);
-+#ifdef USE_SIDEBAR
-+  if ((!option (OPTSIDEBAR) && statcheck) || (option (OPTSIDEBAR) && mailbox->msg_unread > 0))
-+#else
-   if (statcheck)
-+#endif
-   {
-     if (!option(OPTMAILCHECKRECENT) || sb->st_mtime > mailbox->last_visited)
-     {
-@@ -388,6 +515,41 @@ static int buffy_mbox_hasnew (BUFFY* mailbox, struct stat *sb)
++    if (!p || !strchr (p + 3, 'S'))
++    {
++      if (check_stats)
++        mailbox->msg_unread++;
++      if (check_new)
+       {
+-	char msgpath[_POSIX_PATH_MAX];
+-
+-	snprintf(msgpath, sizeof(msgpath), "%s/%s", path, de->d_name);
+-	/* ensure this message was received since leaving this mailbox */
+-	if (stat(msgpath, &sb) == 0 && (sb.st_ctime <= mailbox->last_visited))
+-	  continue;
++        if (option(OPTMAILCHECKRECENT))
++        {
++          snprintf(msgpath, sizeof(msgpath), "%s/%s", path, de->d_name);
++          /* ensure this message was received since leaving this mailbox */
++          if (stat(msgpath, &sb) == 0 && (sb.st_ctime <= mailbox->last_visited))
++            continue;
++        }
++        mailbox->new = 1;
++        rc = 1;
++        check_new = 0;
++        if (!check_stats)
++          break;
+       }
+-      /* one new and undeleted message is enough */
+-      mailbox->new = 1;
+-      rc = 1;
+-      break;
+     }
+   }
+ 
+@@ -340,35 +384,48 @@ static int buffy_maildir_dir_hasnew(BUFFY* mailbox, const char *dir_name)
    return rc;
  }
  
-+#ifdef USE_SIDEBAR
-+/**
-+ * buffy_mbox_update - Update messages counts for an mbox mailbox
-+ * @mailbox: BUFFY representing an mbox mailbox
-+ * @sb:      stat(2) infomation about the mailbox file
-+ *
-+ * Open a mbox file and update our record of how many new, or flagged,
-+ * messages there are. If the mailbox hasn't changed since the last call,
-+ * the function does nothing.
+-/* returns 1 if maildir has new mail */
+-static int buffy_maildir_hasnew (BUFFY* mailbox)
++/* Checks new mail for a maildir mailbox.
++ * check_stats: if true, also count total, new, and flagged mesages.
++ * Returns 1 if the mailbox has new mail.
 + */
-+void
-+buffy_mbox_update (BUFFY *mailbox, struct stat *sb)
-+{
-+  CONTEXT *ctx = NULL;
-+
-+  if (!option (OPTSIDEBAR))
-+    return;
-+  if ((mailbox->sb_last_checked > sb->st_mtime) && (mailbox->msg_count != 0))
-+    return; /* no check necessary */
-+
-+  ctx = mx_open_mailbox (mailbox->path, M_READONLY | M_QUIET | M_NOSORT | M_PEEK, NULL);
-+  if (ctx)
++static int buffy_maildir_check (BUFFY* mailbox, int check_stats)
+ {
+-  if (buffy_maildir_dir_hasnew(mailbox, "new")) {
+-      return 1;
+-  }
++  int rc, check_new = 1;
+ 
+-  if (!option(OPTMAILDIRCHECKCUR)) {
+-      return 0;
++  if (check_stats)
 +  {
-+    mailbox->msg_count       = ctx->msgcount;
-+    mailbox->msg_unread      = ctx->unread;
-+    mailbox->msg_flagged     = ctx->flagged;
-+    mailbox->sb_last_checked = time (NULL);
-+    mx_close_mailbox (ctx, 0);
++    mailbox->msg_count   = 0;
++    mailbox->msg_unread  = 0;
++    mailbox->msg_flagged = 0;
+   }
+ 
+-  if (buffy_maildir_dir_hasnew(mailbox, "cur")) {
+-      return 1;
+-  }
++  rc = buffy_maildir_check_dir (mailbox, "new", check_new, check_stats);
+ 
+-  return 0;
++  check_new = !rc && option (OPTMAILDIRCHECKCUR);
++  if (check_new || check_stats)
++    if (buffy_maildir_check_dir (mailbox, "cur", check_new, check_stats))
++      rc = 1;
++
++  return rc;
+ }
+-/* returns 1 if mailbox has new mail */ 
+-static int buffy_mbox_hasnew (BUFFY* mailbox, struct stat *sb)
++
++/* Checks new mail for an mbox mailbox
++ * check_stats: if true, also count total, new, and flagged mesages.
++ * Returns 1 if the mailbox has new mail.
++ */
++static int buffy_mbox_check (BUFFY* mailbox, struct stat *sb, int check_stats)
+ {
+   int rc = 0;
+-  int statcheck;
++  int new_or_changed;
++  CONTEXT *ctx = NULL;
+ 
+   if (option (OPTCHECKMBOXSIZE))
+-    statcheck = sb->st_size > mailbox->size;
++    new_or_changed = sb->st_size > mailbox->size;
+   else
+-    statcheck = sb->st_mtime > sb->st_atime
++    new_or_changed = sb->st_mtime > sb->st_atime
+       || (mailbox->newly_created && sb->st_ctime == sb->st_mtime && sb->st_ctime == sb->st_atime);
+-  if (statcheck)
++
++  if (new_or_changed)
+   {
+     if (!option(OPTMAILCHECKRECENT) || sb->st_mtime > mailbox->last_visited)
+     {
+@@ -381,19 +438,43 @@ static int buffy_mbox_hasnew (BUFFY* mailbox, struct stat *sb)
+     /* some other program has deleted mail from the folder */
+     mailbox->size = (off_t) sb->st_size;
+   }
++
+   if (mailbox->newly_created &&
+       (sb->st_ctime != sb->st_mtime || sb->st_ctime != sb->st_atime))
+     mailbox->newly_created = 0;
+ 
++  if (check_stats &&
++      (mailbox->stats_last_checked < sb->st_mtime))
++  {
++    if ((ctx = mx_open_mailbox (mailbox->path,
++                                M_READONLY | M_QUIET | M_NOSORT | M_PEEK,
++                                NULL)) != NULL)
++    {
++      mailbox->msg_count       = ctx->msgcount;
++      mailbox->msg_unread      = ctx->unread;
++      mailbox->msg_flagged     = ctx->flagged;
++      mailbox->stats_last_checked = ctx->mtime;
++      mx_close_mailbox (ctx, 0);
++    }
 +  }
 +
-+  /* make sure the updates are actually put on screen */
-+  mutt_sb_draw();
-+}
-+#endif
-+
+   return rc;
+ }
+ 
++/* Check all Incoming for new mail and total/new/flagged messages
++ * force: if true, ignore BuffyTimeout and check for new mail anyway
++ */
  int mutt_buffy_check (int force)
  {
    BUFFY *tmp;
-@@ -461,16 +623,25 @@ int mutt_buffy_check (int force)
+   struct stat sb;
+   struct stat contex_sb;
+   time_t t;
++  int check_stats = 0;
++#ifdef USE_SIDEBAR
++  short orig_new;
++  int orig_count, orig_unread, orig_flagged;
++#endif
+ 
+   sb.st_size=0;
+   contex_sb.st_dev=0;
+@@ -411,13 +492,20 @@ int mutt_buffy_check (int force)
+   t = time (NULL);
+   if (!force && (t - BuffyTime < BuffyTimeout))
+     return BuffyCount;
+- 
++
++  if (option (OPTMAILCHECKSTATS) &&
++      (t - BuffyStatsTime >= BuffyCheckStatsInterval))
++  {
++    check_stats = 1;
++    BuffyStatsTime = t;
++  }
++
+   BuffyTime = t;
+   BuffyCount = 0;
+   BuffyNotify = 0;
+ 
+ #ifdef USE_IMAP
+-  BuffyCount += imap_buffy_check (force);
++  BuffyCount += imap_buffy_check (force, check_stats);
+ #endif
+ 
+   /* check device ID and serial number instead of comparing paths */
+@@ -430,6 +518,13 @@ int mutt_buffy_check (int force)
+   
+   for (tmp = Incoming; tmp; tmp = tmp->next)
+   {
++#ifdef USE_SIDEBAR
++    orig_new = tmp->new;
++    orig_count = tmp->msg_count;
++    orig_unread = tmp->msg_unread;
++    orig_flagged = tmp->msg_flagged;
++#endif
++
+     if (tmp->magic != M_IMAP)
+     {
+       tmp->new = 0;
+@@ -459,27 +554,34 @@ int mutt_buffy_check (int force)
+     {
+       switch (tmp->magic)
        {
-       case M_MBOX:
-       case M_MMDF:
-+#ifdef USE_SIDEBAR
-+	buffy_mbox_update (tmp, &sb);
-+#endif
- 	if (buffy_mbox_hasnew (tmp, &sb) > 0)
- 	  BuffyCount++;
- 	break;
+-      case M_MBOX:
+-      case M_MMDF:
+-	if (buffy_mbox_hasnew (tmp, &sb) > 0)
+-	  BuffyCount++;
+-	break;
+-
+-      case M_MAILDIR:
+-	if (buffy_maildir_hasnew (tmp) > 0)
+-	  BuffyCount++;
+-	break;
+-
+-      case M_MH:
+-	mh_buffy(tmp);
+-	if (tmp->new)
+-	  BuffyCount++;
+-	break;
++        case M_MBOX:
++        case M_MMDF:
++          if (buffy_mbox_check (tmp, &sb, check_stats) > 0)
++            BuffyCount++;
++          break;
++
++        case M_MAILDIR:
++          if (buffy_maildir_check (tmp, check_stats) > 0)
++            BuffyCount++;
++          break;
++
++        case M_MH:
++          if (mh_buffy (tmp, check_stats) > 0)
++            BuffyCount++;
++          break;
+       }
+     }
+     else if (option(OPTCHECKMBOXSIZE) && Context && Context->path)
+       tmp->size = (off_t) sb.st_size;	/* update the size of current folder */
  
-       case M_MAILDIR:
 +#ifdef USE_SIDEBAR
-+	buffy_maildir_update (tmp);
++    if ((orig_new != tmp->new) ||
++        (orig_count != tmp->msg_count) ||
++        (orig_unread != tmp->msg_unread) ||
++        (orig_flagged != tmp->msg_flagged))
++      SidebarNeedsRedraw = 1;
 +#endif
- 	if (buffy_maildir_hasnew (tmp) > 0)
- 	  BuffyCount++;
- 	break;
- 
-       case M_MH:
-+#ifdef USE_SIDEBAR
-+	mh_buffy_update (tmp);
-+#endif
- 	mh_buffy(tmp);
- 	if (tmp->new)
- 	  BuffyCount++;
++
+     if (!tmp->new)
+       tmp->notified = 0;
+     else if (!tmp->notified)
 diff --git a/buffy.h b/buffy.h
-index 9aa8e51..97e6912 100644
+index 9aa8e51..16191f8 100644
 --- a/buffy.h
 +++ b/buffy.h
 @@ -16,6 +16,9 @@
@@ -572,39 +749,41 @@ index 9aa8e51..97e6912 100644
  /*parameter to mutt_parse_mailboxes*/
  #define M_MAILBOXES   1
  #define M_UNMAILBOXES 2 
-@@ -23,13 +26,28 @@
+@@ -23,18 +26,28 @@
  typedef struct buffy_t
  {
    char path[_POSIX_PATH_MAX];
-+#ifdef USE_SIDEBAR
-+  char realpath[_POSIX_PATH_MAX];
-+#endif
++  char realpath[_POSIX_PATH_MAX]; /* used for duplicate detection, context comparison,
++                                     and the sidebar */
    off_t size;
    struct buffy_t *next;
-+#ifdef USE_SIDEBAR
-+  struct buffy_t *prev;
-+#endif
    short new;			/* mailbox has new mail */
-+#ifdef USE_SIDEBAR
++
++  /* These next three are only set when OPTMAILCHECKSTATS is set */
 +  int msg_count;		/* total number of messages */
 +  int msg_unread;		/* number of unread messages */
 +  int msg_flagged;		/* number of flagged messages */
-+  short is_hidden;		/* is hidden from the sidebar */
-+#endif
++
    short notified;		/* user has been notified */
    short magic;			/* mailbox type */
    short newly_created;		/* mbox or mmdf just popped into existence */
    time_t last_visited;		/* time of last exit from this mailbox */
-+#ifdef USE_SIDEBAR
-+  time_t sb_last_checked;	/* time of last buffy check from sidebar */
-+#endif
++  time_t stats_last_checked;	/* mtime of mailbox the last time stats where checked. */
  }
  BUFFY;
  
-@@ -49,3 +67,5 @@ void mutt_buffy_cleanup (const char *buf, struct stat *st);
+ WHERE BUFFY *Incoming INITVAL (0);
+ WHERE short BuffyTimeout INITVAL (3);
++WHERE short BuffyCheckStatsInterval INITVAL (60);
+ 
+ extern time_t BuffyDoneTime;	/* last time we knew for sure how much mail there was */
+ 
+@@ -48,4 +61,6 @@ void mutt_buffy_cleanup (const char *buf, struct stat *st);
+ /* mark mailbox just left as already notified */
  void mutt_buffy_setnotified (const char *path);
  
- void mh_buffy (BUFFY *);
+-void mh_buffy (BUFFY *);
++int mh_buffy (BUFFY *, int);
 +
 +#endif /* _BUFFY_H */
 diff --git a/color.c b/color.c
@@ -637,7 +816,7 @@ index 6e29603..b542ffd 100644
    ColorDefs[MT_COLOR_BOLD] = 0;
    ColorDefs[MT_COLOR_UNDERLINE] = 0;
 diff --git a/compose.c b/compose.c
-index 6af817f..bf6bac8 100644
+index 6af817f..0098ab8 100644
 --- a/compose.c
 +++ b/compose.c
 @@ -32,6 +32,9 @@
@@ -659,6 +838,15 @@ index 6af817f..bf6bac8 100644
  
  static const char * const Prompts[] =
  {
+@@ -99,7 +102,7 @@ static const struct mapping_t ComposeHelp[] = {
+ 
+ static void snd_entry (char *b, size_t blen, MUTTMENU *menu, int num)
+ {
+-    mutt_FormatString (b, blen, 0, NONULL (AttachFormat), mutt_attach_fmt,
++  mutt_FormatString (b, blen, 0, COLS - SidebarWidth, NONULL (AttachFormat), mutt_attach_fmt,
+ 	    (unsigned long)(((ATTACHPTR **) menu->data)[num]),
+ 	    M_FORMAT_STAT_FILE | M_FORMAT_ARROWCURSOR);
+ }
 @@ -110,7 +113,7 @@ static void snd_entry (char *b, size_t blen, MUTTMENU *menu, int num)
  
  static void redraw_crypt_lines (HEADER *msg)
@@ -761,6 +949,47 @@ index 6af817f..bf6bac8 100644
    mutt_paddstr (W, buf);
    
    return 0;
+@@ -402,7 +409,7 @@ static unsigned long cum_attachs_size (MUTTMENU *menu)
+ }
+ 
+ /* prototype for use below */
+-static void compose_status_line (char *buf, size_t buflen, size_t col, MUTTMENU *menu, 
++static void compose_status_line (char *buf, size_t buflen, size_t col, int cols, MUTTMENU *menu, 
+       const char *p);
+ 
+ /*
+@@ -418,7 +425,7 @@ static void compose_status_line (char *buf, size_t buflen, size_t col, MUTTMENU
+  */
+ 
+ static const char *
+-compose_format_str (char *buf, size_t buflen, size_t col, char op, const char *src,
++compose_format_str (char *buf, size_t buflen, size_t col, int cols, char op, const char *src,
+ 		   const char *prefix, const char *ifstring,
+ 		   const char *elsestring,
+ 		   unsigned long data, format_flag flags)
+@@ -461,17 +468,17 @@ compose_format_str (char *buf, size_t buflen, size_t col, char op, const char *s
+   }
+ 
+   if (optional)
+-    compose_status_line (buf, buflen, col, menu, ifstring);
++    compose_status_line (buf, buflen, col, cols, menu, ifstring);
+   else if (flags & M_FORMAT_OPTIONAL)
+-    compose_status_line (buf, buflen, col, menu, elsestring);
++    compose_status_line (buf, buflen, col, cols, menu, elsestring);
+ 
+   return (src);
+ }
+ 
+-static void compose_status_line (char *buf, size_t buflen, size_t col, MUTTMENU *menu, 
+-      const char *p)
++static void compose_status_line (char *buf, size_t buflen, size_t col, int cols,
++                                 MUTTMENU *menu, const char *p)
+ {
+-  mutt_FormatString (buf, buflen, col, p, compose_format_str, 
++  mutt_FormatString (buf, buflen, col, cols, p, compose_format_str, 
+         (unsigned long) menu, 0);
+ }
+ 
 @@ -515,7 +522,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
    menu->tag = mutt_tag_attach;
    menu->data = idx;
@@ -788,8 +1017,39 @@ index 6af817f..bf6bac8 100644
  	  mutt_paddstr (W, fcc);
  	  fccSet = 1;
  	}
+@@ -1313,7 +1320,7 @@ int mutt_compose_menu (HEADER *msg,   /* structure for new message */
+     /* Draw formatted compose status line */
+     if (menu->redraw & REDRAW_STATUS) 
+     {
+-	compose_status_line (buf, sizeof (buf), 0, menu, NONULL(ComposeFormat));
++	compose_status_line (buf, sizeof (buf), 0, COLS - SidebarWidth, menu, NONULL(ComposeFormat));
+ 	move(option (OPTSTATUSONTOP) ? 0 : LINES-2, 0);
+ 	SETCOLOR (MT_COLOR_STATUS);
+ 	mutt_paddstr (COLS, buf);
+diff --git a/compress.c b/compress.c
+index b486755..3eb02a7 100644
+--- a/compress.c
++++ b/compress.c
+@@ -324,7 +324,7 @@ store_size (const CONTEXT *ctx)
+  * Returns: src (unchanged)
+  */
+ static const char *
+-cb_format_str (char *dest, size_t destlen, size_t col, char op, const char *src,
++cb_format_str (char *dest, size_t destlen, size_t col, int cols, char op, const char *src,
+ 	const char *fmt, const char *ifstring, const char *elsestring,
+ 	unsigned long data, format_flag flags)
+ {
+@@ -379,7 +379,7 @@ get_compression_cmd (const CONTEXT *ctx, const char *cmd)
+ 
+ 	char expanded[_POSIX_PATH_MAX];
+ 
+-	mutt_FormatString (expanded, sizeof (expanded), 0, cmd, cb_format_str, (unsigned long) ctx, 0);
++	mutt_FormatString (expanded, sizeof (expanded), 0, COLS - SidebarWidth, cmd, cb_format_str, (unsigned long) ctx, 0);
+ 	return safe_strdup (expanded);
+ }
+ 
 diff --git a/configure.ac b/configure.ac
-index 88700cc..6bf08a1 100644
+index 9106368..52a259f 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -183,6 +183,14 @@ AC_ARG_ENABLE(compressed, AC_HELP_STRING([--enable-compressed], [Enable compress
@@ -821,8 +1081,41 @@ index 360c1a4..3c67260 100644
  	{
  	  error = TRUE;
  	  break;
+diff --git a/crypt-gpgme.c b/crypt-gpgme.c
+index 479b58a..d7bf305 100644
+--- a/crypt-gpgme.c
++++ b/crypt-gpgme.c
+@@ -2744,6 +2744,7 @@ int smime_gpgme_application_handler (BODY *a, STATE *s)
+ static const char *crypt_entry_fmt (char *dest,
+                                     size_t destlen,
+ 				    size_t col,
++                                    int cols,
+                                     char op,
+                                     const char *src,
+                                     const char *prefix,
+@@ -2941,9 +2942,9 @@ static const char *crypt_entry_fmt (char *dest,
+   }
+ 
+   if (optional)
+-    mutt_FormatString (dest, destlen, col, ifstring, mutt_attach_fmt, data, 0);
++    mutt_FormatString (dest, destlen, col, cols, ifstring, mutt_attach_fmt, data, 0);
+   else if (flags & M_FORMAT_OPTIONAL)
+-    mutt_FormatString (dest, destlen, col, elsestring, mutt_attach_fmt, data, 0);
++    mutt_FormatString (dest, destlen, col, cols, elsestring, mutt_attach_fmt, data, 0);
+   return (src);
+ }
+       
+@@ -2956,7 +2957,7 @@ static void crypt_entry (char *s, size_t l, MUTTMENU * menu, int num)
+   entry.key = key_table[num];
+   entry.num = num + 1;
+ 
+-  mutt_FormatString (s, l, 0, NONULL (PgpEntryFormat), crypt_entry_fmt, 
++  mutt_FormatString (s, l, 0, COLS - SidebarWidth, NONULL (PgpEntryFormat), crypt_entry_fmt, 
+ 		     (unsigned long) &entry, M_FORMAT_ARROWCURSOR);
+ }
+ 
 diff --git a/curs_main.c b/curs_main.c
-index 482397e..f6f5550 100644
+index 482397e..3f40e4d 100644
 --- a/curs_main.c
 +++ b/curs_main.c
 @@ -26,8 +26,13 @@
@@ -839,7 +1132,7 @@ index 482397e..f6f5550 100644
  #ifdef USE_POP
  #include "pop.h"
  #endif
-@@ -595,21 +600,39 @@ int mutt_index_menu (void)
+@@ -595,8 +600,12 @@ int mutt_index_menu (void)
         menu->redraw |= REDRAW_STATUS;
       if (do_buffy_notify)
       {
@@ -854,34 +1147,21 @@ index 482397e..f6f5550 100644
       }
       else
         do_buffy_notify = 1;
-     }
- 
-+#ifdef USE_SIDEBAR
-+    if (option (OPTSIDEBAR))
-+        menu->redraw |= REDRAW_SIDEBAR;
-+#endif
-+
-     if (op != -1)
-       mutt_curs_set (0);
- 
-     if (menu->redraw & REDRAW_FULL)
-     {
-       menu_redraw_full (menu);
-+#ifdef USE_SIDEBAR
-+      mutt_sb_draw();
-+#endif
-       mutt_show_error ();
-     }
-+#ifdef USE_SIDEBAR
-+    else if (menu->redraw & REDRAW_SIDEBAR) {
-+      mutt_sb_draw();
-+      menu->redraw &= ~REDRAW_SIDEBAR;
-+    }
-+#endif
+@@ -613,6 +622,13 @@ int mutt_index_menu (void)
  
      if (menu->menu == MENU_MAIN)
      {
-@@ -630,9 +653,20 @@ int mutt_index_menu (void)
++#ifdef USE_SIDEBAR
++      if (menu->redraw & REDRAW_SIDEBAR || SidebarNeedsRedraw)
++      {
++        mutt_sb_set_buffystats (Context);
++        menu_redraw_sidebar (menu);
++      }
++#endif
+       if (Context && Context->hdrs && !(menu->current >= Context->vcount))
+       {
+ 	menu_check_recenter (menu);
+@@ -630,7 +646,15 @@ int mutt_index_menu (void)
  
        if (menu->redraw & REDRAW_STATUS)
        {
@@ -896,13 +1176,8 @@ index 482397e..f6f5550 100644
 +#endif
  	move (option (OPTSTATUSONTOP) ? 0 : LINES-2, 0);
  	SETCOLOR (MT_COLOR_STATUS);
-+#ifdef USE_SIDEBAR
-+	mutt_sb_set_buffystats (Context);
-+#endif
  	mutt_paddstr (COLS, buf);
- 	NORMAL_COLOR;
- 	menu->redraw &= ~REDRAW_STATUS;
-@@ -652,7 +686,7 @@ int mutt_index_menu (void)
+@@ -652,7 +676,7 @@ int mutt_index_menu (void)
  	menu->oldcurrent = -1;
  
        if (option (OPTARROWCURSOR))
@@ -911,17 +1186,7 @@ index 482397e..f6f5550 100644
        else if (option (OPTBRAILLEFRIENDLY))
  	move (menu->current - menu->top + menu->offset, 0);
        else
-@@ -1091,6 +1125,9 @@ int mutt_index_menu (void)
- 	  break;
- 
- 	CHECK_MSGCOUNT;
-+#ifdef USE_SIDEBAR
-+	CHECK_VISIBLE;
-+#endif
- 	CHECK_READONLY;
- 	{
- 	  int oldvcount = Context->vcount;
-@@ -1150,6 +1187,9 @@ int mutt_index_menu (void)
+@@ -1150,6 +1174,9 @@ int mutt_index_menu (void)
  	  menu->redraw = REDRAW_FULL;
  	break;
  
@@ -931,32 +1196,58 @@ index 482397e..f6f5550 100644
        case OP_MAIN_CHANGE_FOLDER:
        case OP_MAIN_NEXT_UNREAD_MAILBOX:
  
-@@ -1181,6 +1221,14 @@ int mutt_index_menu (void)
+@@ -1177,20 +1204,29 @@ int mutt_index_menu (void)
+ 	    break;
+ 	  }
+ 	}
++#ifdef USE_SIDEBAR
++        else if (op == OP_SIDEBAR_OPEN)
++        {
++          const char *path = mutt_sb_get_highlight();
++          if (!path || !*path)
++            break;
++          strncpy (buf, path, sizeof (buf));
++        }
++#endif
+ 	else
  	{
  	  mutt_buffy (buf, sizeof (buf));
  
-+#ifdef USE_SIDEBAR
-+	  if (op == OP_SIDEBAR_OPEN) {
-+	    const char *path = mutt_sb_get_highlight();
-+	    if (!path)
-+	      break;
-+	    strncpy (buf, path, sizeof (buf));
-+	  } else
-+#endif
- 	  if (mutt_enter_fname (cp, buf, sizeof (buf), &menu->redraw, 1) == -1)
+-	  if (mutt_enter_fname (cp, buf, sizeof (buf), &menu->redraw, 1) == -1)
+-	  {
+-	    if (menu->menu == MENU_PAGER)
+-	    {
+-	      op = OP_DISPLAY_MESSAGE;
+-	      continue;
+-	    }
+-	    else
+-	      break;
+-	  }
++          if (mutt_enter_fname (cp, buf, sizeof (buf), &menu->redraw, 1) == -1)
++          {
++            if (menu->menu == MENU_PAGER)
++            {
++              op = OP_DISPLAY_MESSAGE;
++              continue;
++            }
++            else
++              break;
++          }
+ 	  if (!buf[0])
  	  {
- 	    if (menu->menu == MENU_PAGER)
-@@ -1199,6 +1247,9 @@ int mutt_index_menu (void)
- 	}
+ 	    CLEARLINE (LINES-1);
+@@ -1253,6 +1289,10 @@ int mutt_index_menu (void)
+ 	else
+ 	  menu->current = 0;
  
- 	mutt_expand_path (buf, sizeof (buf));
 +#ifdef USE_SIDEBAR
-+	mutt_sb_set_open_buffy (buf);
++        mutt_sb_set_open_buffy ();
 +#endif
- 	if (mx_get_magic (buf) <= 0)
- 	{
- 	  mutt_error (_("%s is not a mailbox."), buf);
-@@ -2323,6 +2374,21 @@ int mutt_index_menu (void)
++
+ 	mutt_clear_error ();
+ 	mutt_buffy_check(1); /* force the buffy check after we have changed
+ 			      the folder */
+@@ -2323,6 +2363,21 @@ int mutt_index_menu (void)
  	mutt_what_key();
  	break;
  
@@ -978,8 +1269,20 @@ index 482397e..f6f5550 100644
        default:
  	if (menu->menu == MENU_MAIN)
  	  km_error_key (MENU_MAIN);
+diff --git a/doc/makedoc-defs.h b/doc/makedoc-defs.h
+index 8f1a349..ac6cd33 100644
+--- a/doc/makedoc-defs.h
++++ b/doc/makedoc-defs.h
+@@ -55,4 +55,7 @@
+ # ifndef USE_SASL
+ #  define USE_SASL
+ # endif
++# ifndef USE_SIDEBAR
++#  define USE_SIDEBAR
++# endif
+ #endif
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index a134c42..676ed6a 100644
+index 571a452..f6e987e 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
 @@ -405,6 +405,623 @@ <sect2 id="intro-browser">
@@ -987,45 +1290,45 @@ index a134c42..676ed6a 100644
  </sect2>
  
 +<sect2 id="intro-sidebar">
-+	<title>Sidebar</title>
-+	<para>
-+		The Sidebar shows a list of all your mailboxes.  The list can be
-+		turned on and off, it can be themed and the list style can be
-+		configured.
-+	</para>
-+	<para>
-+		This part of the manual is suitable for beginners.
-+		If you already know Mutt you could skip ahead to the main
-+		<link linkend="sidebar">Sidebar guide</link>.
-+		If you just want to get started, you could use the sample
-+		<link linkend="sidebar-muttrc">Sidebar muttrc</link>.
-+	</para>
-+	<para>
-+		This version of Sidebar is based on Terry Chan's
-+		<ulink url="http://www.lunar-linux.org/mutt-sidebar/">2015-11-11 release</ulink>.
-+		It contains many
-+		<emphasis role="bold"><link linkend="intro-sidebar-features">new features</link></emphasis>,
-+		lots of
-+		<emphasis role="bold"><link linkend="intro-sidebar-bugfixes">bugfixes</link></emphasis>
-+		and a generous helping of
-+		<emphasis role="bold">new documentation</emphasis> which you are already reading.
-+	</para>
-+	<para>
-+		To check if Mutt supports <quote>Sidebar</quote>, look for the string
-+		<literal>+USE_SIDEBAR</literal> in the mutt version.
-+	</para>
++  <title>Sidebar</title>
++  <para>
++    The Sidebar shows a list of all your mailboxes.  The list can be
++    turned on and off, it can be themed and the list style can be
++    configured.
++  </para>
++  <para>
++    This part of the manual is suitable for beginners.
++    If you already know Mutt you could skip ahead to the main
++    <link linkend="sidebar">Sidebar guide</link>.
++    If you just want to get started, you could use the sample
++    <link linkend="sidebar-muttrc">Sidebar muttrc</link>.
++  </para>
++  <para>
++    This version of Sidebar is based on Terry Chan's
++    <ulink url="http://www.lunar-linux.org/mutt-sidebar/">2015-11-11 release</ulink>.
++    It contains many
++    <emphasis role="bold"><link linkend="intro-sidebar-features">new features</link></emphasis>,
++    lots of
++    <emphasis role="bold"><link linkend="intro-sidebar-bugfixes">bugfixes</link></emphasis>
++    and a generous helping of
++    <emphasis role="bold">new documentation</emphasis> which you are already reading.
++  </para>
++  <para>
++    To check if Mutt supports <quote>Sidebar</quote>, look for the string
++    <literal>+USE_SIDEBAR</literal> in the mutt version.
++  </para>
 +<screen>
 +mutt -v
 +</screen>
-+	<para>
-+		<emphasis role="bold">Let's turn on the Sidebar:</emphasis>
-+	</para>
-+	<screen>set sidebar_visible</screen>
-+	<para>
-+		You will see something like this.
-+		A list of mailboxes on the left.
-+		A list of emails, from the selected mailbox, on the right.
-+	</para>
++  <para>
++    <emphasis role="bold">Let's turn on the Sidebar:</emphasis>
++  </para>
++  <screen>set sidebar_visible</screen>
++  <para>
++    You will see something like this.
++    A list of mailboxes on the left.
++    A list of emails, from the selected mailbox, on the right.
++  </para>
 +<screen>
 +<emphasis role="indicator">Fruit [1]     3/8</emphasis>|  1    + Jan 24  Rhys Lee         (192)  Yew
 +Animals [1]   2/6|  2    + Feb 11  Grace Hall       (167)  Ilama
@@ -1039,28 +1342,28 @@ index a134c42..676ed6a 100644
 +                 |
 +</screen>
 +<para>
-+	This user has four mailboxes: <quote>Fruit</quote>,
-+	<quote>Cars</quote>, <quote>Animals</quote> and
-+	<quote>Seas</quote>.
++  This user has four mailboxes: <quote>Fruit</quote>,
++  <quote>Cars</quote>, <quote>Animals</quote> and
++  <quote>Seas</quote>.
 +</para>
 +<para>
-+	The current, open, mailbox is <quote>Fruit</quote>.  We can
-+	also see information about the other mailboxes.  For example:
-+	The <quote>Animals</quote> mailbox contains, 1 flagged email, 2
-+	new emails out of a total of 6 emails.
++  The current, open, mailbox is <quote>Fruit</quote>.  We can
++  also see information about the other mailboxes.  For example:
++  The <quote>Animals</quote> mailbox contains, 1 flagged email, 2
++  new emails out of a total of 6 emails.
 +</para>
-+	<sect3 id="intro-sidebar-navigation">
-+		<title>Navigation</title>
-+		<para>
-+			The Sidebar adds some new <link linkend="sidebar-functions">functions</link>
-+			to Mutt.
-+		</para>
-+		<para>
-+			The user pressed the <quote>c</quote> key to
-+			<literal>&lt;change-folder&gt;</literal> to the
-+			<quote>Animals</quote> mailbox.  The Sidebar automatically
-+			updated the indicator to match.
-+		</para>
++  <sect3 id="intro-sidebar-navigation">
++    <title>Navigation</title>
++    <para>
++      The Sidebar adds some new <link linkend="sidebar-functions">functions</link>
++      to Mutt.
++    </para>
++    <para>
++      The user pressed the <quote>c</quote> key to
++      <literal>&lt;change-folder&gt;</literal> to the
++      <quote>Animals</quote> mailbox.  The Sidebar automatically
++      updated the indicator to match.
++    </para>
 +<screen>
 +Fruit [1]     3/8|  1      Jan 03  Tia Gibson       (362)  Caiman
 +<emphasis role="indicator">Animals [1]   2/6</emphasis>|  2    + Jan 22  Rhys Lee         ( 48)  Dolphin
@@ -1073,19 +1376,19 @@ index a134c42..676ed6a 100644
 +                 |
 +                 |
 +</screen>
-+		<para>
-+			Let's map some functions:
-+		</para>
++    <para>
++      Let's map some functions:
++    </para>
 +<screen>
 +bind index,pager \CP sidebar-prev       <emphasis role="comment"># Ctrl-Shift-P - Previous Mailbox</emphasis>
 +bind index,pager \CN sidebar-next       <emphasis role="comment"># Ctrl-Shift-N - Next Mailbox</emphasis>
 +bind index,pager \CO sidebar-open       <emphasis role="comment"># Ctrl-Shift-O - Open Highlighted Mailbox</emphasis>
 +</screen>
-+		<para>
-+			Press <quote>Ctrl-Shift-N</quote> (Next mailbox) twice will
-+			move the Sidebar <emphasis role="bold">highlight</emphasis> to
-+			down to the <quote>Seas</quote> mailbox.
-+		</para>
++    <para>
++      Press <quote>Ctrl-Shift-N</quote> (Next mailbox) twice will
++      move the Sidebar <emphasis role="bold">highlight</emphasis> to
++      down to the <quote>Seas</quote> mailbox.
++    </para>
 +<screen>
 +Fruit [1]     3/8|  1      Jan 03  Tia Gibson       (362)  Caiman
 +<emphasis role="indicator">Animals [1]   2/6</emphasis>|  2    + Jan 22  Rhys Lee         ( 48)  Dolphin
@@ -1098,18 +1401,18 @@ index a134c42..676ed6a 100644
 +                 |
 +                 |
 +</screen>
-+		<note>
-+			Functions <literal>&lt;sidebar-next&gt;</literal> and
-+			<literal>&lt;sidebar-prev&gt;</literal> move the Sidebar
-+			<emphasis role="bold">highlight</emphasis>.
-+			They <emphasis role="bold">do not</emphasis> change the open
-+			mailbox.
-+		</note>
-+		<para>
-+			Press <quote>Ctrl-Shift-O</quote>
-+			(<literal>&lt;sidebar-open&gt;</literal>)
-+			to open the highlighted mailbox.
-+		</para>
++    <note>
++      Functions <literal>&lt;sidebar-next&gt;</literal> and
++      <literal>&lt;sidebar-prev&gt;</literal> move the Sidebar
++      <emphasis role="bold">highlight</emphasis>.
++      They <emphasis role="bold">do not</emphasis> change the open
++      mailbox.
++    </note>
++    <para>
++      Press <quote>Ctrl-Shift-O</quote>
++      (<literal>&lt;sidebar-open&gt;</literal>)
++      to open the highlighted mailbox.
++    </para>
 +<screen>
 +Fruit [1]     3/8|  1    ! Mar 07  Finley Jones     (139)  Molucca Sea
 +Animals [1]   2/6|  2    + Mar 24  Summer Jackson   ( 25)  Arafura Sea
@@ -1122,257 +1425,257 @@ index a134c42..676ed6a 100644
 +                 |
 +                 |
 +</screen>
-+	</sect3>
-+	<sect3 id="intro-sidebar-features">
-+		<title>Features</title>
-+		<para>
-+			The Sidebar shows a list of mailboxes in a panel.
-+		<para>
-+		</para>
-+			Everything about the Sidebar can be configured.
-+		</para>
-+		<itemizedlist>
-+		<title><link linkend="intro-sidebar-basics">State of the Sidebar</link></title>
-+			<listitem><para>Visibility</para></listitem>
-+			<listitem><para>Width</para></listitem>
-+		</itemizedlist>
-+		<itemizedlist>
-+		<title><link linkend="intro-sidebar-limit">Which mailboxes are displayed</link></title>
-+			<listitem><para>Display all</para></listitem>
-+			<listitem><para>Limit to mailboxes with new mail</para></listitem>
-+			<listitem><para>Whitelist mailboxes to display always</para></listitem>
-+		</itemizedlist>
-+		<itemizedlist>
-+		<title><link linkend="sidebar-sort">The order in which mailboxes are displayed</link></title>
-+		<title></title>
-+			<listitem><para>Unsorted (order of mailboxes commands)</para></listitem>
-+			<listitem><para>Sorted alphabetically</para></listitem>
-+			<listitem><para>Sorted by number of new mails</para></listitem>
-+		</itemizedlist>
-+		<itemizedlist>
-+		<title><link linkend="intro-sidebar-colors">Color</link></title>
-+			<listitem><para>Sidebar indicators and divider</para></listitem>
-+			<listitem><para>Mailboxes depending on their type</para></listitem>
-+			<listitem><para>Mailboxes depending on their contents</para></listitem>
-+		</itemizedlist>
-+		<itemizedlist>
-+		<title><link linkend="sidebar-functions">Key bindings</link></title>
-+			<listitem><para>Hide/Unhide the Sidebar</para></listitem>
-+			<listitem><para>Select previous/next mailbox</para></listitem>
-+			<listitem><para>Select previous/next mailbox with new mail</para></listitem>
-+			<listitem><para>Page up/down through a list of mailboxes</para></listitem>
-+		</itemizedlist>
-+		<itemizedlist>
-+		<title>Misc</title>
-+			<listitem><para><link linkend="intro-sidebar-format">Formatting string for mailbox</link></para></listitem>
-+			<listitem><para><link linkend="sidebar-next-new-wrap">Wraparound searching</link></para></listitem>
-+			<listitem><para><link linkend="intro-sidebar-abbrev">Flexible mailbox abbreviations</link></para></listitem>
-+			<listitem><para>Support for Unicode mailbox names (utf-8)</para></listitem>
-+		</itemizedlist>
-+	</sect3>
-+	<sect3 id="intro-sidebar-display">
-+		<title>Display</title>
-+		<para>
-+			Everything about the Sidebar can be configured.
-+		</para>
-+		<itemizedlist>
-+			<title>For a quick reference:</title>
-+			<listitem><para><link linkend="sidebar-variables">Sidebar variables to set</link> </para></listitem>
-+			<listitem><para><link linkend="sidebar-colors">Sidebar colors to apply</link></para></listitem>
-+			<listitem><para><link linkend="sidebar-sort">Sidebar sort methods</link></para></listitem>
-+		</itemizedlist>
-+		<sect4 id="intro-sidebar-basics">
-+			<title>Sidebar Basics</title>
-+			<para>
-+				The most important variable is <literal>$sidebar_visible</literal>.
-+				You can set this in your <quote>muttrc</quote>, or bind a key to the
-+				function <literal>&lt;sidebar-toggle-visible&gt;</literal>.
-+			</para>
++  </sect3>
++  <sect3 id="intro-sidebar-features">
++    <title>Features</title>
++    <para>
++      The Sidebar shows a list of mailboxes in a panel.
++    <para>
++    </para>
++      Everything about the Sidebar can be configured.
++    </para>
++    <itemizedlist>
++    <title><link linkend="intro-sidebar-basics">State of the Sidebar</link></title>
++      <listitem><para>Visibility</para></listitem>
++      <listitem><para>Width</para></listitem>
++    </itemizedlist>
++    <itemizedlist>
++    <title><link linkend="intro-sidebar-limit">Which mailboxes are displayed</link></title>
++      <listitem><para>Display all</para></listitem>
++      <listitem><para>Limit to mailboxes with new mail</para></listitem>
++      <listitem><para>Whitelist mailboxes to display always</para></listitem>
++    </itemizedlist>
++    <itemizedlist>
++    <title><link linkend="sidebar-sort">The order in which mailboxes are displayed</link></title>
++    <title></title>
++      <listitem><para>Unsorted (order of mailboxes commands)</para></listitem>
++      <listitem><para>Sorted alphabetically</para></listitem>
++      <listitem><para>Sorted by number of new mails</para></listitem>
++    </itemizedlist>
++    <itemizedlist>
++    <title><link linkend="intro-sidebar-colors">Color</link></title>
++      <listitem><para>Sidebar indicators and divider</para></listitem>
++      <listitem><para>Mailboxes depending on their type</para></listitem>
++      <listitem><para>Mailboxes depending on their contents</para></listitem>
++    </itemizedlist>
++    <itemizedlist>
++    <title><link linkend="sidebar-functions">Key bindings</link></title>
++      <listitem><para>Hide/Unhide the Sidebar</para></listitem>
++      <listitem><para>Select previous/next mailbox</para></listitem>
++      <listitem><para>Select previous/next mailbox with new mail</para></listitem>
++      <listitem><para>Page up/down through a list of mailboxes</para></listitem>
++    </itemizedlist>
++    <itemizedlist>
++    <title>Misc</title>
++      <listitem><para><link linkend="intro-sidebar-format">Formatting string for mailbox</link></para></listitem>
++      <listitem><para><link linkend="sidebar-next-new-wrap">Wraparound searching</link></para></listitem>
++      <listitem><para><link linkend="intro-sidebar-abbrev">Flexible mailbox abbreviations</link></para></listitem>
++      <listitem><para>Support for Unicode mailbox names (utf-8)</para></listitem>
++    </itemizedlist>
++  </sect3>
++  <sect3 id="intro-sidebar-display">
++    <title>Display</title>
++    <para>
++      Everything about the Sidebar can be configured.
++    </para>
++    <itemizedlist>
++      <title>For a quick reference:</title>
++      <listitem><para><link linkend="sidebar-variables">Sidebar variables to set</link> </para></listitem>
++      <listitem><para><link linkend="sidebar-colors">Sidebar colors to apply</link></para></listitem>
++      <listitem><para><link linkend="sidebar-sort">Sidebar sort methods</link></para></listitem>
++    </itemizedlist>
++    <sect4 id="intro-sidebar-basics">
++      <title>Sidebar Basics</title>
++      <para>
++        The most important variable is <literal>$sidebar_visible</literal>.
++        You can set this in your <quote>muttrc</quote>, or bind a key to the
++        function <literal>&lt;sidebar-toggle-visible&gt;</literal>.
++      </para>
 +<screen>
 +set sidebar_visible                         <emphasis role="comment"># Make the Sidebar visible by default</emphasis>
 +bind index,pager B sidebar-toggle-visible   <emphasis role="comment"># Use 'B' to switch the Sidebar on and off</emphasis>
 +</screen>
-+			<para>
-+				Next, decide how wide you want the Sidebar to be.  25
-+				characters might be enough for the mailbox name and some numbers.
-+		Remember, you can hide/show the Sidebar at the press of button.
-+		</para>
-+		<para>
-+		Finally, you might want to change the divider character.
-+		By default, Sidebar draws an ASCII line between it and the Index panel
-+				If your terminal supports it, you can use a Unicode line-drawing character.
-+			</para>
++      <para>
++        Next, decide how wide you want the Sidebar to be.  25
++        characters might be enough for the mailbox name and some numbers.
++    Remember, you can hide/show the Sidebar at the press of button.
++    </para>
++    <para>
++    Finally, you might want to change the divider character.
++    By default, Sidebar draws an ASCII line between it and the Index panel
++        If your terminal supports it, you can use a Unicode line-drawing character.
++      </para>
 +<screen>
 +set sidebar_width = 25                  <emphasis role="comment"># Plenty of space</emphasis>
 +set sidebar_divider_char = '│'          <emphasis role="comment"># Pretty line-drawing character</emphasis>
 +</screen>
-+		</sect4>
-+		<sect4 id="intro-sidebar-format">
-+			<title>Sidebar Format String</title>
-+			<para>
-+				<literal>$sidebar_format</literal> allows you to customize the Sidebar display.
-+				For an introduction, read <link linkend="index-format">format strings</link>
-+				including the section about <link linkend="formatstrings-conditionals">conditionals</link>.
-+			</para>
-+			<para>
-+				The default value is <literal>%B%?F? [%F]?%* %?N?%N/?%S</literal>
-+			</para>
-+			<itemizedlist>
-+				<title>Which breaks down as:</title>
-+				<listitem><para><literal>%B</literal> - Mailbox name</para></listitem>
-+				<listitem><para><literal>%?F? [%F]?</literal> - If flagged emails <literal>[%F]</literal>, otherwise nothing</para></listitem>
-+				<listitem><para><literal>%* </literal> - Pad with spaces</para></listitem>
-+				<listitem><para><literal>%?N?%N/?</literal> - If new emails <literal>%N/</literal>, otherwise nothing</para></listitem>
-+				<listitem><para><literal>%S</literal> - Total number of emails</para></listitem>
-+			</itemizedlist>
-+			<table>
-+				<title>sidebar_format</title>
-+				<tgroup cols="3">
-+					<thead>
-+						<row>
-+							<entry>Format</entry>
-+							<entry>Notes</entry>
-+							<entry>Description</entry>
-+						</row>
-+					</thead>
-+					<tbody>
-+						<row>
-+							<entry>%B</entry>
-+							<entry></entry>
-+							<entry>Name of the mailbox</entry>
-+						</row>
-+						<row>
-+							<entry>%S</entry>
-+							<entry>*</entry>
-+							<entry>Size of mailbox (total number of messages)</entry>
-+						</row>
-+						<row>
-+							<entry>%N</entry>
-+							<entry>*</entry>
-+							<entry>Number of New messages in the mailbox</entry>
-+						</row>
-+						<row>
-+							<entry>%F</entry>
-+							<entry>*</entry>
-+							<entry>Number of Flagged messages in the mailbox</entry>
-+						</row>
-+						<row>
-+							<entry>%!</entry>
-+							<entry></entry>
-+							<entry>
-+								<quote>!</quote>: one flagged message;
-+								<quote>!!</quote>: two flagged messages;
-+								<quote>n!</quote>: n flagged messages (for n &gt; 2).
-+								Otherwise prints nothing.
-+							</entry>
-+						</row>
-+						<row>
-+							<entry>%d</entry>
-+							<entry>* ‡</entry>
-+							<entry>Number of deleted messages</entry>
-+						</row>
-+						<row>
-+							<entry>%L</entry>
-+							<entry>* ‡</entry>
-+							<entry>Number of messages after limiting</entry>
-+						</row>
-+						<row>
-+							<entry>%t</entry>
-+							<entry>* ‡</entry>
-+							<entry>Number of tagged messages</entry>
-+						</row>
-+						<row>
-+							<entry>%&gt;X</entry>
-+							<entry></entry>
-+							<entry>Right justify the rest of the string and pad with <quote>X</quote></entry>
-+						</row>
-+						<row>
-+							<entry>%|X</entry>
-+							<entry></entry>
-+							<entry>Pad to the end of the line with
-+							<quote>X</quote></entry>
-+						</row>
-+						<row>
-+							<entry>%*X</entry>
-+							<entry></entry>
-+							<entry>Soft-fill with character <quote>X</quote>as pad</entry>
-+						</row>
-+					</tbody>
-+				</tgroup>
-+			</table>
-+			<para>
-+			* = Can be optionally printed if nonzero
-+			</para>
-+			<para>
-+			‡ = Only applicable to the current folder
-+			</para>
-+			<para>
-+				Here are some examples.
-+				They show the number of (F)lagged, (N)ew and (S)ize.
-+			</para>
-+			<table>
-+				<title>sidebar_format</title>
-+				<tgroup cols="2">
-+					<thead>
-+						<row>
-+							<entry>Format</entry>
-+							<entry>Example</entry>
-+						</row>
-+					</thead>
-+					<tbody>
-+						<row>
-+							<entry><literal>%B%?F? [%F]?%* %?N?%N/?%S</literal></entry>
-+							<entry><screen>mailbox [F]            N/S</screen></entry>
-+						</row>
-+						<row>
-+							<entry><literal>%B%* %F:%N:%S</literal></entry>
-+							<entry><screen>mailbox              F:N:S</screen></entry>
-+						</row>
-+						<row>
-+							<entry><literal>%B %?N?(%N)?%* %S</literal></entry>
-+							<entry><screen>mailbox (N)              S</screen></entry>
-+						</row>
-+						<row>
-+							<entry><literal>%B%* ?F?%F/?%N</literal></entry>
-+							<entry><screen>mailbox                F/S</screen></entry>
-+						</row>
-+					</tbody>
-+				</tgroup>
-+			</table>
-+		</sect4>
-+		<sect4 id="intro-sidebar-abbrev">
-+			<title>Abbreviating Mailbox Names</title>
-+			<para>
-+				<literal>$sidebar_delim_chars</literal> tells Sidebar
-+				how to split up mailbox paths.  For local directories
-+				use <quote>/</quote>; for IMAP folders use <quote>.</quote>
-+			</para>
-+			<sect5 id="intro-sidebar-abbrev-ex1">
-+				<title>Example 1</title>
-+				<para>
-+					This example works well if your mailboxes have unique names
-+					after the last separator.
-+				</para>
-+				<para>
-+					Add some mailboxes of diffent depths.
-+				</para>
++    </sect4>
++    <sect4 id="intro-sidebar-format">
++      <title>Sidebar Format String</title>
++      <para>
++        <literal>$sidebar_format</literal> allows you to customize the Sidebar display.
++        For an introduction, read <link linkend="index-format">format strings</link>
++        including the section about <link linkend="formatstrings-conditionals">conditionals</link>.
++      </para>
++      <para>
++        The default value is <literal>%B%?F? [%F]?%* %?N?%N/?%S</literal>
++      </para>
++      <itemizedlist>
++        <title>Which breaks down as:</title>
++        <listitem><para><literal>%B</literal> - Mailbox name</para></listitem>
++        <listitem><para><literal>%?F? [%F]?</literal> - If flagged emails <literal>[%F]</literal>, otherwise nothing</para></listitem>
++        <listitem><para><literal>%* </literal> - Pad with spaces</para></listitem>
++        <listitem><para><literal>%?N?%N/?</literal> - If new emails <literal>%N/</literal>, otherwise nothing</para></listitem>
++        <listitem><para><literal>%S</literal> - Total number of emails</para></listitem>
++      </itemizedlist>
++      <table>
++        <title>sidebar_format</title>
++        <tgroup cols="3">
++          <thead>
++            <row>
++              <entry>Format</entry>
++              <entry>Notes</entry>
++              <entry>Description</entry>
++            </row>
++          </thead>
++          <tbody>
++            <row>
++              <entry>%B</entry>
++              <entry></entry>
++              <entry>Name of the mailbox</entry>
++            </row>
++            <row>
++              <entry>%S</entry>
++              <entry>*</entry>
++              <entry>Size of mailbox (total number of messages)</entry>
++            </row>
++            <row>
++              <entry>%N</entry>
++              <entry>*</entry>
++              <entry>Number of New messages in the mailbox</entry>
++            </row>
++            <row>
++              <entry>%F</entry>
++              <entry>*</entry>
++              <entry>Number of Flagged messages in the mailbox</entry>
++            </row>
++            <row>
++              <entry>%!</entry>
++              <entry></entry>
++              <entry>
++                <quote>!</quote>: one flagged message;
++                <quote>!!</quote>: two flagged messages;
++                <quote>n!</quote>: n flagged messages (for n &gt; 2).
++                Otherwise prints nothing.
++              </entry>
++            </row>
++            <row>
++              <entry>%d</entry>
++              <entry>* ‡</entry>
++              <entry>Number of deleted messages</entry>
++            </row>
++            <row>
++              <entry>%L</entry>
++              <entry>* ‡</entry>
++              <entry>Number of messages after limiting</entry>
++            </row>
++            <row>
++              <entry>%t</entry>
++              <entry>* ‡</entry>
++              <entry>Number of tagged messages</entry>
++            </row>
++            <row>
++              <entry>%&gt;X</entry>
++              <entry></entry>
++              <entry>Right justify the rest of the string and pad with <quote>X</quote></entry>
++            </row>
++            <row>
++              <entry>%|X</entry>
++              <entry></entry>
++              <entry>Pad to the end of the line with
++              <quote>X</quote></entry>
++            </row>
++            <row>
++              <entry>%*X</entry>
++              <entry></entry>
++              <entry>Soft-fill with character <quote>X</quote>as pad</entry>
++            </row>
++          </tbody>
++        </tgroup>
++      </table>
++      <para>
++      * = Can be optionally printed if nonzero
++      </para>
++      <para>
++      ‡ = Only applicable to the current folder
++      </para>
++      <para>
++        Here are some examples.
++        They show the number of (F)lagged, (N)ew and (S)ize.
++      </para>
++      <table>
++        <title>sidebar_format</title>
++        <tgroup cols="2">
++          <thead>
++            <row>
++              <entry>Format</entry>
++              <entry>Example</entry>
++            </row>
++          </thead>
++          <tbody>
++            <row>
++              <entry><literal>%B%?F? [%F]?%* %?N?%N/?%S</literal></entry>
++              <entry><screen>mailbox [F]            N/S</screen></entry>
++            </row>
++            <row>
++              <entry><literal>%B%* %F:%N:%S</literal></entry>
++              <entry><screen>mailbox              F:N:S</screen></entry>
++            </row>
++            <row>
++              <entry><literal>%B %?N?(%N)?%* %S</literal></entry>
++              <entry><screen>mailbox (N)              S</screen></entry>
++            </row>
++            <row>
++              <entry><literal>%B%* ?F?%F/?%N</literal></entry>
++              <entry><screen>mailbox                F/S</screen></entry>
++            </row>
++          </tbody>
++        </tgroup>
++      </table>
++    </sect4>
++    <sect4 id="intro-sidebar-abbrev">
++      <title>Abbreviating Mailbox Names</title>
++      <para>
++        <literal>$sidebar_delim_chars</literal> tells Sidebar
++        how to split up mailbox paths.  For local directories
++        use <quote>/</quote>; for IMAP folders use <quote>.</quote>
++      </para>
++      <sect5 id="intro-sidebar-abbrev-ex1">
++        <title>Example 1</title>
++        <para>
++          This example works well if your mailboxes have unique names
++          after the last separator.
++        </para>
++        <para>
++          Add some mailboxes of diffent depths.
++        </para>
 +<screen>
 +set folder="~/mail"
 +mailboxes =fruit/apple          =fruit/banana          =fruit/cherry
 +mailboxes =water/sea/sicily     =water/sea/archipelago =water/sea/sibuyan
 +mailboxes =water/ocean/atlantic =water/ocean/pacific   =water/ocean/arctic
 +</screen>
-+				<para>
-+					Shorten the names:
-+				</para>
++        <para>
++          Shorten the names:
++        </para>
 +<screen>
 +set sidebar_short_path                  <emphasis role="comment"># Shorten mailbox names</emphasis>
 +set sidebar_delim_chars="/"             <emphasis role="comment"># Delete everything up to the last / character</emphasis>
 +</screen>
-+				<para>
-+					The screenshot below shows what the Sidebar would look like
-+					before and after shortening.
-+				</para>
++        <para>
++          The screenshot below shows what the Sidebar would look like
++          before and after shortening.
++        </para>
 +<screen>
 +|fruit/apple                            |apple
 +|fruit/banana                           |banana
@@ -1384,16 +1687,16 @@ index a134c42..676ed6a 100644
 +|water/ocean/pacific                    |pacific
 +|water/ocean/arctic                     |arctic
 +</screen>
-+			</sect5>
-+			<sect5 id="intro-sidebar-abbrev-ex2">
-+				<title>Example 2</title>
-+				<para>
-+					This example works well if you have lots of mailboxes which are arranged
-+					in a tree.
-+				</para>
-+				<para>
-+					Add some mailboxes of diffent depths.
-+				</para>
++      </sect5>
++      <sect5 id="intro-sidebar-abbrev-ex2">
++        <title>Example 2</title>
++        <para>
++          This example works well if you have lots of mailboxes which are arranged
++          in a tree.
++        </para>
++        <para>
++          Add some mailboxes of diffent depths.
++        </para>
 +<screen>
 +set folder="~/mail"
 +mailboxes =fruit
@@ -1404,19 +1707,19 @@ index a134c42..676ed6a 100644
 +mailboxes =water/ocean
 +mailboxes =water/ocean/atlantic =water/ocean/pacific =water/ocean/arctic
 +</screen>
-+				<para>
-+					Shorten the names:
-+				</para>
++        <para>
++          Shorten the names:
++        </para>
 +<screen>
 +set sidebar_short_path                  <emphasis role="comment"># Shorten mailbox names</emphasis>
 +set sidebar_delim_chars="/"             <emphasis role="comment"># Delete everything up to the last / character</emphasis>
 +set sidebar_folder_indent               <emphasis role="comment"># Indent folders whose names we've shortened</emphasis>
 +set sidebar_indent_string="  "          <emphasis role="comment"># Indent with two spaces</emphasis>
 +</screen>
-+				<para>
-+					The screenshot below shows what the Sidebar would look like
-+					before and after shortening.
-+				</para>
++        <para>
++          The screenshot below shows what the Sidebar would look like
++          before and after shortening.
++        </para>
 +<screen>
 +|fruit                                  |fruit
 +|fruit/apple                            |  apple
@@ -1432,36 +1735,36 @@ index a134c42..676ed6a 100644
 +|water/ocean/pacific                    |    pacific
 +|water/ocean/arctic                     |    arctic
 +</screen>
-+				<para>
-+					Sometimes, it will be necessary to add mailboxes, that you
-+					don't use, to fill in part of the tree.	 This will trade
-+					vertical space for horizonal space (but it looks good).
-+				</para>
-+			</sect5>
-+		</sect4>
-+		<sect4 id="intro-sidebar-limit">
-+			<title>Limiting the Number of Mailboxes</title>
-+			<para>
-+				If you have a lot of mailboxes, sometimes it can be useful to hide
-+				the ones you aren't using.	<literal>$sidebar_new_mail_only</literal>
-+				tells Sidebar to only show mailboxes that contain new, or flagged, email.
-+			</para>
-+			<para>
-+				If you want some mailboxes to be always visible, then use the
-+				<literal>sidebar_whitelist</literal> command.  It takes a list of
-+				mailboxes as parameters.
-+			</para>
++        <para>
++          Sometimes, it will be necessary to add mailboxes, that you
++          don't use, to fill in part of the tree.  This will trade
++          vertical space for horizonal space (but it looks good).
++        </para>
++      </sect5>
++    </sect4>
++    <sect4 id="intro-sidebar-limit">
++      <title>Limiting the Number of Mailboxes</title>
++      <para>
++        If you have a lot of mailboxes, sometimes it can be useful to hide
++        the ones you aren't using.  <literal>$sidebar_new_mail_only</literal>
++        tells Sidebar to only show mailboxes that contain new, or flagged, email.
++      </para>
++      <para>
++        If you want some mailboxes to be always visible, then use the
++        <literal>sidebar_whitelist</literal> command.  It takes a list of
++        mailboxes as parameters.
++      </para>
 +<screen>
 +set sidebar_new_mail_only               <emphasis role="comment"># Only mailboxes with new/flagged email</emphasis>
 +sidebar_whitelist fruit fruit/apple     <emphasis role="comment"># Always display these two mailboxes</emphasis>
 +</screen>
-+		</sect4>
-+	</sect3>
-+	<sect3 id="intro-sidebar-colors">
-+		<title>Colors</title>
-+		<para>
-+			Here is a sample color scheme:
-+		</para>
++    </sect4>
++  </sect3>
++  <sect3 id="intro-sidebar-colors">
++    <title>Colors</title>
++    <para>
++      Here is a sample color scheme:
++    </para>
 +<screen>
 +color sidebar_indicator default color17         <emphasis role="comment"># Dark blue background</emphasis>
 +color sidebar_highlight white   color238        <emphasis role="comment"># Grey background</emphasis>
@@ -1470,144 +1773,186 @@ index a134c42..676ed6a 100644
 +color sidebar_flagged   red     default         <emphasis role="comment"># Red</emphasis>
 +color sidebar_divider   color8  default         <emphasis role="comment"># Dark grey</emphasis>
 +</screen>
-+		<para>
-+			There is a priority order when coloring Sidebar mailboxes.
-+			e.g.  If a mailbox has new mail it will have the
-+			<literal>sidebar_new</literal> color, even if it also contains
-+			flagged mails.
-+		</para>
-+		<table id="table-intro-sidebar-colors">
-+			<title>Sidebar Color Priority</title>
-+			<tgroup cols="3">
-+				<thead>
-+					<row>
-+						<entry>Priority</entry>
-+						<entry>Color</entry>
-+						<entry>Description</entry>
-+					</row>
-+				</thead>
-+				<tbody>
-+					<row>
-+						<entry>Highest</entry>
-+						<entry><literal>sidebar_indicator</literal></entry>
-+						<entry>Mailbox is open</entry>
-+					</row>
-+					<row>
-+						<entry></entry>
-+						<entry><literal>sidebar_highlight</literal></entry>
-+						<entry>Mailbox is highlighed</entry>
-+					</row>
-+					<row>
-+						<entry></entry>
-+						<entry><literal>sidebar_spoolfile</literal></entry>
-+						<entry>Mailbox is the spoolfile (receives incoming mail)</entry>
-+					</row>
-+					<row>
-+						<entry></entry>
-+						<entry><literal>sidebar_new</literal></entry>
-+						<entry>Mailbox contains new mail</entry>
-+					</row>
-+					<row>
-+						<entry></entry>
-+						<entry><literal>sidebar_flagged</literal></entry>
-+						<entry>Mailbox contains flagged mail</entry>
-+					</row>
-+					<row>
-+						<entry>Lowest</entry>
-+						<entry>(None)</entry>
-+						<entry>Mailbox does not match above</entry>
-+					</row>
-+				</tbody>
-+			</tgroup>
-+		</table>
-+	</sect3>
-+	<sect3 id="intro-sidebar-bugfixes">
-+		<title>Bug-fixes</title>
-+		<para>
-+			If you haven't used Sidebar before, you can ignore this section.
-+		</para>
-+		<para>
-+			These bugs have been fixed since the previous Sidebar release: 2015-11-11.
-+		</para>
-+		<itemizedlist>
-+			<listitem><para>Fix bug when starting in compose mode</para></listitem>
-+			<listitem><para>Fix bug with empty sidebar_divider_char string</para></listitem>
-+			<listitem><para>Fix bug with header wrapping</para></listitem>
-+			<listitem><para>Correctly handle utf8 character sequences</para></listitem>
-+			<listitem><para>Fix a bug in mh_buffy_update</para></listitem>
-+			<listitem><para>Fix refresh -- time overflowed short</para></listitem>
-+			<listitem><para>Protect against empty format strings</para></listitem>
-+			<listitem><para>Limit Sidebar width to COLS</para></listitem>
-+			<listitem><para>Handle unmailboxes * safely</para></listitem>
-+			<listitem><para>Refresh Sidebar after timeout</para></listitem>
-+		</itemizedlist>
-+	</sect3>
-+	<sect3 id="intro-sidebar-config-changes">
-+		<title>Config Changes</title>
-+		<para>
-+			If you haven't used Sidebar before, you can ignore this section.
-+		</para>
-+		<para>
-+			Some of the Sidebar config has been changed to make its meaning clearer.
-+			These changes have been made since the previous Sidebar release: 2015-11-11.
-+		</para>
-+		<table id="table-intro-sidebar-config-changes">
-+			<title>Config Changes</title>
-+			<tgroup cols="2">
-+				<thead>
-+					<row>
-+						<entry>Old Name</entry>
-+						<entry>New Name</entry>
-+					</row>
-+				</thead>
-+				<tbody>
-+					<row>
-+						<entry><literal>$sidebar_delim</literal></entry>
-+						<entry><literal>$sidebar_divider_char</literal></entry>
-+					</row>
-+					<row>
-+						<entry><literal>$sidebar_folderindent</literal></entry>
-+						<entry><literal>$sidebar_folder_indent</literal></entry>
-+					</row>
-+					<row>
-+						<entry><literal>$sidebar_indentstr</literal></entry>
-+						<entry><literal>$sidebar_indent_string</literal></entry>
-+					</row>
-+					<row>
-+						<entry><literal>$sidebar_newmail_only</literal></entry>
-+						<entry><literal>$sidebar_new_mail_only</literal></entry>
-+					</row>
-+					<row>
-+						<entry><literal>$sidebar_refresh</literal></entry>
-+						<entry><literal>$sidebar_refresh_time</literal></entry>
-+					</row>
-+					<row>
-+						<entry><literal>$sidebar_shortpath</literal></entry>
-+						<entry><literal>$sidebar_short_path</literal></entry>
-+					</row>
-+					<row>
-+						<entry><literal>$sidebar_sort</literal></entry>
-+						<entry><literal>$sidebar_sort_method</literal></entry>
-+					</row>
-+					<row>
-+						<entry><literal>&lt;sidebar-scroll-down&gt;</literal></entry>
-+						<entry><literal>&lt;sidebar-page-down&gt;</literal></entry>
-+					</row>
-+					<row>
-+						<entry><literal>&lt;sidebar-scroll-up&gt;</literal></entry>
-+						<entry><literal>&lt;sidebar-page-up&gt;</literal></entry>
-+					</row>
-+				</tbody>
-+			</tgroup>
-+		</table>
-+	</sect3>
++    <para>
++      There is a priority order when coloring Sidebar mailboxes.
++      e.g.  If a mailbox has new mail it will have the
++      <literal>sidebar_new</literal> color, even if it also contains
++      flagged mails.
++    </para>
++    <table id="table-intro-sidebar-colors">
++      <title>Sidebar Color Priority</title>
++      <tgroup cols="3">
++        <thead>
++          <row>
++            <entry>Priority</entry>
++            <entry>Color</entry>
++            <entry>Description</entry>
++          </row>
++        </thead>
++        <tbody>
++          <row>
++            <entry>Highest</entry>
++            <entry><literal>sidebar_indicator</literal></entry>
++            <entry>Mailbox is open</entry>
++          </row>
++          <row>
++            <entry></entry>
++            <entry><literal>sidebar_highlight</literal></entry>
++            <entry>Mailbox is highlighed</entry>
++          </row>
++          <row>
++            <entry></entry>
++            <entry><literal>sidebar_spoolfile</literal></entry>
++            <entry>Mailbox is the spoolfile (receives incoming mail)</entry>
++          </row>
++          <row>
++            <entry></entry>
++            <entry><literal>sidebar_new</literal></entry>
++            <entry>Mailbox contains new mail</entry>
++          </row>
++          <row>
++            <entry></entry>
++            <entry><literal>sidebar_flagged</literal></entry>
++            <entry>Mailbox contains flagged mail</entry>
++          </row>
++          <row>
++            <entry>Lowest</entry>
++            <entry>(None)</entry>
++            <entry>Mailbox does not match above</entry>
++          </row>
++        </tbody>
++      </tgroup>
++    </table>
++  </sect3>
++  <sect3 id="intro-sidebar-bugfixes">
++    <title>Bug-fixes</title>
++    <para>
++      If you haven't used Sidebar before, you can ignore this section.
++    </para>
++    <para>
++      These bugs have been fixed since the previous Sidebar release: 2015-11-11.
++    </para>
++    <itemizedlist>
++      <listitem><para>Fix bug when starting in compose mode</para></listitem>
++      <listitem><para>Fix bug with empty sidebar_divider_char string</para></listitem>
++      <listitem><para>Fix bug with header wrapping</para></listitem>
++      <listitem><para>Correctly handle utf8 character sequences</para></listitem>
++      <listitem><para>Fix a bug in mh_buffy_update</para></listitem>
++      <listitem><para>Fix refresh -- time overflowed short</para></listitem>
++      <listitem><para>Protect against empty format strings</para></listitem>
++      <listitem><para>Limit Sidebar width to COLS</para></listitem>
++      <listitem><para>Handle unmailboxes * safely</para></listitem>
++      <listitem><para>Refresh Sidebar after timeout</para></listitem>
++    </itemizedlist>
++  </sect3>
++  <sect3 id="intro-sidebar-config-changes">
++    <title>Config Changes</title>
++    <para>
++      If you haven't used Sidebar before, you can ignore this section.
++    </para>
++    <para>
++      Some of the Sidebar config has been changed to make its meaning clearer.
++      These changes have been made since the previous Sidebar release: 2015-11-11.
++    </para>
++    <table id="table-intro-sidebar-config-changes">
++      <title>Config Changes</title>
++      <tgroup cols="2">
++        <thead>
++          <row>
++            <entry>Old Name</entry>
++            <entry>New Name</entry>
++          </row>
++        </thead>
++        <tbody>
++          <row>
++            <entry><literal>$sidebar_delim</literal></entry>
++            <entry><literal>$sidebar_divider_char</literal></entry>
++          </row>
++          <row>
++            <entry><literal>$sidebar_folderindent</literal></entry>
++            <entry><literal>$sidebar_folder_indent</literal></entry>
++          </row>
++          <row>
++            <entry><literal>$sidebar_indentstr</literal></entry>
++            <entry><literal>$sidebar_indent_string</literal></entry>
++          </row>
++          <row>
++            <entry><literal>$sidebar_newmail_only</literal></entry>
++            <entry><literal>$sidebar_new_mail_only</literal></entry>
++          </row>
++          <row>
++            <entry><literal>$sidebar_refresh</literal></entry>
++            <entry><literal>$sidebar_refresh_time</literal></entry>
++          </row>
++          <row>
++            <entry><literal>$sidebar_shortpath</literal></entry>
++            <entry><literal>$sidebar_short_path</literal></entry>
++          </row>
++          <row>
++            <entry><literal>$sidebar_sort</literal></entry>
++            <entry><literal>$sidebar_sort_method</literal></entry>
++          </row>
++          <row>
++            <entry><literal>&lt;sidebar-scroll-down&gt;</literal></entry>
++            <entry><literal>&lt;sidebar-page-down&gt;</literal></entry>
++          </row>
++          <row>
++            <entry><literal>&lt;sidebar-scroll-up&gt;</literal></entry>
++            <entry><literal>&lt;sidebar-page-up&gt;</literal></entry>
++          </row>
++        </tbody>
++      </tgroup>
++    </table>
++  </sect3>
 +</sect2>
 +
  <sect2 id="intro-help">
  <title>Help</title>
  
-@@ -6824,6 +7441,17 @@ <sect3 id="optional-mailcap-fields">
+@@ -6113,6 +6730,14 @@ <sect2 id="new-mail-formats">
+ IDLE extension if advertised by the server.
  </para>
+ 
++<para>
++The <link linkend="mail-check-recent">$mail_check_recent</link>
++option changes whether Mutt will notify you of new mail in an
++already visited mailbox.  When set (the default) it will only notify
++you of new mail received since the last time you opened the mailbox.
++When unset, Mutt will notify you of any new mail in the mailbox.
++</para>
++
+ </sect2>
+ 
+ <sect2 id="new-mail-polling">
+@@ -6161,6 +6786,26 @@ <sect2 id="new-mail-polling">
+ 
+ </sect2>
+ 
++<sect2 id="calc-mailbox-counts">
++<title>Calculating Mailbox Message Counts</title>
++
++<para>
++If <link linkend="mail-check-stats">$mail_check_stats</link> is set,
++Mutt will periodically calculate the unread, flagged, and total
++message counts for each mailbox watched by the
++<command>mailboxes</command> command.  This calculation takes place at
++the same time as new mail polling, but is controlled by a separate
++timer: <link
++linkend="mail-check-stats-interval">$mail_check_stats_interval</link>.
++</para>
++
++<para>
++The sidebar can display these message counts.  See <link
++linkend="sidebar-format">$sidebar_format</link>.
++</para>
++
++</sect2>
++
+ </sect1>
+ 
+ <sect1 id="editing-threads">
+@@ -6835,6 +7480,17 @@ <sect3 id="optional-mailcap-fields">
+ </screen>
  
  <para>
 +Mutt will set the <literal>COLUMNS</literal> environment variable to
@@ -1624,319 +1969,316 @@ index a134c42..676ed6a 100644
  Note that when using the built-in pager, <emphasis>only</emphasis>
  entries with this flag will be considered a handler for a MIME type
  &mdash; all other entries will be ignored.
-@@ -9429,6 +10057,469 @@ <sect1 id="nested-if">
+@@ -9440,6 +10096,466 @@ <sect1 id="nested-if">
  	</sect2>
  </sect1>
  
 +<sect1 id="sidebar">
-+	<title>Sidebar Patch</title>
-+	<subtitle>Overview of mailboxes</subtitle>
++  <title>Sidebar Patch</title>
++  <subtitle>Overview of mailboxes</subtitle>
 +
-+	<sect2 id="sidebar-patch">
-+		<title>Patch</title>
++  <sect2 id="sidebar-patch">
++    <title>Patch</title>
 +
-+		<para>
-+			To check if Mutt supports <quote>Sidebar</quote>, look for
-+			<quote>+USE_SIDEBAR</quote> in the mutt version.
-+			See: <xref linkend="compile-time-features"/>.
-+		</para>
++    <para>
++      To check if Mutt supports <quote>Sidebar</quote>, look for
++      <quote>+USE_SIDEBAR</quote> in the mutt version.
++      See: <xref linkend="compile-time-features"/>.
++    </para>
 +
-+		<itemizedlist>
-+			<title>Dependencies:</title>
-+			<listitem><para>mutt-1.6.1</para></listitem>
-+		</itemizedlist>
++    <itemizedlist>
++      <title>Dependencies:</title>
++      <listitem><para>mutt-1.6.1</para></listitem>
++    </itemizedlist>
 +
-+		<para>This patch is part of the <ulink url="http://www.neomutt.org/">NeoMutt Project</ulink>.</para>
-+	</sect2>
++    <para>This patch is part of the <ulink url="http://www.neomutt.org/">NeoMutt Project</ulink>.</para>
++  </sect2>
 +
-+	<sect2 id="sidebar-intro">
-+		<title>Introduction</title>
++  <sect2 id="sidebar-intro">
++    <title>Introduction</title>
 +
-+		<para>
-+			The Sidebar shows a list of all your mailboxes.  The list can be
-+			turned on and off, it can be themed and the list style can be
-+			configured.
-+		</para>
++    <para>
++      The Sidebar shows a list of all your mailboxes.  The list can be
++      turned on and off, it can be themed and the list style can be
++      configured.
++    </para>
 +
-+		<para>
-+			This part of the manual is a reference guide.
-+			If you want a simple introduction with examples see the
-+			<link linkend="intro-sidebar">Sidebar Howto</link>.
-+			If you just want to get started, you could use the sample
-+			<link linkend="sidebar-muttrc">Sidebar muttrc</link>.
-+		</para>
++    <para>
++      This part of the manual is a reference guide.
++      If you want a simple introduction with examples see the
++      <link linkend="intro-sidebar">Sidebar Howto</link>.
++      If you just want to get started, you could use the sample
++      <link linkend="sidebar-muttrc">Sidebar muttrc</link>.
++    </para>
 +
-+		<para>
-+			This version of Sidebar is based on Terry Chan's
-+			<ulink url="http://www.lunar-linux.org/mutt-sidebar/">2015-11-11 release</ulink>.
-+			It contains many
-+			<emphasis role="bold"><link linkend="intro-sidebar-features">new features</link></emphasis>,
-+			lots of
-+			<emphasis role="bold"><link linkend="intro-sidebar-bugfixes">bugfixes</link></emphasis>.
-+		</para>
-+	</sect2>
++    <para>
++      This version of Sidebar is based on Terry Chan's
++      <ulink url="http://www.lunar-linux.org/mutt-sidebar/">2015-11-11 release</ulink>.
++      It contains many
++      <emphasis role="bold"><link linkend="intro-sidebar-features">new features</link></emphasis>,
++      lots of
++      <emphasis role="bold"><link linkend="intro-sidebar-bugfixes">bugfixes</link></emphasis>.
++    </para>
++  </sect2>
 +
-+	<sect2 id="sidebar-variables">
-+		<title>Variables</title>
++  <sect2 id="sidebar-variables">
++    <title>Variables</title>
 +
-+		<table id="table-sidebar-variables">
-+			<title>Sidebar Variables</title>
-+			<tgroup cols="3">
-+				<thead>
-+					<row>
-+						<entry>Name</entry>
-+						<entry>Type</entry>
-+						<entry>Default</entry>
-+					</row>
-+				</thead>
-+				<tbody>
-+					<row>
-+						<entry><literal>sidebar_delim_chars</literal></entry>
-+						<entry>string</entry>
-+						<entry><literal>/.</literal></entry>
-+					</row>
-+					<row>
-+						<entry><literal>sidebar_divider_char</literal></entry>
-+						<entry>string</entry>
-+						<entry><literal>|</literal></entry>
-+					</row>
-+					<row>
-+						<entry><literal>sidebar_folder_indent</literal></entry>
-+						<entry>boolean</entry>
-+						<entry><literal>no</literal></entry>
-+					</row>
-+					<row>
-+						<entry><literal>sidebar_format</literal></entry>
-+						<entry>string</entry>
-+						<entry><literal>%B%?F? [%F]?%* %?N?%N/?%S</literal></entry>
-+					</row>
-+					<row>
-+						<entry><literal>sidebar_indent_string</literal></entry>
-+						<entry>string</entry>
-+						<entry><literal>&nbsp;&nbsp;</literal> (two spaces)</entry>
-+					</row>
-+					<row>
-+						<entry><literal>sidebar_new_mail_only</literal></entry>
-+						<entry>boolean</entry>
-+						<entry><literal>no</literal></entry>
-+					</row>
-+					<row>
-+						<entry><literal>sidebar_next_new_wrap</literal></entry>
-+						<entry>boolean</entry>
-+						<entry><literal>no</literal></entry>
-+					</row>
-+					<row>
-+						<entry><literal>sidebar_refresh_time</literal></entry>
-+						<entry>number</entry>
-+						<entry><literal>60</literal></entry>
-+					</row>
-+					<row>
-+						<entry><literal>sidebar_short_path</literal></entry>
-+						<entry>boolean</entry>
-+						<entry><literal>no</literal></entry>
-+					</row>
-+					<row>
-+						<entry><literal>sidebar_sort_method</literal></entry>
-+						<entry>enum</entry>
-+						<entry><literal>SORT_ORDER</literal></entry>
-+					</row>
-+					<row>
-+						<entry><literal>sidebar_visible</literal></entry>
-+						<entry>boolean</entry>
-+						<entry><literal>no</literal></entry>
-+					</row>
-+					<row>
-+						<entry><literal>sidebar_whitelist</literal></entry>
-+						<entry>list</entry>
-+						<entry>(empty)</entry>
-+					</row>
-+					<row>
-+						<entry><literal>sidebar_width</literal></entry>
-+						<entry>number</entry>
-+						<entry><literal>20</literal></entry>
-+					</row>
-+				</tbody>
-+			</tgroup>
-+		</table>
-+	</sect2>
++    <table id="table-sidebar-variables">
++      <title>Sidebar Variables</title>
++      <tgroup cols="3">
++	<thead>
++	  <row>
++	    <entry>Name</entry>
++	    <entry>Type</entry>
++	    <entry>Default</entry>
++	  </row>
++	</thead>
++	<tbody>
++	  <row>
++	    <entry><literal>sidebar_delim_chars</literal></entry>
++	    <entry>string</entry>
++	    <entry><literal>/.</literal></entry>
++	  </row>
++	  <row>
++	    <entry><literal>sidebar_divider_char</literal></entry>
++	    <entry>string</entry>
++	    <entry><literal>|</literal></entry>
++	  </row>
++	  <row>
++	    <entry><literal>sidebar_folder_indent</literal></entry>
++	    <entry>boolean</entry>
++	    <entry><literal>no</literal></entry>
++	  </row>
++	  <row>
++	    <entry><literal>sidebar_format</literal></entry>
++	    <entry>string</entry>
++	    <entry><literal>%B%*  %n</literal></entry>
++	  </row>
++	  <row>
++	    <entry><literal>sidebar_indent_string</literal></entry>
++	    <entry>string</entry>
++	    <entry><literal>&nbsp;&nbsp;</literal> (two spaces)</entry>
++	  </row>
++	  <row>
++	    <entry><literal>sidebar_new_mail_only</literal></entry>
++	    <entry>boolean</entry>
++	    <entry><literal>no</literal></entry>
++	  </row>
++	  <row>
++	    <entry><literal>sidebar_next_new_wrap</literal></entry>
++	    <entry>boolean</entry>
++	    <entry><literal>no</literal></entry>
++	  </row>
++	  <row>
++	    <entry><literal>sidebar_short_path</literal></entry>
++	    <entry>boolean</entry>
++	    <entry><literal>no</literal></entry>
++	  </row>
++	  <row>
++	    <entry><literal>sidebar_sort_method</literal></entry>
++	    <entry>enum</entry>
++	    <entry><literal>unsorted</literal></entry>
++	  </row>
++	  <row>
++	    <entry><literal>sidebar_visible</literal></entry>
++	    <entry>boolean</entry>
++	    <entry><literal>no</literal></entry>
++	  </row>
++	  <row>
++	    <entry><literal>sidebar_whitelist</literal></entry>
++	    <entry>list</entry>
++	    <entry>(empty)</entry>
++	  </row>
++	  <row>
++	    <entry><literal>sidebar_width</literal></entry>
++	    <entry>number</entry>
++	    <entry><literal>20</literal></entry>
++	  </row>
++	</tbody>
++      </tgroup>
++    </table>
++  </sect2>
 +
-+	<sect2 id="sidebar-functions">
-+		<title>Functions</title>
++  <sect2 id="sidebar-functions">
++    <title>Functions</title>
 +
-+		<para>
-+			Sidebar adds the following functions to Mutt.
-+			By default, none of them are bound to keys.
-+		</para>
++    <para>
++      Sidebar adds the following functions to Mutt.
++      By default, none of them are bound to keys.
++    </para>
 +
-+		<table id="table-sidebar-functions">
-+			<title>Sidebar Functions</title>
-+			<tgroup cols="3">
-+				<thead>
-+					<row>
-+						<entry>Menus</entry>
-+						<entry>Function</entry>
-+						<entry>Description</entry>
-+					</row>
-+				</thead>
-+				<tbody>
-+					<row>
-+						<entry>index,pager</entry>
-+						<entry><literal>&lt;sidebar-next&gt;</literal></entry>
-+						<entry>Move the highlight to next mailbox</entry>
-+					</row>
-+					<row>
-+						<entry>index,pager</entry>
-+						<entry><literal>&lt;sidebar-next-new&gt;</literal></entry>
-+						<entry>Move the highlight to next mailbox with new mail</entry>
-+					</row>
-+					<row>
-+						<entry>index,pager</entry>
-+						<entry><literal>&lt;sidebar-open&gt;</literal></entry>
-+						<entry>Open highlighted mailbox</entry>
-+					</row>
-+					<row>
-+						<entry>index,pager</entry>
-+						<entry><literal>&lt;sidebar-page-down&gt;</literal></entry>
-+						<entry>Scroll the Sidebar down 1 page</entry>
-+					</row>
-+					<row>
-+						<entry>index,pager</entry>
-+						<entry><literal>&lt;sidebar-page-up&gt;</literal></entry>
-+						<entry>Scroll the Sidebar up 1 page</entry>
-+					</row>
-+					<row>
-+						<entry>index,pager</entry>
-+						<entry><literal>&lt;sidebar-prev&gt;</literal></entry>
-+						<entry>Move the highlight to previous mailbox</entry>
-+					</row>
-+					<row>
-+						<entry>index,pager</entry>
-+						<entry><literal>&lt;sidebar-prev-new&gt;</literal></entry>
-+						<entry>Move the highlight to previous mailbox with new mail</entry>
-+					</row>
-+					<row>
-+						<entry>index,pager</entry>
-+						<entry><literal>&lt;sidebar-toggle-visible&gt;</literal></entry>
-+						<entry>Make the Sidebar (in)visible</entry>
-+					</row>
-+				</tbody>
-+			</tgroup>
-+		</table>
-+	</sect2>
++    <table id="table-sidebar-functions">
++      <title>Sidebar Functions</title>
++      <tgroup cols="3">
++        <thead>
++          <row>
++            <entry>Menus</entry>
++            <entry>Function</entry>
++            <entry>Description</entry>
++          </row>
++        </thead>
++        <tbody>
++          <row>
++            <entry>index,pager</entry>
++            <entry><literal>&lt;sidebar-next&gt;</literal></entry>
++            <entry>Move the highlight to next mailbox</entry>
++          </row>
++          <row>
++            <entry>index,pager</entry>
++            <entry><literal>&lt;sidebar-next-new&gt;</literal></entry>
++            <entry>Move the highlight to next mailbox with new mail</entry>
++          </row>
++          <row>
++            <entry>index,pager</entry>
++            <entry><literal>&lt;sidebar-open&gt;</literal></entry>
++            <entry>Open highlighted mailbox</entry>
++          </row>
++          <row>
++            <entry>index,pager</entry>
++            <entry><literal>&lt;sidebar-page-down&gt;</literal></entry>
++            <entry>Scroll the Sidebar down 1 page</entry>
++          </row>
++          <row>
++            <entry>index,pager</entry>
++            <entry><literal>&lt;sidebar-page-up&gt;</literal></entry>
++            <entry>Scroll the Sidebar up 1 page</entry>
++          </row>
++          <row>
++            <entry>index,pager</entry>
++            <entry><literal>&lt;sidebar-prev&gt;</literal></entry>
++            <entry>Move the highlight to previous mailbox</entry>
++          </row>
++          <row>
++            <entry>index,pager</entry>
++            <entry><literal>&lt;sidebar-prev-new&gt;</literal></entry>
++            <entry>Move the highlight to previous mailbox with new mail</entry>
++          </row>
++          <row>
++            <entry>index,pager</entry>
++            <entry><literal>&lt;sidebar-toggle-visible&gt;</literal></entry>
++            <entry>Make the Sidebar (in)visible</entry>
++          </row>
++        </tbody>
++      </tgroup>
++    </table>
++  </sect2>
 +
-+	<sect2 id="sidebar-commands">
-+		<title>Commands</title>
-+		<cmdsynopsis>
-+			<command>sidebar_whitelist</command>
-+			<arg choice="plain">
-+				<replaceable class="parameter">mailbox</replaceable>
-+			</arg>
-+			<arg choice="opt" rep="repeat">
-+				<replaceable class="parameter">mailbox</replaceable>
-+			</arg>
-+		</cmdsynopsis>
-+	</sect2>
++  <sect2 id="sidebar-commands">
++    <title>Commands</title>
++    <cmdsynopsis>
++      <command>sidebar_whitelist<anchor id="sidebar-whitelist"/></command>
++      <arg choice="plain">
++        <replaceable class="parameter">mailbox</replaceable>
++      </arg>
++      <arg choice="opt" rep="repeat">
++        <replaceable class="parameter">mailbox</replaceable>
++      </arg>
++    </cmdsynopsis>
++  </sect2>
 +
-+	<sect2 id="sidebar-colors">
-+		<title>Colors</title>
++  <sect2 id="sidebar-colors">
++    <title>Colors</title>
 +
-+		<table id="table-sidebar-colors">
-+			<title>Sidebar Colors</title>
-+			<tgroup cols="3">
-+				<thead>
-+					<row>
-+						<entry>Name</entry>
-+						<entry>Default Color</entry>
-+						<entry>Description</entry>
-+					</row>
-+				</thead>
-+				<tbody>
-+					<row>
-+						<entry><literal>sidebar_divider</literal></entry>
-+						<entry>default</entry>
-+						<entry>The dividing line between the Sidebar and the Index/Pager panels</entry>
-+					</row>
-+					<row>
-+						<entry><literal>sidebar_flagged</literal></entry>
-+						<entry>default</entry>
-+						<entry>Mailboxes containing flagged mail</entry>
-+					</row>
-+					<row>
-+						<entry><literal>sidebar_highlight</literal></entry>
-+						<entry>underline</entry>
-+						<entry>Cursor to select a mailbox</entry>
-+					</row>
-+					<row>
-+						<entry><literal>sidebar_indicator</literal></entry>
-+						<entry>mutt <literal>indicator</literal></entry>
-+						<entry>The mailbox open in the Index panel</entry>
-+					</row>
-+					<row>
-+						<entry><literal>sidebar_new</literal></entry>
-+						<entry>default</entry>
-+						<entry>Mailboxes containing new mail</entry>
-+					</row>
-+					<row>
-+						<entry><literal>sidebar_spoolfile</literal></entry>
-+						<entry>default</entry>
-+						<entry>Mailbox that receives incoming mail</entry>
-+					</row>
-+				</tbody>
-+			</tgroup>
-+		</table>
++    <table id="table-sidebar-colors">
++      <title>Sidebar Colors</title>
++      <tgroup cols="3">
++        <thead>
++          <row>
++            <entry>Name</entry>
++            <entry>Default Color</entry>
++            <entry>Description</entry>
++          </row>
++        </thead>
++        <tbody>
++          <row>
++            <entry><literal>sidebar_divider</literal></entry>
++            <entry>default</entry>
++            <entry>The dividing line between the Sidebar and the Index/Pager panels</entry>
++          </row>
++          <row>
++            <entry><literal>sidebar_flagged</literal></entry>
++            <entry>default</entry>
++            <entry>Mailboxes containing flagged mail</entry>
++          </row>
++          <row>
++            <entry><literal>sidebar_highlight</literal></entry>
++            <entry>underline</entry>
++            <entry>Cursor to select a mailbox</entry>
++          </row>
++          <row>
++            <entry><literal>sidebar_indicator</literal></entry>
++            <entry>mutt <literal>indicator</literal></entry>
++            <entry>The mailbox open in the Index panel</entry>
++          </row>
++          <row>
++            <entry><literal>sidebar_new</literal></entry>
++            <entry>default</entry>
++            <entry>Mailboxes containing new mail</entry>
++          </row>
++          <row>
++            <entry><literal>sidebar_spoolfile</literal></entry>
++            <entry>default</entry>
++            <entry>Mailbox that receives incoming mail</entry>
++          </row>
++        </tbody>
++      </tgroup>
++    </table>
 +
-+		If the <literal>sidebar_indicator</literal> color isn't set, then the default Mutt
-+		indicator color will be used (the color used in the index panel).
-+	</sect2>
++    <para>
++    If the <literal>sidebar_indicator</literal> color isn't set, then the default Mutt
++    indicator color will be used (the color used in the index panel).
++    </para>
++  </sect2>
 +
-+	<sect2 id="sidebar-sort">
-+		<title>Sort</title>
++  <sect2 id="sidebar-sort">
++    <title>Sort</title>
 +
-+		<table id="table-sidebar-sort">
-+			<title>Sidebar Sort</title>
-+			<tgroup cols="2">
-+				<thead>
-+					<row>
-+						<entry>Sort</entry>
-+						<entry>Description</entry>
-+					</row>
-+				</thead>
-+				<tbody>
-+					<row>
-+						<entry><literal>alpha</literal></entry>
-+						<entry>Alphabetically by path</entry>
-+					</row>
-+					<row>
-+						<entry><literal>count</literal></entry>
-+						<entry>Total number of messages</entry>
-+					</row>
-+					<row>
-+						<entry><literal>flagged</literal></entry>
-+						<entry>Number of flagged messages</entry>
-+					</row>
-+					<row>
-+						<entry><literal>name</literal></entry>
-+						<entry>Alphabetically by path</entry>
-+					</row>
-+					<row>
-+						<entry><literal>new</literal></entry>
-+						<entry>Number of new messages</entry>
-+					</row>
-+					<row>
-+						<entry><literal>path</literal></entry>
-+						<entry>Alphabetically by path</entry>
-+					</row>
-+					<row>
-+						<entry><literal>unsorted</literal></entry>
-+						<entry>Do not resort the paths</entry>
-+					</row>
-+				</tbody>
-+			</tgroup>
-+		</table>
-+	</sect2>
++    <table id="table-sidebar-sort">
++      <title>Sidebar Sort</title>
++      <tgroup cols="2">
++        <thead>
++          <row>
++            <entry>Sort</entry>
++            <entry>Description</entry>
++          </row>
++        </thead>
++        <tbody>
++          <row>
++            <entry><literal>alpha</literal></entry>
++            <entry>Alphabetically by path</entry>
++          </row>
++          <row>
++            <entry><literal>count</literal></entry>
++            <entry>Total number of messages</entry>
++          </row>
++          <row>
++            <entry><literal>flagged</literal></entry>
++            <entry>Number of flagged messages</entry>
++          </row>
++          <row>
++            <entry><literal>name</literal></entry>
++            <entry>Alphabetically by path</entry>
++          </row>
++          <row>
++            <entry><literal>new</literal></entry>
++            <entry>Number of new messages</entry>
++          </row>
++          <row>
++            <entry><literal>path</literal></entry>
++            <entry>Alphabetically by path</entry>
++          </row>
++          <row>
++            <entry><literal>unsorted</literal></entry>
++            <entry>Do not resort the paths</entry>
++          </row>
++        </tbody>
++      </tgroup>
++    </table>
++  </sect2>
 +
-+	<sect2 id="sidebar-muttrc">
-+		<title>Muttrc</title>
++  <sect2 id="sidebar-muttrc">
++    <title>Muttrc</title>
 +<screen>
 +<emphasis role="comment"># This is a complete list of sidebar-related configuration.
 + 
@@ -2055,46 +2397,46 @@ index a134c42..676ed6a 100644
 + 
 +# vim: syntax=muttrc</emphasis>
 +</screen>
-+	</sect2>
++  </sect2>
 +
-+	<sect2 id="sidebar-see-also">
-+		<title>See Also</title>
++  <sect2 id="sidebar-see-also">
++    <title>See Also</title>
 +
-+		<itemizedlist>
-+			<listitem><para><link linkend="regexp">Regular Expressions</link></para></listitem>
-+			<listitem><para><link linkend="patterns">Patterns</link></para></listitem>
-+			<listitem><para><link linkend="color">Color command</link></para></listitem>
-+			<listitem><para><link linkend="notmuch">notmuch patch</link></para></listitem>
-+		</itemizedlist>
-+	</sect2>
++    <itemizedlist>
++      <listitem><para><link linkend="regexp">Regular Expressions</link></para></listitem>
++      <listitem><para><link linkend="patterns">Patterns</link></para></listitem>
++      <listitem><para><link linkend="color">Color command</link></para></listitem>
++      <listitem><para><link linkend="notmuch">notmuch patch</link></para></listitem>
++    </itemizedlist>
++  </sect2>
 +
-+	<sect2 id="sidebar-known-bugs">
-+		<title>Known Bugs</title>
-+		Unsorted isn't
-+	</sect2>
++  <sect2 id="sidebar-known-bugs">
++    <title>Known Bugs</title>
++    Unsorted isn't
++  </sect2>
 +
-+	<sect2 id="sidebar-credits">
-+		<title>Credits</title>
-+		<itemizedlist>
-+		<listitem><para>Justin Hibbits <email>jrh29@po.cwru.edu</email></para></listitem>
-+		<listitem><para>Thomer M. Gil <email>mutt@thomer.com</email></para></listitem>
-+		<listitem><para>David Sterba <email>dsterba@suse.cz</email></para></listitem>
-+		<listitem><para>Evgeni Golov <email>evgeni@debian.org</email></para></listitem>
-+		<listitem><para>Fabian Groffen <email>grobian@gentoo.org</email></para></listitem>
-+		<listitem><para>Jason DeTiberus <email>jdetiber@redhat.com</email></para></listitem>
-+		<listitem><para>Stefan Assmann <email>sassmann@kpanic.de</email></para></listitem>
-+		<listitem><para>Steve Kemp <email>steve@steve.org.uk</email></para></listitem>
-+		<listitem><para>Terry Chan <email>tchan@lunar-linux.org</email></para></listitem>
-+		<listitem><para>Tyler Earnest <email>tylere@rne.st</email></para></listitem>
-+		<listitem><para>Richard Russon <email>rich@flatcap.org</email></para></listitem>
-+		</itemizedlist>
-+	</sect2>
++  <sect2 id="sidebar-credits">
++    <title>Credits</title>
++    <itemizedlist>
++    <listitem><para>Justin Hibbits <email>jrh29@po.cwru.edu</email></para></listitem>
++    <listitem><para>Thomer M. Gil <email>mutt@thomer.com</email></para></listitem>
++    <listitem><para>David Sterba <email>dsterba@suse.cz</email></para></listitem>
++    <listitem><para>Evgeni Golov <email>evgeni@debian.org</email></para></listitem>
++    <listitem><para>Fabian Groffen <email>grobian@gentoo.org</email></para></listitem>
++    <listitem><para>Jason DeTiberus <email>jdetiber@redhat.com</email></para></listitem>
++    <listitem><para>Stefan Assmann <email>sassmann@kpanic.de</email></para></listitem>
++    <listitem><para>Steve Kemp <email>steve@steve.org.uk</email></para></listitem>
++    <listitem><para>Terry Chan <email>tchan@lunar-linux.org</email></para></listitem>
++    <listitem><para>Tyler Earnest <email>tylere@rne.st</email></para></listitem>
++    <listitem><para>Richard Russon <email>rich@flatcap.org</email></para></listitem>
++    </itemizedlist>
++  </sect2>
 +</sect1>
 +
  <sect1 id="trash-folder">
  	<title>Trash Folder Patch</title>
  	<subtitle>Automatically move "deleted" emails to a trash bin</subtitle>
-@@ -10802,6 +11893,17 @@ <sect1 id="commands">
+@@ -10813,6 +11929,17 @@ <sect1 id="commands">
  
  <listitem>
  <cmdsynopsis>
@@ -2148,7 +2490,7 @@ index 5a37b3c..d7ff017 100644
 +span.reverse { background: #ffffff; color: #000000; }
 diff --git a/doc/muttrc.sidebar b/doc/muttrc.sidebar
 new file mode 100644
-index 0000000..1b5cda7
+index 0000000..f21db26
 --- /dev/null
 +++ b/doc/muttrc.sidebar
 @@ -0,0 +1,116 @@
@@ -2197,12 +2539,12 @@ index 0000000..1b5cda7
 +# Note: Only the first character of this string is used.
 +set sidebar_divider_char = '|'
 +
++# Enable extended buffy mode to calculate total, new, and flagged
++# message counts for each mailbox.
++set mail_check_stats
++
 +# Display the Sidebar mailboxes using this format string.
 +set sidebar_format = '%B%?F? [%F]?%* %?N?%N/?%S'
-+
-+# Sidebar will not refresh its list of mailboxes any more frequently than
-+# this number of seconds.  This will help reduce disk/network traffic.
-+set sidebar_refresh_time = 60
 +
 +# Sort the mailboxes in the Sidebar using this method:
 +#       count    - total number of messages
@@ -2310,60 +2652,35 @@ index 0000000..c5be50d
 +
 +" vim: syntax=vim
 diff --git a/filter.c b/filter.c
-index 91a4d75..a8dc2f5 100644
+index 74df102..a8dc2f5 100644
 --- a/filter.c
 +++ b/filter.c
-@@ -21,6 +21,7 @@
- #endif
- 
- #include "mutt.h"
-+#include "mutt_curses.h"
- 
- #include <unistd.h>
- #include <stdlib.h>
-@@ -34,6 +35,7 @@ mutt_create_filter_fd (const char *cmd, FILE **in, FILE **out, FILE **err,
- 		       int fdin, int fdout, int fderr)
- {
-   int pin[2], pout[2], perr[2], thepid;
-+  char columns[11];
- 
-   if (in)
-   {
-@@ -117,6 +119,9 @@ mutt_create_filter_fd (const char *cmd, FILE **in, FILE **out, FILE **err,
+@@ -119,7 +119,7 @@ mutt_create_filter_fd (const char *cmd, FILE **in, FILE **out, FILE **err,
        close (fderr);
      }
  
+-    snprintf (columns, sizeof (columns), "%d", COLS);
 +    snprintf (columns, sizeof (columns), "%d", COLS - SidebarWidth);
-+    setenv ("COLUMNS", columns, 1);
-+
+     setenv ("COLUMNS", columns, 1);
+ 
      execl (EXECSHELL, "sh", "-c", cmd, NULL);
-     _exit (127);
-   }
 diff --git a/flags.c b/flags.c
-index 7ddb20a..4b5ae66 100644
+index 7ddb20a..1354bb7 100644
 --- a/flags.c
 +++ b/flags.c
-@@ -25,6 +25,10 @@
- #include "sort.h"
- #include "mx.h"
+@@ -282,7 +282,12 @@ void _mutt_set_flag (CONTEXT *ctx, HEADER *h, int flag, int bf, int upd_ctx)
+   }
  
+   if (update)
++  {
+     mutt_set_header_color(ctx, h);
 +#ifdef USE_SIDEBAR
-+#include "sidebar.h"
++    SidebarNeedsRedraw = 1;
 +#endif
-+
- void _mutt_set_flag (CONTEXT *ctx, HEADER *h, int flag, int bf, int upd_ctx)
- {
-   int changed = h->changed;
-@@ -290,6 +294,9 @@ void _mutt_set_flag (CONTEXT *ctx, HEADER *h, int flag, int bf, int upd_ctx)
-    */
-   if (h->searched && (changed != h->changed || deleted != ctx->deleted || tagged != ctx->tagged || flagged != ctx->flagged))
-     h->searched = 0;
-+#ifdef USE_SIDEBAR
-+  mutt_sb_draw();
-+#endif
- }
++  }
  
- void mutt_tag_set_flag (int flag, int bf)
+   /* if the message status has changed, we need to invalidate the cached
+    * search results so that any future search will match the current status
 diff --git a/functions.h b/functions.h
 index a29388c..f898717 100644
 --- a/functions.h
@@ -2404,7 +2721,7 @@ index a29388c..f898717 100644
  };
  
 diff --git a/globals.h b/globals.h
-index 241758d..c4a77ca 100644
+index 241758d..d81166b 100644
 --- a/globals.h
 +++ b/globals.h
 @@ -118,6 +118,12 @@ WHERE short SearchContext;
@@ -2420,61 +2737,174 @@ index 241758d..c4a77ca 100644
  WHERE char *Signature;
  WHERE char *SimpleSearch;
  #if USE_SMTP
-@@ -215,6 +221,14 @@ WHERE short ScoreThresholdDelete;
+@@ -215,6 +221,12 @@ WHERE short ScoreThresholdDelete;
  WHERE short ScoreThresholdRead;
  WHERE short ScoreThresholdFlag;
  
-+/* This isn't excluded from the build because it's too entwined in the code.
-+ * For now. */
-+WHERE short SidebarWidth;
++WHERE short SidebarWidth INITVAL(0);
 +#ifdef USE_SIDEBAR
-+WHERE short SidebarRefreshTime;
 +WHERE LIST *SidebarWhitelist INITVAL(0);
++WHERE int SidebarNeedsRedraw INITVAL (0);
 +#endif
 +
  #ifdef USE_IMAP
  WHERE short ImapKeepalive;
  WHERE short ImapPipelineDepth;
+diff --git a/hdrline.c b/hdrline.c
+index 0d332bd..5434d50 100644
+--- a/hdrline.c
++++ b/hdrline.c
+@@ -237,6 +237,7 @@ static const char *
+ hdr_format_str (char *dest,
+ 		size_t destlen,
+ 		size_t col,
++                int cols,
+ 		char op,
+ 		const char *src,
+ 		const char *prefix,
+@@ -850,9 +851,9 @@ hdr_format_str (char *dest,
+   }
+ 
+   if (optional)
+-    mutt_FormatString (dest, destlen, col, ifstring, hdr_format_str, (unsigned long) hfi, flags);
++    mutt_FormatString (dest, destlen, col, cols, ifstring, hdr_format_str, (unsigned long) hfi, flags);
+   else if (flags & M_FORMAT_OPTIONAL)
+-    mutt_FormatString (dest, destlen, col, elsestring, hdr_format_str, (unsigned long) hfi, flags);
++    mutt_FormatString (dest, destlen, col, cols, elsestring, hdr_format_str, (unsigned long) hfi, flags);
+ 
+   return (src);
+ #undef THREAD_NEW
+@@ -868,11 +869,11 @@ _mutt_make_string (char *dest, size_t destlen, const char *s, CONTEXT *ctx, HEAD
+   hfi.ctx = ctx;
+   hfi.pager_progress = 0;
+ 
+-  mutt_FormatString (dest, destlen, 0, s, hdr_format_str, (unsigned long) &hfi, flags);
++  mutt_FormatString (dest, destlen, 0, COLS - SidebarWidth, s, hdr_format_str, (unsigned long) &hfi, flags);
+ }
+ 
+ void
+ mutt_make_string_info (char *dst, size_t dstlen, const char *s, struct hdr_format_info *hfi, format_flag flags)
+ {
+-  mutt_FormatString (dst, dstlen, 0, s, hdr_format_str, (unsigned long) hfi, flags);
++  mutt_FormatString (dst, dstlen, 0, COLS - SidebarWidth, s, hdr_format_str, (unsigned long) hfi, flags);
+ }
 diff --git a/imap/command.c b/imap/command.c
-index d99a99a..82c992c 100644
+index d99a99a..b5c896d 100644
 --- a/imap/command.c
 +++ b/imap/command.c
-@@ -1016,6 +1016,14 @@ static void cmd_parse_status (IMAP_DATA* idata, char* s)
- 	     opened */
- 	  status->uidnext = oldun;
+@@ -900,6 +900,7 @@ static void cmd_parse_status (IMAP_DATA* idata, char* s)
+   IMAP_STATUS *status;
+   unsigned int olduv, oldun;
+   long litlen;
++  short new = 0;
  
-+#ifdef USE_SIDEBAR
-+	/* Make the sidebar show the correct numbers */
-+	if (status->messages) {
-+	  inc->msg_count  = status->messages;
-+	  inc->msg_unread = status->unseen;
-+	}
-+#endif
+   mailbox = imap_next_word (s);
+ 
+@@ -1000,16 +1001,26 @@ static void cmd_parse_status (IMAP_DATA* idata, char* s)
+ 	  if (olduv && olduv == status->uidvalidity)
+ 	  {
+ 	    if (oldun < status->uidnext)
+-	      inc->new = status->unseen;
++	      new = (status->unseen > 0);
+ 	  }
+ 	  else if (!olduv && !oldun)
+ 	    /* first check per session, use recent. might need a flag for this. */
+-	    inc->new = status->recent;
++	    new = (status->recent > 0);
+ 	  else
+-	    inc->new = status->unseen;
++	    new = (status->unseen > 0);
+ 	}
+ 	else
+-          inc->new = status->unseen;
++          new = (status->unseen > 0);
 +
-         FREE (&value);
-         return;
-       }
++#ifdef USE_SIDEBAR
++        if ((inc->new != new) ||
++            (inc->msg_count != status->messages) ||
++            (inc->msg_unread != status->unseen))
++          SidebarNeedsRedraw = 1;
++#endif
++        inc->new = new;
++        inc->msg_count  = status->messages;
++        inc->msg_unread = status->unseen;
+ 
+ 	if (inc->new)
+ 	  /* force back to keep detecting new mail until the mailbox is
 diff --git a/imap/imap.c b/imap/imap.c
-index af7607b..7655a5f 100644
+index 2f55b8a..2cd64a6 100644
 --- a/imap/imap.c
 +++ b/imap/imap.c
-@@ -1541,7 +1541,11 @@ int imap_buffy_check (int force)
+@@ -589,7 +589,9 @@ int imap_open_mailbox (CONTEXT* ctx)
+   imap_qualify_path (buf, sizeof (buf), &mx, idata->mailbox);
+ 
+   FREE (&(ctx->path));
++  FREE (&(ctx->realpath));
+   ctx->path = safe_strdup (buf);
++  ctx->realpath = safe_strdup (ctx->path);
+ 
+   idata->ctx = ctx;
+ 
+@@ -1485,7 +1487,7 @@ static int imap_get_mailbox (const char* path, IMAP_DATA** hidata, char* buf, si
+ /* check for new mail in any subscribed mailboxes. Given a list of mailboxes
+  * rather than called once for each so that it can batch the commands and
+  * save on round trips. Returns number of mailboxes with new mail. */
+-int imap_buffy_check (int force)
++int imap_buffy_check (int force, int check_stats)
+ {
+   IMAP_DATA* idata;
+   IMAP_DATA* lastdata = NULL;
+@@ -1507,8 +1509,6 @@ int imap_buffy_check (int force)
+     if (mailbox->magic != M_IMAP)
+       continue;
+ 
+-    mailbox->new = 0;
+-
+     if (imap_get_mailbox (mailbox->path, &idata, name, sizeof (name)) < 0)
+     {
+       mailbox->new = 0;
+@@ -1546,7 +1546,11 @@ int imap_buffy_check (int force)
+       lastdata = idata;
  
      imap_munge_mbox_name (idata, munged, sizeof (munged), name);
-     snprintf (command, sizeof (command),
-+#ifdef USE_SIDEBAR
+-    snprintf (command, sizeof (command),
++    if (check_stats)
++      snprintf (command, sizeof (command),
 +	      "STATUS %s (UIDNEXT UIDVALIDITY UNSEEN RECENT MESSAGES)", munged);
-+#else
++    else
++      snprintf (command, sizeof (command),
  	      "STATUS %s (UIDNEXT UIDVALIDITY UNSEEN RECENT)", munged);
-+#endif
  
      if (imap_exec (idata, command, IMAP_CMD_QUEUE) < 0)
-     {
+diff --git a/imap/imap.h b/imap/imap.h
+index a8f762b..4fc8ab3 100644
+--- a/imap/imap.h
++++ b/imap/imap.h
+@@ -39,7 +39,7 @@ int imap_open_mailbox (CONTEXT *ctx);
+ int imap_open_mailbox_append (CONTEXT *ctx);
+ int imap_sync_mailbox (CONTEXT *ctx, int expunge, int *index_hint);
+ int imap_close_mailbox (CONTEXT *ctx);
+-int imap_buffy_check (int force);
++int imap_buffy_check (int force, int check_stats);
+ int imap_status (char *path, int queue);
+ int imap_search (CONTEXT* ctx, const pattern_t* pat);
+ int imap_subscribe (char *path, int subscribe);
 diff --git a/init.c b/init.c
-index c10f448..0113e7d 100644
+index c10f448..b2023bc 100644
 --- a/init.c
 +++ b/init.c
-@@ -2281,6 +2281,9 @@ static int parse_set (BUFFER *tmp, BUFFER *s, unsigned long data, BUFFER *err)
+@@ -1719,6 +1719,10 @@ static void mutt_restore_default (struct option_t *p)
+     set_option (OPTRESORTINIT);
+   if (p->flags & R_TREE)
+     set_option (OPTREDRAWTREE);
++#ifdef USE_SIDEBAR
++  if (p->flags & R_SIDEBAR)
++    SidebarNeedsRedraw = 1;
++#endif
+ }
+ 
+ static size_t escape_string (char *dst, size_t len, const char* src)
+@@ -2281,6 +2285,9 @@ static int parse_set (BUFFER *tmp, BUFFER *s, unsigned long data, BUFFER *err)
  	case DT_SORT_AUX:
  	  map = SortAuxMethods;
  	  break;
@@ -2484,8 +2914,19 @@ index c10f448..0113e7d 100644
  	default:
  	  map = SortMethods;
  	  break;
+@@ -2334,6 +2341,10 @@ static int parse_set (BUFFER *tmp, BUFFER *s, unsigned long data, BUFFER *err)
+         set_option (OPTRESORTINIT);
+       if (MuttVars[idx].flags & R_TREE)
+         set_option (OPTREDRAWTREE);
++#ifdef USE_SIDEBAR
++      if (MuttVars[idx].flags & R_SIDEBAR)
++        SidebarNeedsRedraw = 1;
++#endif
+     }
+   }
+   return (r);
 diff --git a/init.h b/init.h
-index 1412532..0af3a8f 100644
+index 879c368..0b565a8 100644
 --- a/init.h
 +++ b/init.h
 @@ -42,11 +42,12 @@
@@ -2502,19 +2943,51 @@ index 1412532..0af3a8f 100644
  
  /* flags to parse_set() */
  #define M_SET_INV	(1<<0)	/* default is to invert all vars */
-@@ -2669,6 +2670,148 @@ struct option_t MuttVars[] = {
+@@ -61,6 +62,8 @@
+ #define R_RESORT_SUB	(1<<3)	/* resort subthreads */
+ #define R_RESORT_INIT	(1<<4)  /* resort from scratch */
+ #define R_TREE		(1<<5)  /* redraw the thread tree */
++#define R_REFLOW        (1<<6)  /* reflow window layout */
++#define R_SIDEBAR       (1<<7)  /* redraw the sidebar */
+ #define R_BOTH		(R_INDEX | R_PAGER)
+ #define R_RESORT_BOTH	(R_RESORT | R_RESORT_SUB)
+ 
+@@ -1411,6 +1414,22 @@ struct option_t MuttVars[] = {
+   ** When \fI$$mark_old\fP is set, Mutt does not consider the mailbox to contain new
+   ** mail if only old messages exist.
+   */
++  { "mail_check_stats", DT_BOOL, R_NONE, OPTMAILCHECKSTATS, 0 },
++  /*
++  ** .pp
++  ** When \fIset\fP, mutt will periodically calculate message
++  ** statistics of a mailbox while polling for new mail.  It will
++  ** check for unread, flagged, and total message counts.  Because
++  ** this operation is more performance intensive, it defaults to
++  ** \fIunset\fP, and has a separate option, $$mail_check_stats_interval, to
++  ** control how often to update these counts.
++  */
++  { "mail_check_stats_interval", DT_NUM, R_NONE, UL &BuffyCheckStatsInterval, 60 },
++  /*
++  ** .pp
++  ** When $$mail_check_stats is \fIset\fP, this variable configures
++  ** how often (in seconds) mutt will update message counts.
++  */
+   { "mailcap_path",	DT_STR,	 R_NONE, UL &MailcapPath, 0 },
+   /*
+   ** .pp
+@@ -2669,6 +2688,142 @@ struct option_t MuttVars[] = {
    ** Command to use when spawning a subshell.  By default, the user's login
    ** shell from \fC/etc/passwd\fP is used.
    */
 +#ifdef USE_SIDEBAR
-+  { "sidebar_divider_char", DT_STR, R_BOTH, UL &SidebarDividerChar, UL "|" },
++  { "sidebar_divider_char", DT_STR, R_SIDEBAR, UL &SidebarDividerChar, UL "|" },
 +  /*
 +  ** .pp
 +  ** This specifies the characters to be drawn between the sidebar (when
 +  ** visible) and the other Mutt panels. ASCII and Unicode line-drawing
 +  ** characters are supported.
 +  */
-+  { "sidebar_delim_chars", DT_STR, R_NONE, UL &SidebarDelimChars, UL "/." },
++  { "sidebar_delim_chars", DT_STR, R_SIDEBAR, UL &SidebarDelimChars, UL "/." },
 +  /*
 +  ** .pp
 +  ** This contains the list of characters which you would like to treat
@@ -2532,14 +3005,14 @@ index 1412532..0af3a8f 100644
 +  ** .pp
 +  ** \fBSee also:\fP $$sidebar_short_path, $$sidebar_folder_indent, $$sidebar_indent_string.
 +  */
-+  { "sidebar_folder_indent", DT_BOOL, R_BOTH, OPTSIDEBARFOLDERINDENT, 0 },
++  { "sidebar_folder_indent", DT_BOOL, R_SIDEBAR, OPTSIDEBARFOLDERINDENT, 0 },
 +  /*
 +  ** .pp
 +  ** Set this to indent mailboxes in the sidebar.
 +  ** .pp
 +  ** \fBSee also:\fP $$sidebar_short_path, $$sidebar_indent_string, $$sidebar_delim_chars.
 +  */
-+  { "sidebar_format", DT_STR, R_NONE, UL &SidebarFormat, UL "%B%?F? [%F]?%* %?N?%N/?%S" },
++  { "sidebar_format", DT_STR, R_SIDEBAR, UL &SidebarFormat, UL "%B%*  %n" },
 +  /*
 +  ** .pp
 +  ** This variable allows you to customize the sidebar display. This string is
@@ -2565,8 +3038,12 @@ index 1412532..0af3a8f 100644
 +  ** .pp
 +  ** * = Can be optionally printed if nonzero
 +  ** @ = Only applicable to the current folder
++  ** .pp
++  ** In order to use %S, %N, %F, and %!, $$mail_check_stats must
++  ** be \fIset\fP.  When thus set, a suggested value for this option is
++  ** "%B%?F? [%F]?%* %?N?%N/?%S".
 +  */
-+  { "sidebar_indent_string", DT_STR, R_BOTH, UL &SidebarIndentString, UL "  " },
++  { "sidebar_indent_string", DT_STR, R_SIDEBAR, UL &SidebarIndentString, UL "  " },
 +  /*
 +  ** .pp
 +  ** This specifies the string that is used to indent mailboxes in the sidebar.
@@ -2574,7 +3051,7 @@ index 1412532..0af3a8f 100644
 +  ** .pp
 +  ** \fBSee also:\fP $$sidebar_short_path, $$sidebar_folder_indent, $$sidebar_delim_chars.
 +  */
-+  { "sidebar_new_mail_only", DT_BOOL, R_BOTH, OPTSIDEBARNEWMAILONLY, 0 },
++  { "sidebar_new_mail_only", DT_BOOL, R_SIDEBAR, OPTSIDEBARNEWMAILONLY, 0 },
 +  /*
 +  ** .pp
 +  ** When set, the sidebar will only display mailboxes containing new, or
@@ -2582,7 +3059,7 @@ index 1412532..0af3a8f 100644
 +  ** .pp
 +  ** \fBSee also:\fP $sidebar_whitelist.
 +  */
-+  { "sidebar_next_new_wrap", DT_BOOL, R_BOTH, UL OPTSIDEBARNEXTNEWWRAP, 0 },
++  { "sidebar_next_new_wrap", DT_BOOL, R_NONE, UL OPTSIDEBARNEXTNEWWRAP, 0 },
 +  /*
 +  ** .pp
 +  ** When set, the \fC<sidebar-next-new>\fP command will not stop and the end of
@@ -2590,15 +3067,7 @@ index 1412532..0af3a8f 100644
 +  ** \fC<sidebar-prev-new>\fP command is similarly affected, wrapping around to
 +  ** the end of the list.
 +  */
-+  { "sidebar_refresh_time", DT_NUM, R_BOTH, UL &SidebarRefreshTime, 60 },
-+  /*
-+  ** .pp
-+  ** Set sidebar_refresh_time to the minimum number of seconds between refreshes.
-+  ** This will reduce network traffic.
-+  ** .pp
-+  ** \fBNote:\fP Set to 0 to disable refreshing.
-+  */
-+  { "sidebar_short_path", DT_BOOL, R_BOTH, OPTSIDEBARSHORTPATH, 0 },
++  { "sidebar_short_path", DT_BOOL, R_SIDEBAR, OPTSIDEBARSHORTPATH, 0 },
 +  /*
 +  ** .pp
 +  ** By default the sidebar will show the mailbox's path, relative to the
@@ -2614,7 +3083,7 @@ index 1412532..0af3a8f 100644
 +  ** .pp
 +  ** \fBSee also:\fP $$sidebar_delim_chars, $$sidebar_folder_indent, $$sidebar_indent_string.
 +  */
-+  { "sidebar_sort_method", DT_SORT|DT_SORT_SIDEBAR, R_NONE, UL &SidebarSortMethod, SORT_ORDER },
++  { "sidebar_sort_method", DT_SORT|DT_SORT_SIDEBAR, R_SIDEBAR, UL &SidebarSortMethod, SORT_ORDER },
 +  /*
 +  ** .pp
 +  ** Specifies how to sort entries in the file browser.  By default, the
@@ -2622,10 +3091,8 @@ index 1412532..0af3a8f 100644
 +  ** .il
 +  ** .dd alpha (alphabetically)
 +  ** .dd count (all message count)
-+  ** .dd date
-+  ** .dd desc (description)
++  ** .dd flagged (flagged message count)
 +  ** .dd new (new message count)
-+  ** .dd size
 +  ** .dd unsorted
 +  ** .ie
 +  ** .pp
@@ -2651,14 +3118,13 @@ index 1412532..0af3a8f 100644
    { "sig_dashes",	DT_BOOL, R_NONE, OPTSIGDASHES, 1 },
    /*
    ** .pp
-@@ -3666,6 +3809,19 @@ const struct mapping_t SortKeyMethods[] = {
+@@ -3666,6 +3821,18 @@ const struct mapping_t SortKeyMethods[] = {
    { NULL,       0 }
  };
  
 +const struct mapping_t SortSidebarMethods[] = {
 +  { "alpha",		SORT_PATH },
 +  { "count",		SORT_COUNT },
-+  { "desc",		SORT_DESC },
 +  { "flagged",		SORT_FLAGGED },
 +  { "mailbox-order",	SORT_ORDER },
 +  { "name",		SORT_PATH },
@@ -2671,7 +3137,7 @@ index 1412532..0af3a8f 100644
  
  /* functions used to parse commands in a rc file */
  
-@@ -3765,6 +3921,9 @@ const struct command_t Commands[] = {
+@@ -3765,6 +3932,9 @@ const struct command_t Commands[] = {
    { "send-hook",	mutt_parse_hook,	M_SENDHOOK },
    { "send2-hook",	mutt_parse_hook,	M_SEND2HOOK },
    { "set",		parse_set,		0 },
@@ -2681,36 +3147,33 @@ index 1412532..0af3a8f 100644
    { "source",		parse_source,		0 },
    { "spam",		parse_spam_list,	M_SPAM },
    { "nospam",		parse_spam_list,	M_NOSPAM },
-diff --git a/keymap.c b/keymap.c
-index 43a9050..6d9661e 100644
---- a/keymap.c
-+++ b/keymap.c
-@@ -453,6 +453,9 @@ int km_dokey (int menu)
-     }
- #endif
- 
-+    /* update sidebar stats */
-+    mutt_buffy_check(0);
-+
-     timeout (i * 1000);
-     tmp = mutt_getch();
-     timeout (-1);
 diff --git a/mailbox.h b/mailbox.h
-index 2b2c9a1..2249661 100644
+index 2b2c9a1..8ffcbce 100644
 --- a/mailbox.h
 +++ b/mailbox.h
-@@ -27,6 +27,9 @@
- #define M_NEWFOLDER	(1<<4) /* create a new folder - same as M_APPEND, but uses
- 				* safe_fopen() for mbox-style folders.
- 				*/
-+#ifdef USE_SIDEBAR
-+#define M_PEEK		(1<<5) /* revert atime back after taking a look (if applicable) */
-+#endif
+@@ -20,13 +20,13 @@
+ #define _MAILBOX_H
+ 
+ /* flags for mutt_open_mailbox() */
+-#define M_NOSORT	(1<<0) /* do not sort the mailbox after opening it */
+-#define M_APPEND	(1<<1) /* open mailbox for appending messages */
+-#define M_READONLY	(1<<2) /* open in read-only mode */
+-#define M_QUIET		(1<<3) /* do not print any messages */
+-#define M_NEWFOLDER	(1<<4) /* create a new folder - same as M_APPEND, but uses
+-				* safe_fopen() for mbox-style folders.
+-				*/
++#define M_NOSORT     (1<<0) /* do not sort the mailbox after opening it */
++#define M_APPEND     (1<<1) /* open mailbox for appending messages */
++#define M_READONLY   (1<<2) /* open in read-only mode */
++#define M_QUIET      (1<<3) /* do not print any messages */
++#define M_NEWFOLDER  (1<<4) /* create a new folder - same as M_APPEND, but uses
++                                * safe_fopen() for mbox-style folders. */
++#define M_PEEK       (1<<5) /* revert atime back after taking a look (if applicable) */
  
  /* mx_open_new_message() */
  #define M_ADD_FROM	(1<<0)	/* add a From_ line */
 diff --git a/main.c b/main.c
-index e348ca1..7e81016 100644
+index e348ca1..5e6b597 100644
 --- a/main.c
 +++ b/main.c
 @@ -32,6 +32,9 @@
@@ -2723,19 +3186,7 @@ index e348ca1..7e81016 100644
  
  #ifdef USE_SASL
  #include "mutt_sasl.h"
-@@ -165,7 +168,11 @@ init_extended_keys();
- 
- int main (int argc, char **argv)
- {
-+#ifdef USE_SIDEBAR
-+  char folder[PATH_MAX] = "";
-+#else
-   char folder[_POSIX_PATH_MAX] = "";
-+#endif
-   char *subject = NULL;
-   char *includeFile = NULL;
-   char *draftFile = NULL;
-@@ -432,6 +439,9 @@ int main (int argc, char **argv)
+@@ -432,6 +435,9 @@ int main (int argc, char **argv)
      clear ();
      mutt_error = mutt_curses_error;
      mutt_message = mutt_curses_message;
@@ -2745,58 +3196,38 @@ index e348ca1..7e81016 100644
    }
  
    /* Create the Maildir directory if it doesn't exist. */
-@@ -788,6 +798,15 @@ int main (int argc, char **argv)
-       strfcpy (folder, NONULL(Spoolfile), sizeof (folder));
-     mutt_expand_path (folder, sizeof (folder));
- 
-+#ifdef USE_SIDEBAR
-+    {
-+      char tmpfolder[PATH_MAX] = "";
-+      strfcpy (tmpfolder, folder, sizeof (tmpfolder));
-+      if (!realpath (tmpfolder, folder))
-+        strfcpy (folder, tmpfolder, sizeof (tmpfolder));
-+    }
-+#endif
-+
-     mutt_str_replace (&CurrentFolder, folder);
-     mutt_str_replace (&LastFolder, folder);
- 
-@@ -810,6 +829,9 @@ int main (int argc, char **argv)
+@@ -810,6 +816,9 @@ int main (int argc, char **argv)
      if((Context = mx_open_mailbox (folder, ((flags & M_RO) || option (OPTREADONLY)) ? M_READONLY : 0, NULL))
         || !explicit_folder)
      {
 +#ifdef USE_SIDEBAR
-+      mutt_sb_set_open_buffy (folder);
++      mutt_sb_set_open_buffy ();
 +#endif
        mutt_index_menu ();
        if (Context)
  	FREE (&Context);
 diff --git a/mbox.c b/mbox.c
-index 8048f39..1592870 100644
+index 8048f39..abdd0b4 100644
 --- a/mbox.c
 +++ b/mbox.c
-@@ -104,6 +104,9 @@ int mmdf_parse_mailbox (CONTEXT *ctx)
+@@ -104,6 +104,7 @@ int mmdf_parse_mailbox (CONTEXT *ctx)
      mutt_perror (ctx->path);
      return (-1);
    }
-+#ifdef USE_SIDEBAR
 +  ctx->atime = sb.st_atime;
-+#endif
    ctx->mtime = sb.st_mtime;
    ctx->size = sb.st_size;
  
-@@ -255,6 +258,9 @@ int mbox_parse_mailbox (CONTEXT *ctx)
+@@ -255,6 +256,7 @@ int mbox_parse_mailbox (CONTEXT *ctx)
  
    ctx->size = sb.st_size;
    ctx->mtime = sb.st_mtime;
-+#ifdef USE_SIDEBAR
 +  ctx->atime = sb.st_atime;
-+#endif
  
  #ifdef NFS_ATTRIBUTE_HACK
    if (sb.st_mtime > sb.st_atime)
 diff --git a/menu.c b/menu.c
-index 828df9c..6b58e1f 100644
+index 828df9c..729200e 100644
 --- a/menu.c
 +++ b/menu.c
 @@ -24,6 +24,9 @@
@@ -2818,17 +3249,32 @@ index 828df9c..6b58e1f 100644
  
    mutt_format_string (s, n, cols, cols, FMT_LEFT, ' ', scratch, mutt_strlen (scratch), 1);
    s[n - 1] = 0;
-@@ -237,6 +240,9 @@ void menu_redraw_index (MUTTMENU *menu)
-   int do_color;
-   int attr;
+@@ -216,6 +219,9 @@ void menu_redraw_full (MUTTMENU *menu)
+   mutt_show_error ();
+ 
+   menu->redraw = REDRAW_INDEX | REDRAW_STATUS;
++#ifdef USE_SIDEBAR
++  menu->redraw |= REDRAW_SIDEBAR;
++#endif
+ }
+ 
+ void menu_redraw_status (MUTTMENU *menu)
+@@ -230,6 +236,14 @@ void menu_redraw_status (MUTTMENU *menu)
+   menu->redraw &= ~REDRAW_STATUS;
+ }
  
 +#ifdef USE_SIDEBAR
-+  mutt_sb_draw();
++void menu_redraw_sidebar (MUTTMENU *menu)
++{
++  SidebarNeedsRedraw = 0;
++  mutt_sb_draw ();
++}
 +#endif
-   for (i = menu->top; i < menu->top + menu->pagelen; i++)
-   {
-     if (i < menu->max)
-@@ -247,7 +253,7 @@ void menu_redraw_index (MUTTMENU *menu)
++
+ void menu_redraw_index (MUTTMENU *menu)
+ {
+   char buf[LONG_STRING];
+@@ -247,7 +261,7 @@ void menu_redraw_index (MUTTMENU *menu)
        menu_pad_string (buf, sizeof (buf));
  
        ATTRSET(attr);
@@ -2837,7 +3283,7 @@ index 828df9c..6b58e1f 100644
        do_color = 1;
  
        if (i == menu->current)
-@@ -270,7 +276,11 @@ void menu_redraw_index (MUTTMENU *menu)
+@@ -270,7 +284,11 @@ void menu_redraw_index (MUTTMENU *menu)
      else
      {
        NORMAL_COLOR;
@@ -2849,7 +3295,7 @@ index 828df9c..6b58e1f 100644
      }
    }
    NORMAL_COLOR;
-@@ -287,7 +297,7 @@ void menu_redraw_motion (MUTTMENU *menu)
+@@ -287,7 +305,7 @@ void menu_redraw_motion (MUTTMENU *menu)
      return;
    }
    
@@ -2858,7 +3304,7 @@ index 828df9c..6b58e1f 100644
    ATTRSET(menu->color (menu->oldcurrent));
  
    if (option (OPTARROWCURSOR))
-@@ -299,13 +309,13 @@ void menu_redraw_motion (MUTTMENU *menu)
+@@ -299,13 +317,13 @@ void menu_redraw_motion (MUTTMENU *menu)
      {
        menu_make_entry (buf, sizeof (buf), menu, menu->oldcurrent);
        menu_pad_string (buf, sizeof (buf));
@@ -2874,7 +3320,7 @@ index 828df9c..6b58e1f 100644
    }
    else
    {
-@@ -318,7 +328,7 @@ void menu_redraw_motion (MUTTMENU *menu)
+@@ -318,7 +336,7 @@ void menu_redraw_motion (MUTTMENU *menu)
      menu_make_entry (buf, sizeof (buf), menu, menu->current);
      menu_pad_string (buf, sizeof (buf));
      SETCOLOR(MT_COLOR_INDICATOR);
@@ -2883,7 +3329,7 @@ index 828df9c..6b58e1f 100644
      print_enriched_string (menu->color(menu->current), (unsigned char *) buf, 0);
    }
    menu->redraw &= REDRAW_STATUS;
-@@ -330,7 +340,7 @@ void menu_redraw_current (MUTTMENU *menu)
+@@ -330,7 +348,7 @@ void menu_redraw_current (MUTTMENU *menu)
    char buf[LONG_STRING];
    int attr = menu->color (menu->current);
    
@@ -2892,7 +3338,18 @@ index 828df9c..6b58e1f 100644
    menu_make_entry (buf, sizeof (buf), menu, menu->current);
    menu_pad_string (buf, sizeof (buf));
  
-@@ -873,7 +883,7 @@ int mutt_menuLoop (MUTTMENU *menu)
+@@ -835,6 +853,10 @@ int menu_redraw (MUTTMENU *menu)
+   
+   if (menu->redraw & REDRAW_STATUS)
+     menu_redraw_status (menu);
++#ifdef USE_SIDEBAR
++  if (menu->redraw & REDRAW_SIDEBAR || SidebarNeedsRedraw)
++    menu_redraw_sidebar (menu);
++#endif
+   if (menu->redraw & REDRAW_INDEX)
+     menu_redraw_index (menu);
+   else if (menu->redraw & (REDRAW_MOTION | REDRAW_MOTION_RESYNCH))
+@@ -873,7 +895,7 @@ int mutt_menuLoop (MUTTMENU *menu)
      
      
      if (option (OPTARROWCURSOR))
@@ -2902,63 +3359,125 @@ index 828df9c..6b58e1f 100644
        move (menu->current - menu->top + menu->offset, 0);
      else
 diff --git a/mh.c b/mh.c
-index bc87660..3e87181 100644
+index bc87660..ecec925 100644
 --- a/mh.c
 +++ b/mh.c
-@@ -295,6 +295,48 @@ void mh_buffy(BUFFY *b)
-   mhs_free_sequences (&mhs);
+@@ -261,38 +261,86 @@ static int mh_already_notified(BUFFY *b, int msgno)
+   return -1;
  }
  
-+#ifdef USE_SIDEBAR
-+/**
-+ * mh_buffy_update - Update messages counts for an mh mailbox
-+ * @mailbox: BUFFY representing a maildir mailbox
-+ *
-+ * Read through an mh mailbox and count messages.  Save the number of new,
-+ * flagged messages and a timestamp for now.
+-void mh_buffy(BUFFY *b)
++/* Checks new mail for a mh mailbox.
++ * check_stats: if true, also count total, new, and flagged mesages.
++ * Returns 1 if the mailbox has new mail.
 + */
-+void
-+mh_buffy_update (BUFFY *mailbox)
-+{
-+  int i;
-+  struct mh_sequences mhs;
-+
-+  if (!mailbox)
-+    return;
-+
-+  if (!option (OPTSIDEBAR))
-+    return;
-+
-+  memset (&mhs, 0, sizeof (mhs));
-+
-+  if (mh_read_sequences (&mhs, mailbox->path) < 0)
-+    return;
-+
-+  mailbox->msg_count   = 0;
-+  mailbox->msg_unread  = 0;
-+  mailbox->msg_flagged = 0;
-+
-+  for (i = 0; i <= mhs.max; i++)
-+  {
-+    mailbox->msg_count++;
-+    if (mhs_check (&mhs, i) & MH_SEQ_UNSEEN)
-+      mailbox->msg_unread++;
-+    if (mhs_check (&mhs, i) & MH_SEQ_FLAGGED)
-+      mailbox->msg_flagged++;
-+  }
-+  mhs_free_sequences (&mhs);
-+  mailbox->sb_last_checked = time (NULL);
-+}
-+#endif
-+
- static int mh_mkstemp (CONTEXT * dest, FILE ** fp, char **tgt)
++int mh_buffy (BUFFY *mailbox, int check_stats)
  {
-   int fd;
+   int i;
+   struct mh_sequences mhs;
+-
+-  b->new = 0;
++  int check_new = 1;
++  int rc = 0;
++  DIR *dirp;
++  struct dirent *de;
+ 
+   /* when $mail_check_recent is set and the .mh_sequences file hasn't changed
+-   * since the last mailbox visit, there is nothing to do */
+-  if (option(OPTMAILCHECKRECENT) && mh_sequences_changed(b) <= 0)
+-      return;
++   * since the last mailbox visit, there is no "new mail" */
++  if (option(OPTMAILCHECKRECENT) && mh_sequences_changed(mailbox) <= 0)
++  {
++    rc = 0;
++    check_new = 0;
++  }
++
++  if (! (check_new || check_stats))
++    return rc;
+ 
+   memset (&mhs, 0, sizeof (mhs));
++  if (mh_read_sequences (&mhs, mailbox->path) < 0)
++    return 0;
+ 
+-  if (mh_read_sequences (&mhs, b->path) < 0)
+-    return;
++  if (check_stats)
++  {
++    mailbox->msg_count   = 0;
++    mailbox->msg_unread  = 0;
++    mailbox->msg_flagged = 0;
++  }
+ 
+-  /* Traverse the sequence from high to low in order to support
+-   * $mail_check_recent.  Given that new messages are appended, this should
+-   * also be faster when it is unset as well.
+-   */
+   for (i = mhs.max; i > 0; i--)
+   {
++    if (check_stats &&
++        (mhs_check (&mhs, i) & MH_SEQ_FLAGGED))
++      mailbox->msg_flagged++;
+     if (mhs_check (&mhs, i) & MH_SEQ_UNSEEN)
+     {
+-      /* if the first unseen message we encounter was in the mailbox during the last visit, don't notify about it */
+-      if (!option(OPTMAILCHECKRECENT) || mh_already_notified(b, i) == 0)
+-	b->new = 1;
+-      break;
++      if (check_stats)
++        mailbox->msg_unread++;
++      if (check_new)
++      {
++        /* if the first unseen message we encounter was in the mailbox during the
++           last visit, don't notify about it */
++        if (!option(OPTMAILCHECKRECENT) || mh_already_notified(mailbox, i) == 0)
++        {
++          mailbox->new = 1;
++          rc = 1;
++        }
++        /* Because we are traversing from high to low, we can stop
++         * checking for new mail after the first unseen message.
++         * Whether it resulted in "new mail" or not. */
++        check_new = 0;
++        if (!check_stats)
++          break;
++      }
+     }
+   }
+   mhs_free_sequences (&mhs);
++
++  if (check_stats)
++  {
++    if ((dirp = opendir (mailbox->path)) != NULL)
++    {
++      while ((de = readdir (dirp)) != NULL)
++      {
++        if (*de->d_name == '.')
++          continue;
++        if (mh_valid_message (de->d_name))
++          mailbox->msg_count++;
++      }
++      closedir (dirp);
++    }
++  }
++
++  return rc;
+ }
+ 
+ static int mh_mkstemp (CONTEXT * dest, FILE ** fp, char **tgt)
 diff --git a/mutt.h b/mutt.h
-index 514b8e2..765f8f5 100644
+index 514b8e2..f27d507 100644
 --- a/mutt.h
 +++ b/mutt.h
-@@ -435,6 +435,13 @@ enum
+@@ -395,6 +395,7 @@ enum
+   OPTKEEPFLAGGED,
+   OPTMAILCAPSANITIZE,
+   OPTMAILCHECKRECENT,
++  OPTMAILCHECKSTATS,
+   OPTMAILDIRTRASH,
+   OPTMAILDIRCHECKCUR,
+   OPTMARKERS,
+@@ -435,6 +436,13 @@ enum
    OPTSAVEEMPTY,
    OPTSAVENAME,
    OPTSCORE,
@@ -2972,23 +3491,29 @@ index 514b8e2..765f8f5 100644
    OPTSIGDASHES,
    OPTSIGONTOP,
    OPTSORTRE,
-@@ -881,6 +888,9 @@ typedef struct _context
+@@ -880,7 +888,9 @@ enum
+ typedef struct _context
  {
    char *path;
++  char *realpath;               /* used for buffy comparison and the sidebar */
    FILE *fp;
-+#ifdef USE_SIDEBAR
 +  time_t atime;
-+#endif
    time_t mtime;
    off_t size;
    off_t vsize;
-@@ -921,6 +931,9 @@ typedef struct _context
+@@ -906,7 +916,6 @@ typedef struct _context
+ 
+ #ifdef USE_COMPRESSED
+   void *compress_info;		/* compressed mbox module private data */
+-  char *realpath;		/* path to compressed mailbox */
+ #endif /* USE_COMPRESSED */
+ 
+   short magic;			/* mailbox type */
+@@ -921,6 +930,7 @@ typedef struct _context
    unsigned int quiet : 1;	/* inhibit status messages? */
    unsigned int collapsed : 1;   /* are all threads collapsed? */
    unsigned int closing : 1;	/* mailbox is being closed */
-+#ifdef USE_SIDEBAR
 +  unsigned int peekonly : 1;	/* just taking a glance, revert atime */
-+#endif
  
    /* driver hooks */
    void *data;			/* driver specific data */
@@ -3042,7 +3567,7 @@ index 93d9aea..2bfa1ae 100644
  
  extern int *ColorQuote;
 diff --git a/mutt_menu.h b/mutt_menu.h
-index 8192019..8cb49db 100644
+index 8192019..a486d88 100644
 --- a/mutt_menu.h
 +++ b/mutt_menu.h
 @@ -34,6 +34,9 @@
@@ -3055,29 +3580,92 @@ index 8192019..8cb49db 100644
  
  #define M_MODEFMT "-- Mutt: %s"
  
+@@ -82,6 +85,9 @@ typedef struct menu_t
+ void mutt_menu_init (void);
+ void menu_jump (MUTTMENU *);
+ void menu_redraw_full (MUTTMENU *);
++#ifdef USE_SIDEBAR
++void menu_redraw_sidebar (MUTTMENU *);
++#endif
+ void menu_redraw_index (MUTTMENU *);
+ void menu_redraw_status (MUTTMENU *);
+ void menu_redraw_motion (MUTTMENU *);
 diff --git a/muttlib.c b/muttlib.c
-index 5dc7b87..2e9efad 100644
+index 5dc7b87..1cd6342 100644
 --- a/muttlib.c
 +++ b/muttlib.c
-@@ -1333,7 +1333,7 @@ void mutt_FormatString (char *dest,		/* output buffer */
+@@ -1053,6 +1053,7 @@ void mutt_safe_path (char *s, size_t l, ADDRESS *a)
+ void mutt_FormatString (char *dest,		/* output buffer */
+ 			size_t destlen,		/* output buffer len */
+ 			size_t col,		/* starting column (nonzero when called recursively) */
++                        int cols,               /* maximum columns */
+ 			const char *src,	/* template string */
+ 			format_t *callback,	/* callback for processing */
+ 			unsigned long data,	/* callback data */
+@@ -1117,7 +1118,7 @@ void mutt_FormatString (char *dest,		/* output buffer */
+         mutt_extract_token(word, srcbuf, 0);
+         dprint(3, (debugfile, "fmtpipe %2d: %s\n", i++, word->data));
+         mutt_buffer_addch(command, '\'');
+-        mutt_FormatString(buf, sizeof(buf), 0, word->data, callback, data,
++        mutt_FormatString(buf, sizeof(buf), 0, cols, word->data, callback, data,
+                           flags | M_FORMAT_NOFILTER);
+         for (p = buf; p && *p; p++)
+         {
+@@ -1172,7 +1173,7 @@ void mutt_FormatString (char *dest,		/* output buffer */
+ 		 * it back for the recursive call since the expansion of
+ 		 * format pipes does not try to append a nul itself.
+ 		 */
+-		mutt_FormatString(dest, destlen+1, col, recycler, callback, data, flags);
++		mutt_FormatString(dest, destlen+1, col, cols, recycler, callback, data, flags);
+ 		FREE(&recycler);
+ 	      }
+ 	    }
+@@ -1333,23 +1334,35 @@ void mutt_FormatString (char *dest,		/* output buffer */
  	  pl = pw = 1;
  
  	/* see if there's room to add content, else ignore */
 -	if ((col < COLS && wlen < destlen) || soft)
-+	if ((col < (COLS - SidebarWidth) && (wlen < destlen)) || soft)
++	if ((col < cols && wlen < destlen) || soft)
  	{
  	  int pad;
  
-@@ -1344,7 +1344,7 @@ void mutt_FormatString (char *dest,		/* output buffer */
+ 	  /* get contents after padding */
+-	  mutt_FormatString (buf, sizeof (buf), 0, src + pl, callback, data, flags);
++	  mutt_FormatString (buf, sizeof (buf), 0, cols, src + pl, callback, data, flags);
+ 	  len = mutt_strlen (buf);
+ 	  wid = mutt_strwidth (buf);
  
- 	  /* try to consume as many columns as we can, if we don't have
- 	   * memory for that, use as much memory as possible */
+-	  /* try to consume as many columns as we can, if we don't have
+-	   * memory for that, use as much memory as possible */
 -	  pad = (COLS - col - wid) / pw;
-+	  pad = (COLS - SidebarWidth - col - wid) / pw;
- 	  if (pad > 0 && wlen + (pad * pl) + len > destlen)
- 	    pad = ((signed)(destlen - wlen - len)) / pl;
- 	  if (pad > 0)
-@@ -1363,13 +1363,13 @@ void mutt_FormatString (char *dest,		/* output buffer */
+-	  if (pad > 0 && wlen + (pad * pl) + len > destlen)
+-	    pad = ((signed)(destlen - wlen - len)) / pl;
+-	  if (pad > 0)
++	  pad = (cols - col - wid) / pw;
++	  if (pad >= 0)
+ 	  {
+-	    while (pad--)
++            /* try to consume as many columns as we can, if we don't have
++             * memory for that, use as much memory as possible */
++            if (wlen + (pad * pl) + len > destlen)
++              pad = (destlen > wlen + len) ? ((destlen - wlen - len) / pl) : 0;
++            else
++            {
++              /* Add pre-spacing to make multi-column pad characters and
++               * the contents after padding line up */
++              while ((col + (pad * pw) + wid < cols) &&
++                     (wlen + (pad * pl) + len < destlen))
++              {
++                *wptr++ = ' ';
++                wlen++;
++                col++;
++              }
++            }
++	    while (pad-- > 0)
+ 	    {
+ 	      memcpy (wptr, src, pl);
+ 	      wptr += pl;
+@@ -1363,13 +1376,13 @@ void mutt_FormatString (char *dest,		/* output buffer */
  	    /* \0-terminate dest for length computation in mutt_wstr_trunc() */
  	    *wptr = 0;
  	    /* make sure right part is at most as wide as display */
@@ -3089,12 +3677,42 @@ index 5dc7b87..2e9efad 100644
  	  }
  	  if (len + wlen > destlen)
 -	    len = mutt_wstr_trunc (buf, destlen - wlen, COLS - col, NULL);
-+	    len = mutt_wstr_trunc (buf, destlen - wlen, COLS - SidebarWidth - col, NULL);
++	    len = mutt_wstr_trunc (buf, destlen - wlen, cols - col, NULL);
  	  memcpy (wptr, buf, len);
  	  wptr += len;
  	  wlen += len;
+@@ -1386,9 +1399,9 @@ void mutt_FormatString (char *dest,		/* output buffer */
+ 	  pl = pw = 1;
+ 
+ 	/* see if there's room to add content, else ignore */
+-	if (col < COLS && wlen < destlen)
++	if (col < cols && wlen < destlen)
+ 	{
+-	  c = (COLS - col) / pw;
++	  c = (cols - col) / pw;
+ 	  if (c > 0 && wlen + (c * pl) > destlen)
+ 	    c = ((signed)(destlen - wlen)) / pl;
+ 	  while (c > 0)
+@@ -1419,7 +1432,7 @@ void mutt_FormatString (char *dest,		/* output buffer */
+ 	}
+ 	
+ 	/* use callback function to handle this case */
+-	src = callback (buf, sizeof (buf), col, ch, src, prefix, ifstring, elsestring, data, flags);
++	src = callback (buf, sizeof (buf), col, cols, ch, src, prefix, ifstring, elsestring, data, flags);
+ 
+ 	if (tolower)
+ 	  mutt_strlower (buf);
+@@ -1432,7 +1445,7 @@ void mutt_FormatString (char *dest,		/* output buffer */
+ 	}
+ 	
+ 	if ((len = mutt_strlen (buf)) + wlen > destlen)
+-	  len = mutt_wstr_trunc (buf, destlen - wlen, COLS - col, NULL);
++	  len = mutt_wstr_trunc (buf, destlen - wlen, cols - col, NULL);
+ 
+ 	memcpy (wptr, buf, len);
+ 	wptr += len;
 diff --git a/mx.c b/mx.c
-index 0cb5636..4a2ca3c 100644
+index 0cb5636..d7218ec 100644
 --- a/mx.c
 +++ b/mx.c
 @@ -29,6 +29,9 @@
@@ -3115,40 +3733,57 @@ index 0cb5636..4a2ca3c 100644
   *	ctx	if non-null, context struct to use
   */
  CONTEXT *mx_open_mailbox (const char *path, int flags, CONTEXT *pctx)
-@@ -617,6 +621,10 @@ CONTEXT *mx_open_mailbox (const char *path, int flags, CONTEXT *pctx)
+@@ -606,6 +610,8 @@ CONTEXT *mx_open_mailbox (const char *path, int flags, CONTEXT *pctx)
+     ctx = safe_malloc (sizeof (CONTEXT));
+   memset (ctx, 0, sizeof (CONTEXT));
+   ctx->path = safe_strdup (path);
++  if (! (ctx->realpath = realpath (ctx->path, NULL)) )
++    ctx->realpath = safe_strdup (ctx->path);
+ 
+   ctx->msgnotreadyet = -1;
+   ctx->collapsed = 0;
+@@ -617,6 +623,8 @@ CONTEXT *mx_open_mailbox (const char *path, int flags, CONTEXT *pctx)
      ctx->quiet = 1;
    if (flags & M_READONLY)
      ctx->readonly = 1;
-+#ifdef USE_SIDEBAR
 +  if (flags & M_PEEK)
 +    ctx->peekonly = 1;
-+#endif
  
    if (flags & (M_APPEND|M_NEWFOLDER))
    {
-@@ -725,8 +733,21 @@ void mx_fastclose_mailbox (CONTEXT *ctx)
+@@ -721,13 +729,22 @@ CONTEXT *mx_open_mailbox (const char *path, int flags, CONTEXT *pctx)
+ void mx_fastclose_mailbox (CONTEXT *ctx)
+ {
+   int i;
++  struct utimbuf ut;
+ 
    if(!ctx) 
      return;
  
-+#ifdef USE_SIDEBAR
 +  /* fix up the times so buffy won't get confused */
-+  struct utimbuf ut;
 +  if (ctx->peekonly && ctx->path && (ctx->mtime > ctx->atime)) {
 +    ut.actime  = ctx->atime;
 +    ut.modtime = ctx->mtime;
 +    utime (ctx->path, &ut);
 +  }
-+#endif
 +
    /* never announce that a mailbox we've just left has new mail. #3290
     * XXX: really belongs in mx_close_mailbox, but this is a nice hook point */
-+#ifdef USE_SIDEBAR
+-  mutt_buffy_setnotified(ctx->path);
 +  if (!ctx->peekonly)
-+#endif
-   mutt_buffy_setnotified(ctx->path);
++    mutt_buffy_setnotified(ctx->path);
  
    if (ctx->mx_close)
-@@ -898,6 +919,12 @@ int mx_close_mailbox (CONTEXT *ctx, int *index_hint)
+     ctx->mx_close (ctx);
+@@ -746,6 +763,7 @@ void mx_fastclose_mailbox (CONTEXT *ctx)
+     comp_fast_close (ctx);
+ #endif
+   FREE (&ctx->path);
++  FREE (&ctx->realpath);
+   FREE (&ctx->pattern);
+   if (ctx->limit_pattern) 
+     mutt_pattern_free (&ctx->limit_pattern);
+@@ -898,6 +916,12 @@ int mx_close_mailbox (CONTEXT *ctx, int *index_hint)
      if (!ctx->hdrs[i]->deleted && ctx->hdrs[i]->read 
          && !(ctx->hdrs[i]->flagged && option (OPTKEEPFLAGGED)))
        read_msgs++;
@@ -3161,7 +3796,7 @@ index 0cb5636..4a2ca3c 100644
    }
  
    if (read_msgs && quadoption (OPT_MOVE) != M_NO)
-@@ -1081,6 +1108,11 @@ int mx_close_mailbox (CONTEXT *ctx, int *index_hint)
+@@ -1081,6 +1105,11 @@ int mx_close_mailbox (CONTEXT *ctx, int *index_hint)
      return (-1);
  #endif
  
@@ -3174,7 +3809,7 @@ index 0cb5636..4a2ca3c 100644
  
    return 0;
 diff --git a/mx.h b/mx.h
-index d926cf6..f2b79c0 100644
+index d926cf6..648f131 100644
 --- a/mx.h
 +++ b/mx.h
 @@ -26,6 +26,7 @@
@@ -3185,18 +3820,8 @@ index d926cf6..f2b79c0 100644
  
  /* supported mailbox formats */
  enum
-@@ -60,6 +61,9 @@ void mbox_reset_atime (CONTEXT *, struct stat *);
- int mh_read_dir (CONTEXT *, const char *);
- int mh_sync_mailbox (CONTEXT *, int *);
- int mh_check_mailbox (CONTEXT *, int *);
-+#ifdef USE_SIDEBAR
-+void mh_buffy_update (BUFFY *mailbox);
-+#endif
- int mh_check_empty (const char *);
- 
- int maildir_read_dir (CONTEXT *);
 diff --git a/pager.c b/pager.c
-index b9f72c2..b4b8889 100644
+index b9f72c2..e8b2b04 100644
 --- a/pager.c
 +++ b/pager.c
 @@ -29,6 +29,9 @@
@@ -3226,7 +3851,28 @@ index b9f72c2..b4b8889 100644
    int helpoffset = LINES - 2;		/* offset for the help bar. */
    int bodylen = LINES - 2 - bodyoffset; /* length of displayable area */
  
-@@ -1747,7 +1751,7 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
+@@ -1726,6 +1730,9 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
+       }
+ 
+       redraw |= REDRAW_BODY | REDRAW_INDEX | REDRAW_STATUS;
++#ifdef USE_SIDEBAR
++      redraw |= REDRAW_SIDEBAR;
++#endif
+       mutt_show_error ();
+     }
+ 
+@@ -1744,10 +1751,18 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
+ 	}
+     }
+ 
++#ifdef USE_SIDEBAR
++    if ((redraw & REDRAW_SIDEBAR) || SidebarNeedsRedraw)
++    {
++      SidebarNeedsRedraw = 0;
++      mutt_sb_draw ();
++    }
++#endif
++
      if ((redraw & REDRAW_BODY) || topline != oldtopline)
      {
        do {
@@ -3235,7 +3881,7 @@ index b9f72c2..b4b8889 100644
  	curline = oldtopline = topline;
  	lines = 0;
  	force_redraw = 0;
-@@ -1760,6 +1764,9 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
+@@ -1760,6 +1775,9 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
  			    &QuoteList, &q_level, &force_redraw, &SearchRE) > 0)
  	    lines++;
  	  curline++;
@@ -3245,7 +3891,7 @@ index b9f72c2..b4b8889 100644
  	}
  	last_offset = lineInfo[curline].offset;
        } while (force_redraw);
-@@ -1772,6 +1779,9 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
+@@ -1772,6 +1790,9 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
  	  addch ('~');
  	addch ('\n');
  	lines++;
@@ -3255,7 +3901,7 @@ index b9f72c2..b4b8889 100644
        }
        NORMAL_COLOR;
  
-@@ -1789,29 +1799,49 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
+@@ -1789,29 +1810,49 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
        hfi.ctx = Context;
        hfi.pager_progress = pager_progress_str;
  
@@ -3309,7 +3955,7 @@ index b9f72c2..b4b8889 100644
        NORMAL_COLOR;
        if (option(OPTTSENABLED) && TSSupported)
        {
-@@ -1827,16 +1857,26 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
+@@ -1827,16 +1868,26 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
        /* redraw the pager_index indicator, because the
         * flags for this message might have changed. */
        menu_redraw_current (index);
@@ -3338,21 +3984,7 @@ index b9f72c2..b4b8889 100644
      redraw = 0;
  
      if (option(OPTBRAILLEFRIENDLY)) {
-@@ -2501,8 +2541,12 @@ search_next:
- 	  ch = 0;
- 	}
- 
--	if (option (OPTFORCEREDRAWPAGER))
-+	if (option (OPTFORCEREDRAWPAGER)) {
- 	  redraw = REDRAW_FULL;
-+#ifdef USE_SIDEBAR
-+	  mutt_sb_draw();
-+#endif
-+	}
- 	unset_option (OPTFORCEREDRAWINDEX);
- 	unset_option (OPTFORCEREDRAWPAGER);
- 	break;
-@@ -2783,6 +2827,22 @@ search_next:
+@@ -2783,6 +2834,22 @@ search_next:
  	mutt_what_key ();
  	break;
  
@@ -3375,12 +4007,221 @@ index b9f72c2..b4b8889 100644
        default:
  	ch = -1;
  	break;
+diff --git a/pgpinvoke.c b/pgpinvoke.c
+index 7334192..a108b4e 100644
+--- a/pgpinvoke.c
++++ b/pgpinvoke.c
+@@ -59,6 +59,7 @@ struct pgp_command_context {
+ const char *_mutt_fmt_pgp_command (char *dest,
+ 				   size_t destlen,
+ 				   size_t col,
++                                   int cols,
+ 				   char op,
+ 				   const char *src,
+ 				   const char *prefix,
+@@ -140,16 +141,16 @@ const char *_mutt_fmt_pgp_command (char *dest,
+   }
+ 
+   if (optional)
+-    mutt_FormatString (dest, destlen, col, ifstring, _mutt_fmt_pgp_command, data, 0);
++    mutt_FormatString (dest, destlen, col, cols, ifstring, _mutt_fmt_pgp_command, data, 0);
+   else if (flags & M_FORMAT_OPTIONAL)
+-    mutt_FormatString (dest, destlen, col, elsestring, _mutt_fmt_pgp_command, data, 0);
++    mutt_FormatString (dest, destlen, col, cols, elsestring, _mutt_fmt_pgp_command, data, 0);
+ 
+   return (src);
+ }
+ 
+ void mutt_pgp_command (char *d, size_t dlen, struct pgp_command_context *cctx, const char *fmt)
+ {
+-  mutt_FormatString (d, dlen, 0, NONULL (fmt), _mutt_fmt_pgp_command, (unsigned long) cctx, 0);
++  mutt_FormatString (d, dlen, 0, COLS - SidebarWidth, NONULL (fmt), _mutt_fmt_pgp_command, (unsigned long) cctx, 0);
+   dprint (2, (debugfile, "mutt_pgp_command: %s\n", d));
+ }
+ 
+diff --git a/pgpkey.c b/pgpkey.c
+index 80bd7de..849fa49 100644
+--- a/pgpkey.c
++++ b/pgpkey.c
+@@ -122,6 +122,7 @@ typedef struct pgp_entry
+ static const char *pgp_entry_fmt (char *dest,
+ 				  size_t destlen,
+ 				  size_t col,
++                                  int cols,
+ 				  char op,
+ 				  const char *src,
+ 				  const char *prefix,
+@@ -278,9 +279,9 @@ static const char *pgp_entry_fmt (char *dest,
+   }
+ 
+   if (optional)
+-    mutt_FormatString (dest, destlen, col, ifstring, mutt_attach_fmt, data, 0);
++    mutt_FormatString (dest, destlen, col, cols, ifstring, mutt_attach_fmt, data, 0);
+   else if (flags & M_FORMAT_OPTIONAL)
+-    mutt_FormatString (dest, destlen, col, elsestring, mutt_attach_fmt, data, 0);
++    mutt_FormatString (dest, destlen, col, cols, elsestring, mutt_attach_fmt, data, 0);
+   return (src);
+ }
+ 
+@@ -292,7 +293,7 @@ static void pgp_entry (char *s, size_t l, MUTTMENU * menu, int num)
+   entry.uid = KeyTable[num];
+   entry.num = num + 1;
+ 
+-  mutt_FormatString (s, l, 0, NONULL (PgpEntryFormat), pgp_entry_fmt, 
++  mutt_FormatString (s, l, 0, COLS - SidebarWidth, NONULL (PgpEntryFormat), pgp_entry_fmt, 
+ 		     (unsigned long) &entry, M_FORMAT_ARROWCURSOR);
+ }
+ 
+diff --git a/pop.c b/pop.c
+index 11af0ab..4ef0e11 100644
+--- a/pop.c
++++ b/pop.c
+@@ -421,7 +421,9 @@ int pop_open_mailbox (CONTEXT *ctx)
+     return -1;
+ 
+   FREE (&ctx->path);
++  FREE (&ctx->realpath);
+   ctx->path = safe_strdup (buf);
++  ctx->realpath = safe_strdup (ctx->path);
+ 
+   pop_data = safe_calloc (1, sizeof (POP_DATA));
+   pop_data->conn = conn;
+diff --git a/protos.h b/protos.h
+index 8e5f7aa..686c5d1 100644
+--- a/protos.h
++++ b/protos.h
+@@ -71,9 +71,9 @@ int _mutt_traverse_thread (CONTEXT *ctx, HEADER *hdr, int flag);
+ #define mutt_new_envelope() safe_calloc (1, sizeof (ENVELOPE))
+ #define mutt_new_enter_state() safe_calloc (1, sizeof (ENTER_STATE))
+ 
+-typedef const char * format_t (char *, size_t, size_t, char, const char *, const char *, const char *, const char *, unsigned long, format_flag);
++typedef const char * format_t (char *, size_t, size_t, int, char, const char *, const char *, const char *, const char *, unsigned long, format_flag);
+ 
+-void mutt_FormatString (char *, size_t, size_t, const char *, format_t *, unsigned long, format_flag);
++void mutt_FormatString (char *, size_t, size_t, int, const char *, format_t *, unsigned long, format_flag);
+ void mutt_parse_content_type (char *, BODY *);
+ void mutt_generate_boundary (PARAMETER **);
+ void mutt_delete_parameter (const char *attribute, PARAMETER **p);
+@@ -127,6 +127,7 @@ const char *mutt_attach_fmt (
+ 	char *dest,
+ 	size_t destlen,
+ 	size_t col,
++        int cols,
+ 	char op,
+ 	const char *src,
+ 	const char *prefix,
+diff --git a/query.c b/query.c
+index 8bcffbd..605b823 100644
+--- a/query.c
++++ b/query.c
+@@ -24,6 +24,7 @@
+ #include "mutt_menu.h"
+ #include "mutt_idna.h"
+ #include "mapping.h"
++#include "mutt_curses.h"
+ 
+ #include <string.h>
+ #include <stdlib.h>
+@@ -183,7 +184,7 @@ static int query_search (MUTTMENU *m, regex_t *re, int n)
+   return REG_NOMATCH;
+ }
+ 
+-static const char * query_format_str (char *dest, size_t destlen, size_t col,
++static const char * query_format_str (char *dest, size_t destlen, size_t col, int cols,
+ 				      char op, const char *src,
+ 				      const char *fmt, const char *ifstring,
+ 				      const char *elsestring,
+@@ -230,9 +231,9 @@ static const char * query_format_str (char *dest, size_t destlen, size_t col,
+   }
+ 
+   if (optional)
+-    mutt_FormatString (dest, destlen, col, ifstring, query_format_str, data, 0);
++    mutt_FormatString (dest, destlen, col, cols, ifstring, query_format_str, data, 0);
+   else if (flags & M_FORMAT_OPTIONAL)
+-    mutt_FormatString (dest, destlen, col, elsestring, query_format_str, data, 0);
++    mutt_FormatString (dest, destlen, col, cols, elsestring, query_format_str, data, 0);
+ 
+   return src;
+ }
+@@ -242,7 +243,7 @@ static void query_entry (char *s, size_t slen, MUTTMENU *m, int num)
+   ENTRY *entry = &((ENTRY *) m->data)[num];
+ 
+   entry->data->num = num;
+-  mutt_FormatString (s, slen, 0, NONULL (QueryFormat), query_format_str,
++  mutt_FormatString (s, slen, 0, COLS - SidebarWidth, NONULL (QueryFormat), query_format_str,
+ 		     (unsigned long) entry, M_FORMAT_ARROWCURSOR);
+ }
+ 
+diff --git a/recvattach.c b/recvattach.c
+index 5424eda..6bc30fe 100644
+--- a/recvattach.c
++++ b/recvattach.c
+@@ -173,6 +173,7 @@ ATTACHPTR **mutt_gen_attach_list (BODY *m,
+ const char *mutt_attach_fmt (char *dest,
+     size_t destlen,
+     size_t col,
++    int cols,
+     char op,
+     const char *src,
+     const char *prefix,
+@@ -365,15 +366,15 @@ const char *mutt_attach_fmt (char *dest,
+   }
+   
+   if (optional)
+-    mutt_FormatString (dest, destlen, col, ifstring, mutt_attach_fmt, data, 0);
++    mutt_FormatString (dest, destlen, col, cols, ifstring, mutt_attach_fmt, data, 0);
+   else if (flags & M_FORMAT_OPTIONAL)
+-    mutt_FormatString (dest, destlen, col, elsestring, mutt_attach_fmt, data, 0);
++    mutt_FormatString (dest, destlen, col, cols, elsestring, mutt_attach_fmt, data, 0);
+   return (src);
+ }
+ 
+ static void attach_entry (char *b, size_t blen, MUTTMENU *menu, int num)
+ {
+-  mutt_FormatString (b, blen, 0, NONULL (AttachFormat), mutt_attach_fmt, (unsigned long) (((ATTACHPTR **)menu->data)[num]), M_FORMAT_ARROWCURSOR);
++  mutt_FormatString (b, blen, 0, COLS - SidebarWidth, NONULL (AttachFormat), mutt_attach_fmt, (unsigned long) (((ATTACHPTR **)menu->data)[num]), M_FORMAT_ARROWCURSOR);
+ }
+ 
+ int mutt_tag_attach (MUTTMENU *menu, int n, int m)
+diff --git a/remailer.c b/remailer.c
+index fe9c7f2..3f665af 100644
+--- a/remailer.c
++++ b/remailer.c
+@@ -375,6 +375,7 @@ static const char *mix_format_caps (REMAILER *r)
+ static const char *mix_entry_fmt (char *dest,
+ 				  size_t destlen,
+ 				  size_t col,
++                                  int cols,
+ 				  char op,
+ 				  const char *src,
+ 				  const char *prefix,
+@@ -427,9 +428,9 @@ static const char *mix_entry_fmt (char *dest,
+   }
+ 
+   if (optional)
+-    mutt_FormatString (dest, destlen, col, ifstring, mutt_attach_fmt, data, 0);
++    mutt_FormatString (dest, destlen, col, cols, ifstring, mutt_attach_fmt, data, 0);
+   else if (flags & M_FORMAT_OPTIONAL)
+-    mutt_FormatString (dest, destlen, col, elsestring, mutt_attach_fmt, data, 0);
++    mutt_FormatString (dest, destlen, col, cols, elsestring, mutt_attach_fmt, data, 0);
+   return (src);
+ }
+ 
+@@ -438,7 +439,7 @@ static const char *mix_entry_fmt (char *dest,
+ static void mix_entry (char *b, size_t blen, MUTTMENU *menu, int num)
+ {
+   REMAILER **type2_list = (REMAILER **) menu->data;
+-  mutt_FormatString (b, blen, 0, NONULL (MixEntryFormat), mix_entry_fmt,
++  mutt_FormatString (b, blen, 0, COLS - SidebarWidth, NONULL (MixEntryFormat), mix_entry_fmt,
+ 		     (unsigned long) type2_list[num], M_FORMAT_ARROWCURSOR);
+ }
+ 
 diff --git a/sidebar.c b/sidebar.c
 new file mode 100644
-index 0000000..333ec60
+index 0000000..ea81e1e
 --- /dev/null
 +++ b/sidebar.c
-@@ -0,0 +1,1101 @@
+@@ -0,0 +1,1077 @@
 +/* Copyright (C) 2004 Justin Hibbits <jrh29@po.cwru.edu>
 + * Copyright (C) 2004 Thomer M. Gil <mutt@thomer.com>
 + * Copyright (C) 2015-2016 Richard Russon <rich@flatcap.org>
@@ -3414,87 +4255,26 @@ index 0000000..333ec60
 +/* Previous values for some sidebar config */
 +static short  OldVisible;	/* sidebar_visible */
 +static short  OldWidth;		/* sidebar_width */
-+static short  PreviousSort;	/* sidebar_sort_method */
-+static time_t LastRefresh;	/* Time of last refresh */
-+
-+/* Keep track of various BUFFYs */
-+static BUFFY *TopBuffy;		/* First mailbox visible in sidebar */
-+static BUFFY *OpnBuffy;		/* Current (open) mailbox */
-+static BUFFY *HilBuffy;		/* Highlighted mailbox */
-+static BUFFY *BotBuffy;		/* Last mailbox visible in sidebar */
-+static BUFFY *Outgoing;		/* Last mailbox in the linked list */
++static short PreviousSort = SORT_ORDER;  /* sidebar_sort_method */
 +
 +/**
 + * struct sidebar_entry - Info about folders in the sidebar
-+ *
-+ * Used in the mutt_FormatString callback
 + */
-+struct sidebar_entry
++typedef struct sidebar_entry
 +{
-+  char         box[STRING];
++  char         box[STRING];     /* formatted mailbox name */
 +  BUFFY       *buffy;
-+};
++  short        is_hidden;
++} SBENTRY;
 +
++static int EntryCount = 0;
++static int EntryLen   = 0;
++static SBENTRY **Entries = NULL;
 +
-+/**
-+ * find_next_new - Find the next folder that contains new mail
-+ * @wrap: Wrap around to the beginning if the end is reached
-+ *
-+ * Search down the list of mail folders for one containing new mail.
-+ *
-+ * Returns:
-+ *	BUFFY*: Success
-+ *	NULL:   Failure
-+ */
-+static BUFFY *find_next_new (int wrap)
-+{
-+  BUFFY *b = HilBuffy;
-+  if (!b)
-+    return NULL;
-+
-+  do
-+  {
-+    b = b->next;
-+    if (!b && wrap)
-+      b = Incoming;
-+    if (!b || (b == HilBuffy))
-+      break;
-+    if (b->msg_unread > 0)
-+      return b;
-+  } while (b);
-+
-+  return NULL;
-+}
-+
-+/**
-+ * find_prev_new - Find the previous folder that contains new mail
-+ * @wrap: Wrap around to the beginning if the end is reached
-+ *
-+ * Search up the list of mail folders for one containing new mail.
-+ *
-+ * Returns:
-+ *	BUFFY*: Success
-+ *	NULL:   Failure
-+ */
-+static BUFFY *find_prev_new (int wrap)
-+{
-+  BUFFY *b = HilBuffy;
-+  if (!b)
-+    return NULL;
-+
-+  do
-+  {
-+    b = b->prev;
-+    if (!b && wrap)
-+      b = Outgoing;
-+    if (!b || (b == HilBuffy))
-+      break;
-+    if (b->msg_unread > 0)
-+      return b;
-+  } while (b);
-+
-+  return NULL;
-+}
++static int TopIndex = -1;    /* First mailbox visible in sidebar */
++static int OpnIndex = -1;    /* Current (open) mailbox */
++static int HilIndex = -1;    /* Highlighted mailbox */
++static int BotIndex = -1;    /* Last mailbox visible in sidebar */
 +
 +/**
 + * cb_format_str - Create the string to show in the sidebar
@@ -3517,11 +4297,11 @@ index 0000000..333ec60
 + *
 + * Returns: src (unchanged)
 + */
-+static const char *cb_format_str(char *dest, size_t destlen, size_t col, char op,
++static const char *cb_format_str(char *dest, size_t destlen, size_t col, int cols, char op,
 +                                 const char *src, const char *prefix, const char *ifstring,
 +                                 const char *elsestring, unsigned long data, format_flag flags)
 +{
-+  struct sidebar_entry *sbe = (struct sidebar_entry *) data;
++  SBENTRY *sbe = (SBENTRY *) data;
 +  unsigned int optional;
 +  char fmt[STRING];
 +
@@ -3534,7 +4314,7 @@ index 0000000..333ec60
 +  if (!b)
 +    return src;
 +
-+  int c = Context && (mutt_strcmp (Context->path, b->path) == 0);
++  int c = Context && (mutt_strcmp (Context->realpath, b->realpath) == 0);
 +
 +  optional = flags & M_FORMAT_OPTIONAL;
 +
@@ -3630,9 +4410,9 @@ index 0000000..333ec60
 +  }
 +
 +  if (optional)
-+    mutt_FormatString (dest, destlen, col, ifstring,   cb_format_str, (unsigned long) sbe, flags);
++    mutt_FormatString (dest, destlen, col, cols, ifstring,   cb_format_str, (unsigned long) sbe, flags);
 +  else if (flags & M_FORMAT_OPTIONAL)
-+    mutt_FormatString (dest, destlen, col, elsestring, cb_format_str, (unsigned long) sbe, flags);
++    mutt_FormatString (dest, destlen, col, cols, elsestring, cb_format_str, (unsigned long) sbe, flags);
 +
 +  /* We return the format string, unchanged */
 +  return src;
@@ -3653,21 +4433,14 @@ index 0000000..333ec60
 + * us using cb_format_str() for the sidebar specific formatting characters.
 + */
 +static void make_sidebar_entry (char *buf, unsigned int buflen, int width, char *box,
-+                                BUFFY *b)
++                                SBENTRY *sbe)
 +{
-+  struct sidebar_entry sbe;
-+
-+  if (!buf || !box || !b)
++  if (!buf || !box || !sbe)
 +    return;
 +
-+  sbe.buffy = b;
-+  strfcpy (sbe.box, box, sizeof (sbe.box));
++  strfcpy (sbe->box, box, sizeof (sbe->box));
 +
-+  /* Temporarily lie about the screen width */
-+  int oc = COLS;
-+  COLS = width + SidebarWidth;
-+  mutt_FormatString (buf, buflen, 0, NONULL(SidebarFormat), cb_format_str, (unsigned long) &sbe, 0);
-+  COLS = oc;
++  mutt_FormatString (buf, buflen, 0, width, NONULL(SidebarFormat), cb_format_str, (unsigned long) sbe, 0);
 +
 +  /* Force string to be exactly the right width */
 +  int w = mutt_strwidth (buf);
@@ -3688,30 +4461,21 @@ index 0000000..333ec60
 +}
 +
 +/**
-+ * cb_qsort_buffy - qsort callback to sort BUFFYs
-+ * @a: First  BUFFY to compare
-+ * @b: Second BUFFY to compare
-+ *
-+ * Compare the paths of two BUFFYs taking the locale into account.
++ * cb_qsort_sbe - qsort callback to sort SBENTRYs
++ * @a: First  SBENTRY to compare
++ * @b: Second SBENTRY to compare
 + *
 + * Returns:
 + *	-1: a precedes b
 + *	 0: a and b are identical
 + *	 1: b precedes a
 + */
-+static int cb_qsort_buffy (const void *a, const void *b)
++static int cb_qsort_sbe (const void *a, const void *b)
 +{
-+  const BUFFY *b1 = *(const BUFFY **) a;
-+  const BUFFY *b2 = *(const BUFFY **) b;
-+
-+  /* Special case -- move hidden BUFFYs to the end */
-+  if (b1->is_hidden != b2->is_hidden)
-+  {
-+    if (b1->is_hidden)
-+      return 1;
-+    else
-+      return -1;
-+  }
++  const SBENTRY *sbe1 = *(const SBENTRY **) a;
++  const SBENTRY *sbe2 = *(const SBENTRY **) b;
++  BUFFY *b1 = sbe1->buffy;
++  BUFFY *b2 = sbe2->buffy;
 +
 +  int result = 0;
 +
@@ -3738,43 +4502,9 @@ index 0000000..333ec60
 +}
 +
 +/**
-+ * buffy_going - Prevent our pointers becoming invalid
-+ * @b: BUFFY about to be deleted
++ * update_entries_visibility - Should a sidebar_entry be displayed in the sidebar
 + *
-+ * If we receive a delete-notification for a BUFFY, we need to change any
-+ * pointers we have to reference a different BUFFY, or set them to NULL.
-+ *
-+ * We don't update the prev/next pointers, they'll be fixed on the next
-+ * call to prepare_sidebar().
-+ *
-+ * Returns:
-+ *	A valid alternative BUFFY, or NULL
-+ */
-+static BUFFY *buffy_going (const BUFFY *b)
-+{
-+  if (!b)
-+    return NULL;
-+
-+  if (b->prev)
-+  {
-+    b->prev->next = NULL;
-+  }
-+
-+  if (b->next)
-+  {
-+    b->next->prev = NULL;
-+    return b->next;
-+  }
-+
-+  return b->prev;
-+}
-+
-+/**
-+ * update_buffy_visibility - Should a BUFFY be displayed in the sidebar
-+ * @arr:     array of BUFFYs
-+ * @arr_len: number of BUFFYs in array
-+ *
-+ * For each BUFFY in the array, check whether we should display it.
++ * For each SBENTRY in the Entries array, check whether we should display it.
 + * This is determined by several criteria.  If the BUFFY:
 + *	is the currently open mailbox
 + *	is the currently highlighted mailbox
@@ -3782,81 +4512,96 @@ index 0000000..333ec60
 + *	has flagged messages
 + *	is whitelisted
 + */
-+static void update_buffy_visibility (BUFFY **arr, int arr_len)
++static void update_entries_visibility (void)
 +{
-+  if (!arr)
-+    return;
-+
 +  short new_only = option (OPTSIDEBARNEWMAILONLY);
-+
-+  BUFFY *b;
++  SBENTRY *sbe;
 +  int i;
-+  for (i = 0; i < arr_len; i++)
-+  {
-+    b = arr[i];
 +
-+    b->is_hidden = 0;
++  for (i = 0; i < EntryCount; i++)
++  {
++    sbe = Entries[i];
++
++    sbe->is_hidden = 0;
 +
 +    if (!new_only)
 +      continue;
 +
-+    if ((b == OpnBuffy) || (b->msg_unread  > 0) ||
-+        (b == HilBuffy) || (b->msg_flagged > 0))
++    if ((i == OpnIndex) || (sbe->buffy->msg_unread  > 0) || sbe->buffy->new ||
++        (i == HilIndex) || (sbe->buffy->msg_flagged > 0))
 +      continue;
 +
-+    if (Context && (strcmp (b->path, Context->path) == 0))
++    if (Context && (mutt_strcmp (sbe->buffy->realpath, Context->realpath) == 0))
 +      /* Spool directory */
 +      continue;
 +
-+    if (mutt_find_list (SidebarWhitelist, b->path))
++    if (mutt_find_list (SidebarWhitelist, sbe->buffy->path))
 +      /* Explicitly asked to be visible */
 +      continue;
 +
-+    b->is_hidden = 1;
++    sbe->is_hidden = 1;
 +  }
 +}
 +
 +/**
-+ * sort_buffy_array - Sort an array of BUFFY pointers
-+ * @arr:     array of BUFFYs
-+ * @arr_len: number of BUFFYs in array
-+ *
-+ * Sort an array of BUFFY pointers according to the current sort config
-+ * option "sidebar_sort_method". This calls qsort to do the work which calls our
-+ * callback function "cb_qsort_buffy".
-+ *
-+ * Once sorted, the prev/next links will be reconstructed.
++ * unsort_entries - Restore Entries array order to match Buffy list order
 + */
-+static void sort_buffy_array (BUFFY **arr, int arr_len)
++static void unsort_entries (void)
 +{
-+  if (!arr)
-+    return;
++  BUFFY *cur = Incoming;
++  int i = 0, j;
++  SBENTRY *tmp;
 +
-+  /* These are the only sort methods we understand */
-+  short ssm = (SidebarSortMethod & SORT_MASK);
-+  if ((ssm == SORT_COUNT)     ||
-+      (ssm == SORT_COUNT_NEW) ||
-+      (ssm == SORT_DESC)      ||
-+      (ssm == SORT_FLAGGED)   ||
-+      (ssm == SORT_PATH))
-+    qsort (arr, arr_len, sizeof (*arr), cb_qsort_buffy);
-+
-+  int i;
-+  for (i = 0; i < (arr_len - 1); i++)
-+    arr[i]->next = arr[i + 1];
-+  arr[arr_len - 1]->next = NULL;
-+
-+  for (i = 1; i < arr_len; i++)
-+    arr[i]->prev = arr[i - 1];
-+  arr[0]->prev = NULL;
++  while (cur && (i < EntryCount))
++  {
++    j = i;
++    while ((j < EntryCount) &&
++           (Entries[j]->buffy != cur))
++      j++;
++    if (j < EntryCount)
++    {
++      if (j != i)
++      {
++        tmp = Entries[i];
++        Entries[i] = Entries[j];
++        Entries[j] = tmp;
++      }
++      i++;
++    }
++    cur = cur->next;
++  }
 +}
 +
 +/**
-+ * prepare_sidebar - Prepare the list of BUFFYs for the sidebar display
++ * sort_entries - Sort Entries array.
++ *
++ * Sort the Entries array according to the current sort config
++ * option "sidebar_sort_method". This calls qsort to do the work which calls our
++ * callback function "cb_qsort_sbe".
++ *
++ * Once sorted, the prev/next links will be reconstructed.
++ */
++static void sort_entries (void)
++{
++  short ssm = (SidebarSortMethod & SORT_MASK);
++
++  /* These are the only sort methods we understand */
++  if ((ssm == SORT_COUNT)     ||
++      (ssm == SORT_COUNT_NEW) ||
++      (ssm == SORT_FLAGGED)   ||
++      (ssm == SORT_PATH))
++    qsort (Entries, EntryCount, sizeof (*Entries), cb_qsort_sbe);
++  else if ((ssm == SORT_ORDER) &&
++           (SidebarSortMethod != PreviousSort))
++    unsort_entries ();
++}
++
++/**
++ * prepare_sidebar - Prepare the list of SBENTRYs for the sidebar display
 + * @page_size:  The number of lines on a page
 + *
-+ * Before painting the sidebar, we count the BUFFYs, determine which are
-+ * visible, sort them and set up our page pointers.
++ * Before painting the sidebar, we determine which are visible, sort
++ * them and set up our page pointers.
 + *
 + * This is a lot of work to do each refresh, but there are many things that
 + * can change outside of the sidebar that we don't hear about.
@@ -3867,66 +4612,45 @@ index 0000000..333ec60
 + */
 +static int prepare_sidebar (int page_size)
 +{
-+  BUFFY *b = Incoming;
-+  if (!b)
++  int i;
++  SBENTRY *opn_entry = NULL, *hil_entry = NULL;
++
++  if (!EntryCount)
 +    return 0;
 +
-+  int count = 0;
-+  for (; b; b = b->next)
-+    count++;
++  if (OpnIndex >= 0)
++    opn_entry = Entries[OpnIndex];
++  if (HilIndex >= 0)
++    hil_entry = Entries[HilIndex];
 +
-+  BUFFY **arr = safe_malloc (count * sizeof (*arr));
++  update_entries_visibility ();
++  sort_entries ();
 +
-+  int i = 0;
-+  for (b = Incoming; b; b = b->next, i++)
-+    arr[i] = b;
-+
-+  update_buffy_visibility (arr, count);
-+  sort_buffy_array        (arr, count);
-+
-+  Incoming = arr[0];
-+
-+  int top_index =  0;
-+  int opn_index = -1;
-+  int hil_index = -1;
-+  int bot_index = -1;
-+
-+  for (i = 0; i < count; i++)
++  for (i = 0; i < EntryCount; i++)
 +  {
-+    if (OpnBuffy == arr[i])
-+      opn_index = i;
-+    if (HilBuffy == arr[i])
-+      hil_index = i;
++    if (opn_entry == Entries[i])
++      OpnIndex = i;
++    if (hil_entry == Entries[i])
++      HilIndex = i;
 +  }
 +
-+  if (!HilBuffy || (SidebarSortMethod != PreviousSort))
++  if ((HilIndex < 0) || (SidebarSortMethod != PreviousSort))
 +  {
-+    if (OpnBuffy)
-+    {
-+      HilBuffy  = OpnBuffy;
-+      hil_index = opn_index;
-+    }
++    if (OpnIndex >= 0)
++      HilIndex  = OpnIndex;
 +    else
-+    {
-+      HilBuffy  = arr[0];
-+      hil_index = 0;
-+    }
++      HilIndex  = 0;
 +  }
-+  if (TopBuffy)
-+    top_index = (hil_index / page_size) * page_size;
++  if (TopIndex >= 0)
++    TopIndex = (HilIndex / page_size) * page_size;
 +  else
-+    top_index = hil_index;
-+  TopBuffy = arr[top_index];
++    TopIndex = HilIndex;
 +
-+  bot_index = top_index + page_size - 1;
-+  if (bot_index > (count - 1))
-+    bot_index = count - 1;
-+  BotBuffy  = arr[bot_index];
-+
-+  Outgoing = arr[count - 1];
++  BotIndex = TopIndex + page_size - 1;
++  if (BotIndex > (EntryCount - 1))
++    BotIndex = EntryCount - 1;
 +
 +  PreviousSort = SidebarSortMethod;
-+  FREE (&arr);
 +  return 1;
 +}
 +
@@ -4076,25 +4800,29 @@ index 0000000..333ec60
 + */
 +static void draw_sidebar (int first_row, int num_rows, int div_width)
 +{
-+  BUFFY *b = TopBuffy;
-+  if (!b)
++  int entryidx;
++  SBENTRY *entry;
++  BUFFY *b;
++  if (TopIndex < 0)
 +    return;
 +
 +  int w = MIN(COLS, (SidebarWidth - div_width));
 +  int row = 0;
-+  for (b = TopBuffy; b && (row < num_rows); b = b->next)
++  for (entryidx = TopIndex; (entryidx < EntryCount) && (row < num_rows); entryidx++)
 +  {
-+    if (b->is_hidden)
++    entry = Entries[entryidx];
++    if (entry->is_hidden)
 +      continue;
++    b = entry->buffy;
 +
-+    if (b == OpnBuffy)
++    if (entryidx == OpnIndex)
 +    {
 +      if ((ColorDefs[MT_COLOR_SB_INDICATOR] != 0))
 +        SETCOLOR(MT_COLOR_SB_INDICATOR);
 +      else
 +        SETCOLOR(MT_COLOR_INDICATOR);
 +    }
-+    else if (b == HilBuffy)
++    else if (entryidx == HilIndex)
 +      SETCOLOR(MT_COLOR_HIGHLIGHT);
 +    else if ((ColorDefs[MT_COLOR_SB_SPOOLFILE] != 0) &&
 +               (mutt_strcmp (b->path, Spoolfile) == 0))
@@ -4107,9 +4835,8 @@ index 0000000..333ec60
 +      SETCOLOR(MT_COLOR_NORMAL);
 +
 +    move (first_row + row, 0);
-+    if (Context && Context->path &&
-+        (!strcmp (b->path, Context->path)||
-+         !strcmp (b->realpath, Context->path)))
++    if (Context && Context->realpath &&
++        !mutt_strcmp (b->realpath, Context->realpath))
 +    {
 +      b->msg_unread  = Context->unread;
 +      b->msg_count   = Context->msgcount;
@@ -4166,14 +4893,16 @@ index 0000000..333ec60
 +        if (option (OPTSIDEBARSHORTPATH))
 +          tmp_folder_name += lastsep;  /* basename */
 +        sidebar_folder_name = malloc (strlen (tmp_folder_name) + sidebar_folder_depth*strlen (NONULL(SidebarIndentString)) + 1);
++                                 int sfn_len = strlen (tmp_folder_name) + sidebar_folder_depth*strlen (NONULL(SidebarIndentString)) + 1;
++        sidebar_folder_name = safe_malloc (sfn_len);
 +        sidebar_folder_name[0]=0;
 +        for (i=0; i < sidebar_folder_depth; i++)
-+          strncat (sidebar_folder_name, NONULL(SidebarIndentString), strlen (NONULL(SidebarIndentString)));
-+        strncat (sidebar_folder_name, tmp_folder_name, strlen (tmp_folder_name));
++          safe_strcat (sidebar_folder_name, sfn_len, NONULL(SidebarIndentString));
++        safe_strcat (sidebar_folder_name, sfn_len, tmp_folder_name);
 +      }
 +    }
 +    char str[STRING];
-+    make_sidebar_entry (str, sizeof (str), w, sidebar_folder_name, b);
++    make_sidebar_entry (str, sizeof (str), w, sidebar_folder_name, entry);
 +    printw ("%s", str);
 +    if (sidebar_folder_depth > 0)
 +      FREE (&sidebar_folder_name);
@@ -4220,8 +4949,13 @@ index 0000000..333ec60
 +  /* if (OldVisible == 0) */
 +  /* 	mutt_buffy_check (1); we probably have bad or no numbers */
 +
++#ifdef USE_SLANG_CURSES
++  int x = SLsmg_get_column();
++  int y = SLsmg_get_row();
++#else
 +  int x = getcurx (stdscr);
 +  int y = getcury (stdscr);
++#endif
 +
 +  int first_row = 0;
 +  int num_rows  = LINES - 2;
@@ -4251,26 +4985,123 @@ index 0000000..333ec60
 +}
 +
 +/**
-+ * mutt_sb_should_refresh - Check if the sidebar is due to be refreshed
-+ *
-+ * The "sidebar_refresh_time" config option allows the user to limit the frequency
-+ * with which the sidebar is refreshed.
++ * select_next - Selects the next unhidden mailbox
 + *
 + * Returns:
-+ *	1  Yes, refresh is due
-+ *	0  No,  refresh happened recently
++ *      1: Success
++ *      0: Failure
 + */
-+int mutt_sb_should_refresh (void)
++static int select_next (void)
 +{
-+  if (!option (OPTSIDEBAR))
++  int entry = HilIndex;
++
++  if (!EntryCount || HilIndex < 0)
 +    return 0;
 +
-+  if (SidebarRefreshTime == 0)
++  do
++  {
++    entry++;
++    if (entry == EntryCount)
++      return 0;
++  } while (Entries[entry]->is_hidden);
++
++  HilIndex = entry;
++  return 1;
++}
++
++/**
++ * select_next_new - Selects the next new mailbox
++ *
++ * Search down the list of mail folders for one containing new mail.
++ *
++ * Returns:
++ *	1: Success
++ *	0: Failure
++ */
++static int select_next_new (void)
++{
++  int entry = HilIndex;
++
++  if (!EntryCount || HilIndex < 0)
 +    return 0;
 +
-+  time_t diff = (time (NULL) - LastRefresh);
++  do
++  {
++    entry++;
++    if (entry == EntryCount)
++    {
++      if (option (OPTSIDEBARNEXTNEWWRAP))
++        entry = 0;
++      else
++        return 0;
++    }
++    if (entry == HilIndex)
++      return 0;
++  } while (!Entries[entry]->buffy->new &&
++           !Entries[entry]->buffy->msg_unread);
 +
-+  return (diff >= SidebarRefreshTime);
++  HilIndex = entry;
++  return 1;
++}
++
++/**
++ * select_prev - Selects the previous unhidden mailbox
++ *
++ * Returns:
++ *      1: Success
++ *      0: Failure
++ */
++static int select_prev (void)
++{
++  int entry = HilIndex;
++
++  if (!EntryCount || HilIndex < 0)
++    return 0;
++
++  do
++  {
++    entry--;
++    if (entry < 0)
++      return 0;
++  } while (Entries[entry]->is_hidden);
++
++  HilIndex = entry;
++  return 1;
++}
++
++/**
++ * select_prev_new - Selects the previous new mailbox
++ *
++ * Search up the list of mail folders for one containing new mail.
++ *
++ * Returns:
++ *	1: Success
++ *	0: Failure
++ */
++static int select_prev_new (void)
++{
++  int entry = HilIndex;
++
++  if (!EntryCount || HilIndex < 0)
++    return 0;
++
++  do
++  {
++    entry--;
++    if (entry < 0)
++    {
++      if (option (OPTSIDEBARNEXTNEWWRAP))
++        entry = EntryCount - 1;
++      else
++        return 0;
++    }
++    if (entry == HilIndex)
++      return 0;
++  } while (!Entries[entry]->buffy->new &&
++           !Entries[entry]->buffy->msg_unread);
++
++  HilIndex = entry;
++  return 1;
 +}
 +
 +/**
@@ -4290,57 +5121,42 @@ index 0000000..333ec60
 + */
 +void mutt_sb_change_mailbox (int op)
 +{
-+  BUFFY *b;
-+  if (!HilBuffy)	/* It'll get reset on the next draw */
++  if (!option (OPTSIDEBAR))
++    return;
++
++  if (HilIndex < 0)	/* It'll get reset on the next draw */
 +    return;
 +
 +  switch (op)
 +  {
 +    case OP_SIDEBAR_NEXT:
-+      if (!HilBuffy->next)
++      if (! select_next ())
 +        return;
-+      if (HilBuffy->next->is_hidden)
-+        return;
-+      HilBuffy = HilBuffy->next;
 +      break;
 +    case OP_SIDEBAR_NEXT_NEW:
-+      b = find_next_new (option (OPTSIDEBARNEXTNEWWRAP));
-+      if (!b)
++      if (! select_next_new ())
 +        return;
-+      else
-+        HilBuffy = b;
 +      break;
 +    case OP_SIDEBAR_PAGE_DOWN:
-+      HilBuffy = BotBuffy;
-+      if (HilBuffy->next)
-+        HilBuffy = HilBuffy->next;
++      HilIndex = BotIndex;
++      select_next ();
 +      break;
 +    case OP_SIDEBAR_PAGE_UP:
-+      HilBuffy = TopBuffy;
-+      if (HilBuffy != Incoming)
-+        HilBuffy = HilBuffy->prev;
++      HilIndex = TopIndex;
++      select_prev ();
 +      break;
 +    case OP_SIDEBAR_PREV:
-+      if (!HilBuffy->prev)
++      if (! select_prev ())
 +        return;
-+      if (HilBuffy->prev->is_hidden)	/* Can't happen, we've sorted the hidden to the end */
-+        return;
-+      HilBuffy = HilBuffy->prev;
 +      break;
 +    case OP_SIDEBAR_PREV_NEW:
-+      b = find_prev_new (option (OPTSIDEBARNEXTNEWWRAP));
-+      if (!b)
++      if (! select_prev_new ())
 +        return;
-+      else
-+        HilBuffy = b;
 +      break;
 +    default:
 +      return;
 +  }
-+
-+  /* We can change folder even if the sidebar is hidden */
-+  if (option (OPTSIDEBAR))
-+    mutt_sb_draw();
++  SidebarNeedsRedraw = 1;
 +}
 +
 +/**
@@ -4360,8 +5176,7 @@ index 0000000..333ec60
 +
 +  for (; b; b = b->next)
 +  {
-+    if (!strcmp (b->path,     ctx->path) ||
-+        !strcmp (b->realpath, ctx->path))
++    if (!mutt_strcmp (b->realpath, ctx->realpath))
 +    {
 +      b->msg_unread  = ctx->unread;
 +      b->msg_count   = ctx->msgcount;
@@ -4381,55 +5196,39 @@ index 0000000..333ec60
 + */
 +const char *mutt_sb_get_highlight (void)
 +{
-+  if (!HilBuffy)
++  if (!option (OPTSIDEBAR))
 +    return NULL;
 +
-+  return HilBuffy->path;
++  if (!EntryCount || HilIndex < 0)
++    return NULL;
++
++  return Entries[HilIndex]->buffy->path;
 +}
 +
 +/**
-+ * mutt_sb_set_open_buffy - Set the OpnBuffy based on a mailbox path
-+ * @path: Mailbox path
++ * mutt_sb_set_open_buffy - Set the OpnBuffy based on the global Context
 + *
 + * Search through the list of mailboxes.  If a BUFFY has a matching path, set
 + * OpnBuffy to it.
 + */
-+BUFFY *mutt_sb_set_open_buffy (const char *path)
++void mutt_sb_set_open_buffy (void)
 +{
-+  /* Even if the sidebar is hidden */
++  int entry;
 +
-+  BUFFY *b = Incoming;
++  OpnIndex = -1;
 +
-+  if (!path || !b)
-+    return NULL;
++  if (!Context)
++    return;
 +
-+  OpnBuffy = NULL;
-+
-+  for (; b; b = b->next)
++  for (entry = 0; entry < EntryCount; entry++)
 +  {
-+    if (!strcmp (b->path,     path) ||
-+        !strcmp (b->realpath, path))
++    if (!mutt_strcmp (Entries[entry]->buffy->realpath, Context->realpath))
 +    {
-+      OpnBuffy = b;
-+      HilBuffy = b;
++      OpnIndex = entry;
++      HilIndex = entry;
 +      break;
 +    }
 +  }
-+
-+  return OpnBuffy;
-+}
-+
-+/**
-+ * mutt_sb_set_update_time - Note the time that the sidebar was updated
-+ *
-+ * Update the timestamp representing the last sidebar update.  If the user
-+ * configures "sidebar_refresh_time", this will help to reduce traffic.
-+ */
-+void mutt_sb_set_update_time (void)
-+{
-+  /* XXX - should this be public? */
-+
-+  LastRefresh = time (NULL);
 +}
 +
 +/**
@@ -4443,6 +5242,8 @@ index 0000000..333ec60
 + */
 +void mutt_sb_notify_mailbox (BUFFY *b, int created)
 +{
++  int del_index;
++
 +  if (!b)
 +    return;
 +
@@ -4451,43 +5252,59 @@ index 0000000..333ec60
 +
 +  if (created)
 +  {
-+    if (!TopBuffy)
-+      TopBuffy = b;
-+    if (!HilBuffy)
-+      HilBuffy = b;
-+    if (!BotBuffy)
-+      BotBuffy = b;
-+    if (!Outgoing)
-+      Outgoing = b;
-+    if (!OpnBuffy && Context)
++    if (EntryCount >= EntryLen)
 +    {
-+      /* This might happen if the user "unmailboxes *", then
-+       * "mailboxes" our current mailbox back again */
-+      if (mutt_strcmp (b->path, Context->path) == 0)
-+        OpnBuffy = b;
++      EntryLen += 10;
++      safe_realloc (&Entries, EntryLen * sizeof (SBENTRY *));
 +    }
++    Entries[EntryCount] = safe_calloc (1, sizeof(SBENTRY));
++    Entries[EntryCount]->buffy = b;
++
++    if (TopIndex < 0)
++      TopIndex = EntryCount;
++    if (HilIndex < 0)
++      HilIndex = EntryCount;
++    if (BotIndex < 0)
++      BotIndex = EntryCount;
++    if ((OpnIndex < 0) && Context &&
++        (mutt_strcmp (b->realpath, Context->realpath) == 0))
++      OpnIndex = EntryCount;
++
++    EntryCount++;
 +  }
 +  else
 +  {
-+    BUFFY *replacement = buffy_going (b);
-+    if (TopBuffy == b)
-+      TopBuffy = replacement;
-+    if (OpnBuffy == b)
-+      OpnBuffy = NULL;
-+    if (HilBuffy == b)
-+      HilBuffy = replacement;
-+    if (BotBuffy == b)
-+      BotBuffy = replacement;
-+    if (Outgoing == b)
-+      Outgoing = replacement;
++    for (del_index = 0; del_index < EntryCount; del_index++)
++      if (Entries[del_index]->buffy == b)
++        break;
++    if (del_index == EntryCount)
++      return;
++    FREE (&Entries[del_index]);
++    EntryCount--;
++
++    if (TopIndex > del_index || TopIndex == EntryCount)
++      TopIndex--;
++    if (OpnIndex == del_index)
++      OpnIndex = -1;
++    else if (OpnIndex > del_index)
++      OpnIndex--;
++    if (HilIndex > del_index || HilIndex == EntryCount)
++      HilIndex--;
++    if (BotIndex > del_index || BotIndex == EntryCount)
++      BotIndex--;
++
++    for (; del_index < EntryCount; del_index++)
++      Entries[del_index] = Entries[del_index + 1];
 +  }
++
++  SidebarNeedsRedraw = 1;
 +}
 diff --git a/sidebar.h b/sidebar.h
 new file mode 100644
-index 0000000..a97e024
+index 0000000..f7875ea
 --- /dev/null
 +++ b/sidebar.h
-@@ -0,0 +1,36 @@
+@@ -0,0 +1,34 @@
 +/* Copyright (C) 2004 Justin Hibbits <jrh29@po.cwru.edu>
 + * Copyright (C) 2004 Thomer M. Gil <mutt@thomer.com>
 + * Copyright (C) 2015-2016 Richard Russon <rich@flatcap.org>
@@ -4519,29 +5336,60 @@ index 0000000..a97e024
 +void         mutt_sb_init (void);
 +void         mutt_sb_notify_mailbox (BUFFY *b, int created);
 +void         mutt_sb_set_buffystats (const CONTEXT *ctx);
-+BUFFY *      mutt_sb_set_open_buffy (const char *path);
-+void         mutt_sb_set_update_time (void);
-+int          mutt_sb_should_refresh (void);
++BUFFY *      mutt_sb_set_open_buffy (void);
 +
 +#endif /* SIDEBAR_H */
+diff --git a/smime.c b/smime.c
+index 7f9a8b5..c6b96b7 100644
+--- a/smime.c
++++ b/smime.c
+@@ -159,6 +159,7 @@ int smime_valid_passphrase (void)
+ static const char *_mutt_fmt_smime_command (char *dest,
+ 					    size_t destlen,
+ 					    size_t col,
++                                            int cols,
+ 					    char op,
+ 					    const char *src,
+ 					    const char *prefix,
+@@ -284,10 +285,10 @@ static const char *_mutt_fmt_smime_command (char *dest,
+   }
+ 
+   if (optional)
+-    mutt_FormatString (dest, destlen, col, ifstring, _mutt_fmt_smime_command,
++    mutt_FormatString (dest, destlen, col, cols, ifstring, _mutt_fmt_smime_command,
+ 		       data, 0);
+   else if (flags & M_FORMAT_OPTIONAL)
+-    mutt_FormatString (dest, destlen, col, elsestring, _mutt_fmt_smime_command,
++    mutt_FormatString (dest, destlen, col, cols, elsestring, _mutt_fmt_smime_command,
+ 		       data, 0);
+ 
+   return (src);
+@@ -298,7 +299,7 @@ static const char *_mutt_fmt_smime_command (char *dest,
+ static void mutt_smime_command (char *d, size_t dlen,
+ 				struct smime_command_context *cctx, const char *fmt)
+ {
+-  mutt_FormatString (d, dlen, 0, NONULL(fmt), _mutt_fmt_smime_command,
++  mutt_FormatString (d, dlen, 0, COLS - SidebarWidth, NONULL(fmt), _mutt_fmt_smime_command,
+ 		    (unsigned long) cctx, 0);
+   dprint (2,(debugfile, "mutt_smime_command: %s\n", d));
+ }
 diff --git a/sort.h b/sort.h
-index f2832b2..f24491b 100644
+index f2832b2..26afdc6 100644
 --- a/sort.h
 +++ b/sort.h
-@@ -31,6 +31,12 @@
+@@ -31,6 +31,11 @@
  #define SORT_KEYID	12
  #define SORT_TRUST	13
  #define SORT_SPAM	14
 +#define SORT_COUNT	15
 +#define SORT_COUNT_NEW	16
-+#define SORT_DESC	17
-+#define SORT_FLAGGED	18
-+#define SORT_PATH	19
++#define SORT_FLAGGED	17
++#define SORT_PATH	18
 +
  /* dgc: Sort & SortAux are shorts, so I'm bumping these bitflags up from
   * bits 4 & 5 to bits 8 & 9 to make room for more sort keys in the future. */
  #define SORT_MASK	0xff
-@@ -50,6 +56,7 @@ WHERE short BrowserSort INITVAL (SORT_SUBJECT);
+@@ -50,6 +55,7 @@ WHERE short BrowserSort INITVAL (SORT_SUBJECT);
  WHERE short Sort INITVAL (SORT_DATE);
  WHERE short SortAux INITVAL (SORT_DATE); /* auxiliary sorting method */
  WHERE short SortAlias INITVAL (SORT_ALIAS);
@@ -4549,6 +5397,53 @@ index f2832b2..f24491b 100644
  
  /* FIXME: This one does not belong to here */
  WHERE short PgpSortKeys INITVAL (SORT_ADDRESS);
+diff --git a/status.c b/status.c
+index 2573b8d..61dbf61 100644
+--- a/status.c
++++ b/status.c
+@@ -40,7 +40,7 @@ static char *get_sort_str (char *buf, size_t buflen, int method)
+   return buf;
+ }
+ 
+-static void _menu_status_line (char *buf, size_t buflen, size_t col, MUTTMENU *menu, const char *p);
++static void _menu_status_line (char *buf, size_t buflen, size_t col, int cols, MUTTMENU *menu, const char *p);
+ 
+ /* %b = number of incoming folders with unread messages [option]
+  * %d = number of deleted messages [option]
+@@ -62,7 +62,7 @@ static void _menu_status_line (char *buf, size_t buflen, size_t col, MUTTMENU *m
+  * %v = Mutt version 
+  * %V = currently active limit pattern [option] */
+ static const char *
+-status_format_str (char *buf, size_t buflen, size_t col, char op, const char *src,
++status_format_str (char *buf, size_t buflen, size_t col, int cols, char op, const char *src,
+ 		   const char *prefix, const char *ifstring,
+ 		   const char *elsestring,
+ 		   unsigned long data, format_flag flags)
+@@ -296,19 +296,19 @@ status_format_str (char *buf, size_t buflen, size_t col, char op, const char *sr
+   }
+ 
+   if (optional)
+-    _menu_status_line (buf, buflen, col, menu, ifstring);
++    _menu_status_line (buf, buflen, col, cols, menu, ifstring);
+   else if (flags & M_FORMAT_OPTIONAL)
+-    _menu_status_line (buf, buflen, col, menu, elsestring);
++    _menu_status_line (buf, buflen, col, cols, menu, elsestring);
+ 
+   return (src);
+ }
+ 
+-static void _menu_status_line (char *buf, size_t buflen, size_t col, MUTTMENU *menu, const char *p)
++static void _menu_status_line (char *buf, size_t buflen, size_t col, int cols, MUTTMENU *menu, const char *p)
+ {
+-  mutt_FormatString (buf, buflen, col, p, status_format_str, (unsigned long) menu, 0);
++  mutt_FormatString (buf, buflen, col, cols, p, status_format_str, (unsigned long) menu, 0);
+ }
+ 
+ void menu_status_line (char *buf, size_t buflen, MUTTMENU *menu, const char *p)
+ {
+-  mutt_FormatString (buf, buflen, 0, p, status_format_str, (unsigned long) menu, 0);
++  mutt_FormatString (buf, buflen, 0, COLS - SidebarWidth, p, status_format_str, (unsigned long) menu, 0);
+ }
 diff --git a/version.c b/version.c
 index d586aad..a0cd472 100644
 --- a/version.c
@@ -4566,5 +5461,5 @@ index d586aad..a0cd472 100644
  	{ "USE_SMTP", 1 },
  #else
 -- 
-2.8.2
+2.9.0
 

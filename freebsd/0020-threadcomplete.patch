@@ -1,4 +1,4 @@
-From 3b73b84215c57dcd4e1e3f675222d81bf290a065 Mon Sep 17 00:00:00 2001
+From 22a68508883fe79f23042b29327c785bd7158a1b Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 15:24:12 +0100
 Subject: [PATCH 20/21] threadcomplete
@@ -9,7 +9,7 @@ Subject: [PATCH 20/21] threadcomplete
  2 files changed, 12 insertions(+)
 
 diff --git a/mutt.h b/mutt.h
-index 163ef0b..d8196fb 100644
+index 86a2b27..213c003 100644
 --- a/mutt.h
 +++ b/mutt.h
 @@ -195,6 +195,7 @@ enum
@@ -50,5 +50,5 @@ index 470f1a3..e70b503 100644
        return (pat->not ^ mutt_is_list_recipient (pat->alladdr, h->env->to, h->env->cc));
      case M_PERSONAL_RECIP:
 -- 
-2.8.2
+2.9.0
 

@@ -1,7 +1,7 @@
-From 547a85bfcbca975b929704e5ee75ce5f80a9a696 Mon Sep 17 00:00:00 2001
+From 08b90057c360a2638ca1db9a6efc8ab964f8087c Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Tue, 24 May 2016 17:22:39 +0100
-Subject: [PATCH 03/11] feature: status-color
+Subject: [PATCH 03/14] feature: status-color
 
 ---
  PATCHES                 |   1 +
@@ -18,14 +18,14 @@ Subject: [PATCH 03/11] feature: status-color
  create mode 100644 doc/muttrc.status-color
 
 diff --git a/PATCHES b/PATCHES
-index 9400723..f2056f5 100644
+index 75a4f03..2aad783 100644
 --- a/PATCHES
 +++ b/PATCHES
-@@ -7,3 +7,4 @@ patch-compress-neo-UNKNOWN
- patch-sidebar-neo-UNKNOWN
- patch-progress-neo-UNKNOWN
- patch-skip-quoted-neo-UNKNOWN
-+patch-status-color-neo-UNKNOWN
+@@ -7,3 +7,4 @@ patch-compress-neo-git
+ patch-sidebar-neo-git
+ patch-progress-neo-git
+ patch-skip-quoted-neo-git
++patch-status-color-neo-git
 diff --git a/README.status-color b/README.status-color
 new file mode 100644
 index 0000000..cbaa0fb
@@ -197,7 +197,7 @@ index e2ff989..0efc743 100644
    }
    else if (object == MT_COLOR_QUOTED)
 diff --git a/curs_main.c b/curs_main.c
-index f6f5550..51a0dd3 100644
+index 3f40e4d..9114aeb 100644
 --- a/curs_main.c
 +++ b/curs_main.c
 @@ -482,6 +482,111 @@ static void resort_index (MUTTMENU *menu)
@@ -312,20 +312,20 @@ index f6f5550..51a0dd3 100644
  static const struct mapping_t IndexHelp[] = {
    { N_("Quit"),  OP_QUIT },
    { N_("Del"),   OP_DELETE },
-@@ -667,7 +772,7 @@ int mutt_index_menu (void)
- #ifdef USE_SIDEBAR
- 	mutt_sb_set_buffystats (Context);
+@@ -657,7 +762,7 @@ int mutt_index_menu (void)
  #endif
+ 	move (option (OPTSTATUSONTOP) ? 0 : LINES-2, 0);
+ 	SETCOLOR (MT_COLOR_STATUS);
 -	mutt_paddstr (COLS, buf);
 +	mutt_draw_statusline (COLS, buf);
  	NORMAL_COLOR;
  	menu->redraw &= ~REDRAW_STATUS;
  	if (option(OPTTSENABLED) && TSSupported)
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index e5c4a66..633ac6a 100644
+index 761dacf..1d68abc 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
-@@ -10761,6 +10761,209 @@ <sect1 id="skip-quoted-patch">
+@@ -10797,6 +10797,209 @@ <sect1 id="skip-quoted-patch">
  	</sect2>
  </sect1>
  
@@ -611,10 +611,10 @@ index 75ea85a..69d06c5 100644
  
  void ci_init_color (void);
 diff --git a/pager.c b/pager.c
-index d4697ba..227727e 100644
+index 226fe15..db3c85c 100644
 --- a/pager.c
 +++ b/pager.c
-@@ -1830,13 +1830,13 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
+@@ -1841,13 +1841,13 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
  	size_t l2 = sizeof (buffer);
  	hfi.hdr = (IsHeader (extra)) ? extra->hdr : extra->bdy->hdr;
  	mutt_make_string_info (buffer, l1 < l2 ? l1 : l2, NONULL (PagerFmt), &hfi, M_FORMAT_MAKEPRINT);
@@ -631,10 +631,10 @@ index d4697ba..227727e 100644
  #ifdef USE_SIDEBAR
        if (!option (OPTSTATUSONTOP) || PagerIndexLines == 0)
 diff --git a/protos.h b/protos.h
-index 8e5f7aa..bfe78e4 100644
+index 686c5d1..d06c003 100644
 --- a/protos.h
 +++ b/protos.h
-@@ -180,6 +180,7 @@ void mutt_decode_base64 (STATE *s, long len, int istext, iconv_t cd);
+@@ -181,6 +181,7 @@ void mutt_decode_base64 (STATE *s, long len, int istext, iconv_t cd);
  void mutt_default_save (char *, size_t, HEADER *);
  void mutt_display_address (ENVELOPE *);
  void mutt_display_sanitize (char *);
@@ -643,5 +643,5 @@ index 8e5f7aa..bfe78e4 100644
  void mutt_edit_file (const char *, const char *);
  void mutt_edit_headers (const char *, const char *, HEADER *, char *, size_t);
 -- 
-2.8.2
+2.9.0
 

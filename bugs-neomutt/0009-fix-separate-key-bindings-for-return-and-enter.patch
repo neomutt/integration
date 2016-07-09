@@ -1,4 +1,4 @@
-From e6f072b6cef3e14f6ec38f840b56205487fc3182 Mon Sep 17 00:00:00 2001
+From eb18ac2d0b81165fad87159f9259c46ed08efc54 Mon Sep 17 00:00:00 2001
 From: Mike Frysinger <vapier@gentoo.org>
 Date: Tue, 31 May 2016 21:17:41 +0100
 Subject: [PATCH 09/10] fix: separate key bindings for <return> and <enter>
@@ -123,7 +123,7 @@ index 5747425..347bcde 100644
    { "insert",		OP_MIX_INSERT,	"i"       },
    { "delete",		OP_MIX_DELETE,  "d"	  },
 diff --git a/keymap.c b/keymap.c
-index e2c51ad..300b116 100644
+index 29b3c4f..4d7103d 100644
 --- a/keymap.c
 +++ b/keymap.c
 @@ -76,10 +76,8 @@ static struct mapping_t KeyNames[] = {
@@ -139,7 +139,7 @@ index e2c51ad..300b116 100644
    { "<Esc>",	'\033' },
    { "<Tab>",	'\t' },
    { "<Space>",	' ' },
-@@ -784,6 +782,7 @@ void km_init (void)
+@@ -785,6 +783,7 @@ void km_init (void)
    km_bindkey ("8", MENU_GENERIC, OP_JUMP);
    km_bindkey ("9", MENU_GENERIC, OP_JUMP);
  
@@ -147,7 +147,7 @@ index e2c51ad..300b116 100644
    km_bindkey ("<enter>", MENU_GENERIC, OP_GENERIC_SELECT_ENTRY);
  
    /* Miscellaneous extra bindings */
-@@ -795,6 +794,7 @@ void km_init (void)
+@@ -796,6 +795,7 @@ void km_init (void)
    km_bindkey ("K", MENU_MAIN, OP_PREV_ENTRY);
    km_bindkey ("x", MENU_MAIN, OP_EXIT);
  
@@ -155,7 +155,7 @@ index e2c51ad..300b116 100644
    km_bindkey ("<enter>", MENU_MAIN, OP_DISPLAY_MESSAGE);
  
    km_bindkey ("x", MENU_PAGER, OP_EXIT);
-@@ -817,13 +817,16 @@ void km_init (void)
+@@ -818,13 +818,16 @@ void km_init (void)
    km_bindkey ("8", MENU_PAGER, OP_JUMP);
    km_bindkey ("9", MENU_PAGER, OP_JUMP);
  
@@ -173,7 +173,7 @@ index e2c51ad..300b116 100644
  
    /* edit-to (default "t") hides generic tag-entry in Compose menu
 diff --git a/main.c b/main.c
-index f19b920..52afbe9 100644
+index 05fae87..53c7de7 100644
 --- a/main.c
 +++ b/main.c
 @@ -157,6 +157,7 @@ static void start_curses (void)
@@ -213,5 +213,5 @@ index b647a2a..1d974d8 100644
  
  /* AIX defines ``lines'' in <term.h>, but it's used as a var name in
 -- 
-2.8.2
+2.9.0
 

@@ -1,4 +1,4 @@
-From f362c3c77563b3beef10e21d24b18b0a3f76e6fd Mon Sep 17 00:00:00 2001
+From 5614bcda2b512ffbd469776d2295e145799c34ad Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 15:21:48 +0100
 Subject: [PATCH 13/21] m4-gssapi.m4
@@ -8,11 +8,11 @@ Subject: [PATCH 13/21] m4-gssapi.m4
  1 file changed, 1 insertion(+)
 
 diff --git a/m4/gssapi.m4 b/m4/gssapi.m4
-index e8451ea..adeb51e 100644
+index 0e0194e..80f14ed 100644
 --- a/m4/gssapi.m4
 +++ b/m4/gssapi.m4
 @@ -27,6 +27,7 @@ AC_DEFUN([MUTT_AM_PATH_GSSAPI],
-     GSSAPI_LIBS="$MUTTLIBS `$KRB5CFGPATH --libs gssapi`"
+     GSSAPI_LIBS="`$KRB5CFGPATH --libs gssapi`"
      case "`$KRB5CFGPATH --version`" in
        "Kerberos 5 "*)	GSSAPI_IMPL="MIT";;
 +      "FreeBSD heimdal"*)		GSSAPI_IMPL="Heimdal";;
@@ -20,5 +20,5 @@ index e8451ea..adeb51e 100644
        *)		GSSAPI_IMPL="Unknown";;
     esac
 -- 
-2.8.2
+2.9.0
 

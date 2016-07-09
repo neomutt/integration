@@ -1,0 +1,34 @@
+From 325b280f8ebeaa0db2517792ba95daed12636db0 Mon Sep 17 00:00:00 2001
+From: Kevin McCarthy <kevin@8t8.us>
+Date: Wed, 29 Jun 2016 18:58:53 -0700
+Subject: [PATCH 4/6] fix: Fix cppflags and muttlibs duplication with
+ --with-gss.
+
+When krb5-config was found, MUTT_AM_PATH_GSSAPI included CFLAGS in
+GSSAPI_CFLAGS and MUTTLIBS in GSSAPI_LIBS.  However, configure.ac
+afterwards sets:
+    CPPFLAGS="$CPPFLAGS $GSSAPI_CFLAGS"
+    MUTTLIBS="$MUTTLIBS $GSSAPI_LIBS"
+This caused the flags and libs to be duplicated.
+---
+ m4/gssapi.m4 | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/m4/gssapi.m4 b/m4/gssapi.m4
+index e8451ea..0e0194e 100644
+--- a/m4/gssapi.m4
++++ b/m4/gssapi.m4
+@@ -23,8 +23,8 @@ AC_DEFUN([MUTT_AM_PATH_GSSAPI],
+   AC_PATH_PROG(KRB5CFGPATH, krb5-config, none, $krb5_path)
+   if test "$KRB5CFGPATH" != "none"
+   then
+-    GSSAPI_CFLAGS="$CPPFLAGS `$KRB5CFGPATH --cflags gssapi`"
+-    GSSAPI_LIBS="$MUTTLIBS `$KRB5CFGPATH --libs gssapi`"
++    GSSAPI_CFLAGS="`$KRB5CFGPATH --cflags gssapi`"
++    GSSAPI_LIBS="`$KRB5CFGPATH --libs gssapi`"
+     case "`$KRB5CFGPATH --version`" in
+       "Kerberos 5 "*)	GSSAPI_IMPL="MIT";;
+       ?eimdal*)		GSSAPI_IMPL="Heimdal";;
+-- 
+2.9.0
+

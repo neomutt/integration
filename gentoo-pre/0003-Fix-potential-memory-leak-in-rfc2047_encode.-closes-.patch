@@ -1,7 +1,7 @@
-From 13be46dd93dc32b0ef10434fe65290ab1fb04f5c Mon Sep 17 00:00:00 2001
+From e4e65a809fa63f5ac024a2c937ce4db41edfb1fa Mon Sep 17 00:00:00 2001
 From: Kevin McCarthy <kevin@8t8.us>
 Date: Fri, 8 Apr 2016 18:38:27 -0700
-Subject: [PATCH 03/45] Fix potential memory leak in rfc2047_encode. (closes
+Subject: [PATCH 03/37] Fix potential memory leak in rfc2047_encode. (closes
  #3825)
 
 If convert_string() has nonreversible characters, the allocated output
@@ -36,5 +36,5 @@ index 663b55b..aa02422 100644
      u[ulen] = 0;
    }
 -- 
-2.8.2
+2.9.0
 

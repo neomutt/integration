@@ -1,7 +1,7 @@
-From bef876f8383f4569def23f1fa69ebd6a35095e4c Mon Sep 17 00:00:00 2001
+From 28f431a741a05f73e02c519e86db675552381360 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Tue, 24 May 2016 17:29:02 +0100
-Subject: [PATCH 07/11] feature: fmemopen
+Subject: [PATCH 07/14] feature: fmemopen
 
 ---
  PATCHES             |   1 +
@@ -16,14 +16,14 @@ Subject: [PATCH 07/11] feature: fmemopen
  create mode 100644 doc/muttrc.fmemopen
 
 diff --git a/PATCHES b/PATCHES
-index 763deff..4fad8c6 100644
+index e0283aa..69d1802 100644
 --- a/PATCHES
 +++ b/PATCHES
-@@ -11,3 +11,4 @@ patch-status-color-neo-UNKNOWN
- patch-index-color-neo-UNKNOWN
- patch-tls-sni-neo-UNKNOWN
- patch-quasi-delete-neo-UNKNOWN
-+patch-fmemopen-neo-UNKNOWN
+@@ -11,3 +11,4 @@ patch-status-color-neo-git
+ patch-index-color-neo-git
+ patch-tls-sni-neo-git
+ patch-quasi-delete-neo-git
++patch-fmemopen-neo-git
 diff --git a/README.fmemopen b/README.fmemopen
 new file mode 100644
 index 0000000..adab594
@@ -78,10 +78,10 @@ index 0000000..adab594
 +    * Richard Russon <rich@flatcap.org>
 +
 diff --git a/configure.ac b/configure.ac
-index 6bf08a1..50c2666 100644
+index 52a259f..9170070 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -1324,6 +1324,8 @@ if test $mutt_cv_langinfo_yesexpr = yes; then
+@@ -1326,6 +1326,8 @@ if test $mutt_cv_langinfo_yesexpr = yes; then
    AC_DEFINE(HAVE_LANGINFO_YESEXPR,1,[ Define if you have <langinfo.h> and nl_langinfo(YESEXPR). ])
  fi
  
@@ -91,10 +91,10 @@ index 6bf08a1..50c2666 100644
  have_openjade="no"
  AC_PATH_PROG([OSPCAT], [ospcat], [none])
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index 76022ae..a1689b2 100644
+index 04e77a0..cddbfa7 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
-@@ -9581,6 +9581,109 @@ <sect1 id="cond-date">
+@@ -9620,6 +9620,109 @@ <sect1 id="cond-date">
  	</sect2>
  </sect1>
  
@@ -395,5 +395,5 @@ index ea0230e..b3f517d 100644
    }
  
 -- 
-2.8.2
+2.9.0
 

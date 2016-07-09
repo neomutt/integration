@@ -1,4 +1,4 @@
-From f084c919cf2b529b33705e6fa0f8431a23a9fa3d Mon Sep 17 00:00:00 2001
+From 6b0096a0313f95df0f3aaa932c8ad5ca565c9f4e Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 15:21:35 +0100
 Subject: [PATCH 12/21] imap-message.c
@@ -21,5 +21,5 @@ index 7a79f44..d6ef7fc 100644
  	dprint (2, (debugfile, "imap_read_headers: message %d is not new\n",
  		    h.sid));
 -- 
-2.8.2
+2.9.0
 
