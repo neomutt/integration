@@ -31,6 +31,8 @@
 
 ## mutt/stable
 
+Since: Mutt-1.6.0
+
 + 70553d3 Added tag mutt-1-6-rel for changeset be82a2fde82f
 + f55b1d1 mutt-1.6.0 signed
 + 1795554 Fix IDNA functions for systems without iconv.
@@ -48,6 +50,10 @@
 + 1136287 mutt-1.6.2 signed
 
 ## mutt/default
+
+Since: Mutt-1.6.0
+
+These appear in gentoo-pre
 
 + 6ee72bb Reset mbstate for other mbrtowc() calls returning -1
 + f1faba9 Fix pager.c format_line() to use size_t for mbrtowc() retvals.
@@ -155,12 +161,12 @@ Base: mutt-1.6.2
 
 - 2cea9b7 travis: add config
 + 74f97b8 Set COLUMNS to MuttIndexWindow->cols in mutt_create_filter_fd. (closes #3837)
-+ ecc0f7d Fix infinite loop when help is bound to a named key combination.
+- ecc0f7d Fix infinite loop when help is bound to a named key combination.
 + 7d337d8 Add real prototype for re_match_2_internal in regex.c
 + 7ef976e Clarify oppenc option documention. (closes #3846)
 + 705c952 Include ncurses tinfo library if found.
 + fe61d27 Fix cppflags and muttlibs duplication with --with-gss.
-+ 4393f27 Check $pgp_autoinline and $pgp_replyinline if oppenc is set. (closes #3846)
+- 4393f27 Check $pgp_autoinline and $pgp_replyinline if oppenc is set. (closes #3846)
 + b7ff43a Reset buffy->new for the current mailbox in IMAP.
 
 ## bugs/neomutt
@@ -178,8 +184,8 @@ Base: mutt-1.6.2
 + 90af436 compose mode: make messages respect the TITLE_FMT
 + bc4c351 build tweak to allow testing
 - eb9c4b1 travis: add config
-+ 02a8509 separate key bindings for <return> and <enter>
-+ 7cad3cb Revert "separate key bindings for <return> and <enter>"
+- 02a8509 separate key bindings for <return> and <enter>
+- 7cad3cb Revert "separate key bindings for <return> and <enter>"
 + 333f8a6 separate key bindings for <return> and <enter>
 - f04aa8d travis: tidy build script
 
@@ -505,14 +511,14 @@ Base: mutt-1.6.2
 + 147874d notmuch: update muttrc example
 + f4ba398 sidebar: folder may be virtual
 + 66163ca docs: add to UPDATING.kz
-+ 0a23e8c enabling notmuch enables sidebar
+- 0a23e8c enabling notmuch enables sidebar
 + 3368d34 conditional include if <sys/syscall.h>
 + 2cde302 minor style changes to match sidebar
 + 35b705f fix typo
 + 9931be2 change sidebar-toggle function to match sidebar
 + 71a4787 change wiki references to website
 - 43f4efd travis: add config
-+ f061036 Revert "enabling notmuch enables sidebar"
+- f061036 Revert "enabling notmuch enables sidebar"
 + 1855694 fix build without sidebar
 + 25f47ff notmuch: update sidebar toggle example
 + 6f94aed notmuch: enlarge buffer in mutt_parse_virtual_mailboxes()
@@ -521,10 +527,10 @@ Base: mutt-1.6.2
 + d4885e2 use the new notmuch functions that return a status
 + 755c2d5 fix typo
 + cfaee62 fix typos
-+ b5bd653 Fix IDNA functions for systems without iconv.
-+ 54d9bbf Fix mutt_protect() when INLINE is set. (closes #3828)
-+ 61eb6f4 Create a wrapper sys_socket.h to work around Solaris namespace issues. (closes #3833)
-+ f7ced08 automatic post-release commit for mutt-1.6.1
+- b5bd653 Fix IDNA functions for systems without iconv.
+- 54d9bbf Fix mutt_protect() when INLINE is set. (closes #3828)
+- 61eb6f4 Create a wrapper sys_socket.h to work around Solaris namespace issues. (closes #3833)
+- f7ced08 automatic post-release commit for mutt-1.6.1
 + f80f7ce reduce the frequency of mailbox checks
 - 48e8ad9 travis: new build script
 + 378f5ae Fix compiler warnings due to always true condition
@@ -544,7 +550,7 @@ Base: mutt-1.6.2
 + 26c4c0f change wiki references to website
 - aba4bff travis: add config
 + 5d08a58 bump dependency to 1.6.1
-+ 345e4e0 doc: check for installed patches
+- 345e4e0 doc: check for installed patches
 - 0dd13f2 travis: new build script
 + 102f30b change ident to -git
 + ff5d9f2 docs: update dependency
@@ -690,7 +696,7 @@ Base: mutt-1.6.2
 + b89d6f0 change wiki references to website
 - df7d8ff travis: add config
 + c5e1f89 bump dependency to 1.6.1
-+ 83def03 doc: check for installed patches
+- 83def03 doc: check for installed patches
 + 49f0397 Single quote at line beginning misinterpreted by groff
 - 784f5ba travis: new build script
 + 2ddb1ec change ident to -git
@@ -760,24 +766,24 @@ Base: mutt-1.6.2
 Base: mutt-1.6.2
 
 - 9146541 TravisCI
-+ 22af258 Build fix for broken merge
+- 22af258 Build fix for broken merge
 + db930ca add some neomutt docs
 + a6c6f7a drop all mercurial references
 - 2d2676d travis: build notmuch and sidebar
 - b261cb9 travis build matrix
 - fba0ecd disable broken builds
-+ 2da6559 add missing version identifier
+- 2da6559 add missing version identifier
 + cc26696 change contact information
 + f1cdf6f expand README
 + 6064713 markdown version of gpl
 + 6aec937 change wiki references to website
-+ 737d0f2 build fix
-+ ba82f88 enabling notmuch enables sidebar
-+ a356f42 conditional include if <sys/syscall.h>
-+ e078a09 change sidebar-toggle function to match sidebar
-+ 7768928 change wiki references to website
+- 737d0f2 build fix
+- ba82f88 enabling notmuch enables sidebar
+- a356f42 conditional include if <sys/syscall.h>
+- e078a09 change sidebar-toggle function to match sidebar
+- 7768928 change wiki references to website
 - 3a81e8b travis: update config
-+ fcf870a NeoMutt 20160502
+- fcf870a NeoMutt 20160502
 + fc227f5 Fix the README's markdown
 - 05ddfb4 travis: limit pull-requests to one build
 + 15ed088 add configure option --enable-quick-build
@@ -796,7 +802,7 @@ Base: mutt-1.6.2
 - 20801c1 travis: new build script
 + 2bab308 Scroll half page thanks to @rgrinberg
 + f323ca5 Temporary compatibility workaround
-+ 5269f57 sort manual sections
-+ c08f4e1 change ident to -git
+- 5269f57 sort manual sections
+- c08f4e1 change ident to -git
 + df5eea3 fix version.sh regression
 
