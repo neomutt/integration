@@ -1,33 +1,33 @@
-# NeoMutt 2016-07-11
+# NeoMutt 2016-07-22
 
 ## List of Merged Branches
 
-| Branch                          | Description                               |
-|:--------------------------------|:------------------------------------------|
-| bugs/common                     | Various upstream bug fixes                |
-| bugs/neomutt                    | Various downstream bug fixes              |
-| feature/compress                | Read from compressed mailboxes            |
-| feature/cond-date               | Use rules to choose date format           |
-| feature/fmemopen                | Use memory buffers instead of files       |
-| feature/ifdef                   | Conditional config options                |
-| feature/index-color             | Theme the email index                     |
-| feature/initials                | Expando for author's initials             |
-| feature/keywords                | Email labels/keywords/tagging             |
-| feature/limit-current-thread    | Only show the current thread              |
-| feature/lmdb                    | LMDB backend for the header cache         |
-| feature/nested-if               | Allow deeply nested conditions            |
-| feature/new-mail                | Run a command when new mail arrives       |
-| feature/nntp                    | Talk to a usenet news server              |
-| feature/notmuch                 | Email search engine                       |
-| feature/progress                | Show a visual progress bar                |
-| feature/quasi-delete            | Mark emails to be hidden                  |
-| feature/sidebar                 | Overview of mailboxes                     |
-| feature/skip-quoted             | Configure quote lines context             |
-| feature/smime-encrypt-to-self   | Save an self-encrypted copy of emails     |
-| feature/status-color            | Theming the status bar                    |
-| feature/tls-sni                 | Negotiate for a certificate               |
-| feature/trash                   | Move 'deleted' emails to a trash bin      |
-| neomutt                         | NeoMutt customisations                    |
+| Branch                       | Description                               |
+|:-----------------------------|:------------------------------------------|
+| bugs/common                  | Various upstream bug fixes                |
+| bugs/neomutt                 | Various downstream bug fixes              |
+| feature/compress             | Read from compressed mailboxes            |
+| feature/cond-date            | Use rules to choose date format           |
+| feature/fmemopen             | Use memory buffers instead of files       |
+| feature/ifdef                | Conditional config options                |
+| feature/index-color          | Theme the email index                     |
+| feature/initials             | Expando for author's initials             |
+| feature/keywords             | Email labels/keywords/tagging             |
+| feature/limit-current-thread | Only show the current thread              |
+| feature/lmdb                 | LMDB backend for the header cache         |
+| feature/nested-if            | Allow deeply nested conditions            |
+| feature/new-mail             | Run a command when new mail arrives       |
+| feature/nntp                 | Talk to a usenet news server              |
+| feature/notmuch              | Email search engine                       |
+| feature/progress             | Show a visual progress bar                |
+| feature/quasi-delete         | Mark emails to be hidden                  |
+| feature/sidebar              | Overview of mailboxes                     |
+| feature/skip-quoted          | Configure quote lines context             |
+| feature/smime-encrypt-self   | Save an self-encrypted copy of emails     |
+| feature/status-color         | Theming the status bar                    |
+| feature/tls-sni              | Negotiate for a certificate               |
+| feature/trash                | Move 'deleted' emails to a trash bin      |
+| neomutt                      | NeoMutt customisations                    |
 
 ## mutt/stable
 
@@ -41,13 +41,14 @@ Since: Mutt-1.6.0
 + 23411fd automatic post-release commit for mutt-1.6.1
 + 83144e2 Added tag mutt-1-6-1-rel for changeset 1ef1e39a7218
 + 74bc6c5 mutt-1.6.1 signed
-+ f1e9319 travis: add config
+- f1e9319 travis: add config
 + 6d9c6c3 Fix infinite loop when help is bound to a named key combination.
-+ 95e6db0 travis: test slang
+- 95e6db0 travis: test slang
 + c47e403 Check $pgp_autoinline and $pgp_replyinline if oppenc is set. (closes #3846)
 + 73d6b7b automatic post-release commit for mutt-1.6.2
 + 91300f5 Added tag mutt-1-6-2-rel for changeset 7ccd4417bd70
 + 1136287 mutt-1.6.2 signed
+- cd77e2f travis: new build script
 
 ## mutt/default
 
@@ -82,7 +83,7 @@ These appear in gentoo-pre
 + 6648091 Remove newline insertion from pager. (closes #3835)
 + 4bbc6cf Fix pager layout when $status_on_top with no mini-index.  (closes #3836)
 + a6e6866 Fix pager mini-index drawing when $pager_index_lines = 1 and $status_on_top.
-+ db4e44f travis: add config
+- db4e44f travis: add config
 + 96915f1 Change mutt_window_getyx() to accept NULL *y/*x params.
 + 70af64a Skip bidi markers in the pager and index.  (closes #3827)
 + 5067b38 Change M_* symbols to MUTT_*
@@ -96,14 +97,14 @@ These appear in gentoo-pre
 + 52b6985 mx_check_mailbox: remove lock argument in function call
 + 8921ed4 add check operation to struct mx_ops
 + 9c3ca28 Fix header file indentation after M_ prefix renaming.
-+ c30443c travis: test slang
+- c30443c travis: test slang
 + b33ed8a Fix documentation for DT_MAGIC types. (closes #3845)
-+ bab1033 Add neomutt version of sidebar patch.  (closes #3829)
+- bab1033 Add neomutt version of sidebar patch.  (closes #3829)
 + 4cd023d Sidebar clean up: building and drawing logic.
 + f57b776 Fix sidebar check_sec.sh warnings.
 + 1a2cec5 Re-indent and style sidebar.c.
-+ 15a39c3 Clean up the sidebar manual.
-+ 3cd3232 Add "mutt_" prefix to global sidebar functions.
+- 15a39c3 Clean up the sidebar manual.
+- 3cd3232 Add "mutt_" prefix to global sidebar functions.
 + 61faa2a Various fixes to the sidebar logic.
 + b0f3d68 Start to fix sidebar buffy modifications.
 + 2e40ce6 Fix sidebar buffy stats updating on mailbox close.
@@ -154,6 +155,15 @@ These appear in gentoo-pre
 + 7f54e8f Fix sidebar pagedown/up when mailboxes on the end are hidden.
 + 8dbe637 Change sidebar highlighted mailbox behavior.
 + e3654fa Fix conststrings compiler version string generation. (closes #3852)
++ fc8a37b Initialize mutt windows even in batch mode. (closes #3853)
++ 5853c1b Fix BODY->charset memory leaks.
++ f8a6153 Fix BODY->d_filename memory leaks.
++ 9c0993d Fix memory leak in mutt_sasl_cb_pass.
++ 2f764c5 Add the trash folder patch.
++ 0692bed Add purge-message patch.
++ 679cbdf Add imap-fast-trash patch.
+- 4fb25aa travis: new build script
++ e94eaaa Fix arithmetic exception due to menu->pagelen being negative.
 
 ## bugs/common
 
@@ -211,7 +221,7 @@ Base: mutt-1.6.2
 + a307689 update dependency in readme
 - f84f221 travis: new build script
 + b34e0d9 change ident to -git
-+ 542c493 docs: update dependency
++ ce858ab docs: big update
 
 ## feature/cond-date
 
@@ -228,7 +238,8 @@ Base: mutt-1.6.2
 + c1e9f15 doc: check for installed patches
 - 5f5f6a6 travis: new build script
 + 8045d8c change ident to -git
-+ 5a66cc9 docs: update dependency
++ c180e15 docs: big update
++ b29ddbd docs: fix typo
 
 ## feature/fmemopen
 
@@ -244,7 +255,7 @@ Base: mutt-1.6.2
 + 8da43b2 doc: check for installed patches
 - b905a0f travis: tidy build script
 + 9909106 change ident to -git
-+ 55da968 docs: update dependency
++ e8c7147 docs: big update
 
 ## feature/ifdef
 
@@ -267,7 +278,7 @@ Base: mutt-1.6.2
 + 487855f doc: check for installed patches
 - 32a9929 travis: new build script
 + 6ec7ce3 change ident to -git
-+ d3e6299 docs: update dependency
++ 293f912 docs: big update
 
 ## feature/index-color
 
@@ -287,7 +298,7 @@ Base: mutt-1.6.2
 + f289e69 fix index_format truncation problem
 - 58bc287 travis: new build script
 + 9375f66 change ident to -git
-+ 728b56e docs: update dependency
++ 5f14087 docs: big update
 
 ## feature/initials
 
@@ -303,7 +314,7 @@ Base: mutt-1.6.2
 + 2f3aeec doc: check for installed patches
 - 70a50b8 travis: new build script
 + 9bc3ffe change ident to -git
-+ c749e8a docs: update dependency
++ 650e14a docs: big update
 
 ## feature/keywords
 
@@ -325,7 +336,7 @@ Base: mutt-1.6.2
 + 4b95587 update dependency in readme
 - 822704e travis: new build script
 + b2c7786 change ident to -git
-+ 6b48ff6 docs: update dependency
++ 8dd3a3e docs: big update
 
 ## feature/limit-current-thread
 
@@ -341,7 +352,7 @@ Base: mutt-1.6.2
 + 94fcf6a doc: check for installed patches
 - 09317b6 travis: new build script
 + 5353fba change ident to -git
-+ 5df65c7 docs: update dependency
++ e886841 docs: big update
 
 ## feature/lmdb
 
@@ -352,7 +363,7 @@ Base: mutt-1.6.2
 + 1126f8d docs: document lmdb feature
 - e9f527f travis: new build script
 + d2f8965 change ident to -git
-+ da1c97d docs: update dependency
++ 0055523 docs: big update
 
 ## feature/nested-if
 
@@ -369,7 +380,7 @@ Base: mutt-1.6.2
 + ed20705 doc: check for installed patches
 - d4094e0 travis: new build script
 + 6b78f03 change ident to -git
-+ 4fbf35e docs: update dependency
++ 36ff893 docs: big update
 
 ## feature/new-mail
 
@@ -378,6 +389,10 @@ Base: mutt-1.6.2
 - b820dc4 travis: add config
 + 22ef61e feature: new_mail_command
 + df7472e Add documentation template
++ 6bc1a1a Add documentation for new-mail
++ f9c3ced doc/manual.xml.head: Adds documentation block
++ 15d82f9 tidy code
++ ba9f550 docs: big update
 
 ## feature/nntp
 
@@ -393,7 +408,7 @@ Base: mutt-1.6.2
 + 21f2a32 update dependency in readme
 - 0944bc0 travis: new build script
 + 7ec076c change ident to -git
-+ 21ce43b docs: update dependency
++ 3cb2237 docs: big update
 
 ## feature/notmuch
 
@@ -536,7 +551,7 @@ Base: mutt-1.6.2
 + 378f5ae Fix compiler warnings due to always true condition
 + 908d9ba change ident to -git
 + 1e96d79 fix crash when notmuch tries to read a message
-+ 105b7b3 docs: update dependency
++ 652c7f3 docs: big update
 
 ## feature/progress
 
@@ -553,7 +568,7 @@ Base: mutt-1.6.2
 - 345e4e0 doc: check for installed patches
 - 0dd13f2 travis: new build script
 + 102f30b change ident to -git
-+ ff5d9f2 docs: update dependency
++ 283671a docs: big update
 
 ## feature/quasi-delete
 
@@ -569,7 +584,7 @@ Base: mutt-1.6.2
 + 22530e2 doc: check for installed patches
 - f706fb7 travis: new build script
 + b8c67c4 change ident to -git
-+ c11298e docs: update dependency
++ f7ca6c8 docs: big update
 
 ## feature/sidebar
 
@@ -683,7 +698,7 @@ Base: mutt-1.6.2
 + 2840326 fix Sidebar width problem
 + a064e26 Fix sidebar crash for non-existent mailbox
 + 81130f3 change ident to -git
-+ 7b92e89 docs: update dependency
++ bb08244 docs: big update
 
 ## feature/skip-quoted
 
@@ -700,15 +715,16 @@ Base: mutt-1.6.2
 + 49f0397 Single quote at line beginning misinterpreted by groff
 - 784f5ba travis: new build script
 + 2ddb1ec change ident to -git
-+ 9a68418 docs: update dependency
++ 52921ff docs: big update
 
-## feature/smime-encrypt-to-self
+## feature/smime-encrypt-self
 
 Base: mutt-1.6.2
 
 + a0c235e smime encrypt to self patch
 - 9a23b19 travis: add config
 + 5d4abc5 default to off
++ c80bc66 docs: big update
 
 ## feature/status-color
 
@@ -725,7 +741,8 @@ Base: mutt-1.6.2
 + ef65b84 rework mutt_draw_statusline()
 - 61775be travis: new build script
 + cf2d8e2 change ident to -git
-+ 5816207 docs: update dependency
++ 59a364b docs: big update
++ 2522b02 fix: status line wrapping
 
 ## feature/tls-sni
 
@@ -741,7 +758,7 @@ Base: mutt-1.6.2
 + b065671 doc: check for installed patches
 - a88d513 travis: new build script
 + b86026e change ident to -git
-+ a504ac4 docs: update dependency
++ cb6a8f2 docs: big update
 
 ## feature/trash
 
@@ -759,7 +776,7 @@ Base: mutt-1.6.2
 + 5930454 doc: check for installed patches
 - 3e65a45 travis: new build script
 + a32347a change ident to -git
-+ 166c409 docs: update dependency
++ dd52e80 docs: big update
 
 ## neomutt
 
@@ -805,4 +822,5 @@ Base: mutt-1.6.2
 - 5269f57 sort manual sections
 - c08f4e1 change ident to -git
 + df5eea3 fix version.sh regression
++ c874276 docs: fix broken link
 
