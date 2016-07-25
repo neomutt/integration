@@ -1,4 +1,4 @@
-From 1fce1a02ad10540030bbe9b6aa1befa555e0bc1c Mon Sep 17 00:00:00 2001
+From e4e001e010e0c282c6a2e22a015f5d40193ca8f8 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 15:17:48 +0100
 Subject: [PATCH 05/21] reverse_reply
@@ -13,14 +13,14 @@ Subject: [PATCH 05/21] reverse_reply
  6 files changed, 43 insertions(+)
 
 diff --git a/PATCHES b/PATCHES
-index f161358..0cdc587 100644
+index 27976aa..15ba04b 100644
 --- a/PATCHES
 +++ b/PATCHES
-@@ -1,3 +1,4 @@
-+patch-1.5.6.cb.reverse_reply.2
- vvv.quote
- patch-ifdef-neo-git
+@@ -6,3 +6,4 @@ patch-trash-neo-git
  patch-initials-neo-git
+ patch-ifdef-neo-git
+ vvv.quote
++patch-1.5.6.cb.reverse_reply.2
 diff --git a/init.h b/init.h
 index ffb8f28..510a3d9 100644
 --- a/init.h
@@ -119,5 +119,5 @@ index e6b6a79..c25c0da 100644
  {
    CONTEXT f;
 -- 
-2.9.0
+2.7.4
 

@@ -1,4 +1,4 @@
-From dc1ea59a2fabad5870e5e9013cfc37198a869acf Mon Sep 17 00:00:00 2001
+From aeeac346cafb4fbb0dcab4ea3833d26ac02062d8 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 6 May 2016 00:24:00 +0100
 Subject: [PATCH 10/22] debian-specific/assumed_charset-compat
@@ -8,7 +8,7 @@ Subject: [PATCH 10/22] debian-specific/assumed_charset-compat
  1 file changed, 3 insertions(+)
 
 diff --git a/init.h b/init.h
-index 379004a..8020f09 100644
+index 9ccc384..636e606 100644
 --- a/init.h
 +++ b/init.h
 @@ -228,6 +228,9 @@ struct option_t MuttVars[] = {
@@ -22,5 +22,5 @@ index 379004a..8020f09 100644
    /*
    ** .pp
 -- 
-2.9.0
+2.7.4
 

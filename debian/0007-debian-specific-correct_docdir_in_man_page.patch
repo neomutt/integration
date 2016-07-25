@@ -1,4 +1,4 @@
-From f8ec44b2ecdab022ee4b1f5baab80d0564f7bcef Mon Sep 17 00:00:00 2001
+From 2d32a37669ff779659d1e1f38bad78e5cebaabe9 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 6 May 2016 00:23:59 +0100
 Subject: [PATCH 07/22] debian-specific/correct_docdir_in_man_page
@@ -21,5 +21,5 @@ index b5b7337..f1f1399 100644
  .SH BUGS
  .PP
 -- 
-2.9.0
+2.7.4
 

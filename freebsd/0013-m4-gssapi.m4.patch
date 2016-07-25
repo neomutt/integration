@@ -1,4 +1,4 @@
-From 5614bcda2b512ffbd469776d2295e145799c34ad Mon Sep 17 00:00:00 2001
+From 3269b9ae8112aa191f32437670e613d17bfe0b2b Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 15:21:48 +0100
 Subject: [PATCH 13/21] m4-gssapi.m4
@@ -20,5 +20,5 @@ index 0e0194e..80f14ed 100644
        *)		GSSAPI_IMPL="Unknown";;
     esac
 -- 
-2.9.0
+2.7.4
 

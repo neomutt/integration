@@ -1,4 +1,4 @@
-From 6f505de79d5df7dae9dc30258caa26ab174b0bb3 Mon Sep 17 00:00:00 2001
+From cb5ff36c9cfde5bafe63991884e63ed9a93015ca Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 03:02:20 +0100
 Subject: [PATCH 02/12] mutt-1.5.9i-pgpewrap
@@ -23,5 +23,5 @@ index 14b2e0a..a63a87e 100644
  	perror(argv[0]);
  	return 2;
 -- 
-2.9.0
+2.7.4
 

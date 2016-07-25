@@ -1,4 +1,4 @@
-From 6625b2a7956f18e935b4a555beb30c9ec32c408f Mon Sep 17 00:00:00 2001
+From 8a11ff01c7034d8499c7c8dd7e93f5acff45567b Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 03:04:29 +0100
 Subject: [PATCH 05/12] mutt-1.6.1-opennfs
@@ -15,10 +15,10 @@ Subject: [PATCH 05/12] mutt-1.6.1-opennfs
  create mode 100644 opennfs.c
 
 diff --git a/Makefile.am b/Makefile.am
-index 75dea4e..9e8a35b 100644
+index 30da750..edd04e8 100644
 --- a/Makefile.am
 +++ b/Makefile.am
-@@ -28,7 +28,7 @@ mutt_SOURCES = \
+@@ -32,7 +32,7 @@ mutt_SOURCES = \
  	edit.c enter.c flags.c init.c filter.c from.c \
  	getdomain.c group.c \
  	handler.c hash.c hdrline.c headers.c help.c hook.c keymap.c \
@@ -27,7 +27,7 @@ index 75dea4e..9e8a35b 100644
  	postpone.c query.c recvattach.c recvcmd.c \
  	rfc822.c rfc1524.c rfc2047.c rfc2231.c rfc3676.c \
  	score.c send.c sendlib.c signal.c sort.c \
-@@ -93,7 +93,7 @@ mutt_dotlock_SOURCES = mutt_dotlock.c
+@@ -97,7 +97,7 @@ mutt_dotlock_SOURCES = mutt_dotlock.c
  mutt_dotlock_LDADD = $(LIBOBJS)
  mutt_dotlock_DEPENDENCIES = $(LIBOBJS)
  
@@ -142,10 +142,10 @@ index c36b413..e32c60e 100644
        if (errno != EEXIST)
        {
 diff --git a/mutt.h b/mutt.h
-index b401f86..fba677a 100644
+index 0c5fd88..133e6f3 100644
 --- a/mutt.h
 +++ b/mutt.h
-@@ -1077,4 +1077,5 @@ typedef struct
+@@ -1075,4 +1075,5 @@ typedef struct
  #include "lib.h"
  #include "globals.h"
  
@@ -293,5 +293,5 @@ index 449bf0b..c0e7f37 100644
  	/* redirect stderr to *tempfile too */
  	if (dup (1) < 0)
 -- 
-2.9.0
+2.7.4
 

@@ -1,4 +1,4 @@
-From 5312e048c3767c51d18c7b09024a2a03a1e81721 Mon Sep 17 00:00:00 2001
+From 942c1309d364a26a6ddafd50a3b31444aba0f1bb Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 6 May 2016 00:23:57 +0100
 Subject: [PATCH 04/22] debian-specific/Muttrc
@@ -76,5 +76,5 @@ index 69e27ca..cc4a8e9 100644
  ## *** DEFAULT SETTINGS FOR THE ATTACHMENTS PATCH ***
  ##
 -- 
-2.9.0
+2.7.4
 

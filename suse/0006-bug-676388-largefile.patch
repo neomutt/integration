@@ -1,4 +1,4 @@
-From 72226f6b928e70634416e8f3e1d783a2db851e38 Mon Sep 17 00:00:00 2001
+From 2f018f337325136c5c1ebcfb85c43b58ea21be7e Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 03:05:02 +0100
 Subject: [PATCH 06/12] bug-676388-largefile
@@ -40,10 +40,10 @@ index e32c60e..9873c6c 100644
    if ((dest = mx_open_new_message (ctx, h, 0)) == NULL)
      return -1;
 diff --git a/mutt.h b/mutt.h
-index fba677a..20fb7b3 100644
+index 133e6f3..9f54db5 100644
 --- a/mutt.h
 +++ b/mutt.h
-@@ -732,7 +732,7 @@ typedef struct body
+@@ -730,7 +730,7 @@ typedef struct body
    PARAMETER *parameter;         /* parameters of the content-type */
    char *description;            /* content-description */
    char *form_name;		/* Content-Disposition form-data name param */
@@ -53,5 +53,5 @@ index fba677a..20fb7b3 100644
  				 * where we need to send the headers of the
  				 * attachment
 -- 
-2.9.0
+2.7.4
 

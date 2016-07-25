@@ -1,4 +1,4 @@
-From 6646809d4cd6805f15f17ff04aea36eedfdab34f Mon Sep 17 00:00:00 2001
+From 4be44eb7099bca6a8d9529ab7843f46f8a337afd Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 03:03:32 +0100
 Subject: [PATCH 03/12] mutt-1.5.20-sendgroupreplyto
@@ -10,7 +10,7 @@ Subject: [PATCH 03/12] mutt-1.5.20-sendgroupreplyto
  3 files changed, 16 insertions(+)
 
 diff --git a/init.h b/init.h
-index 253cd93..d6596e1 100644
+index 4d13bdb..378f547 100644
 --- a/init.h
 +++ b/init.h
 @@ -2885,6 +2885,13 @@ struct option_t MuttVars[] = {
@@ -28,7 +28,7 @@ index 253cd93..d6596e1 100644
    /*
    ** .pp
 diff --git a/mutt.h b/mutt.h
-index ea059ba..b401f86 100644
+index d4e7404..0c5fd88 100644
 --- a/mutt.h
 +++ b/mutt.h
 @@ -482,6 +482,7 @@ enum
@@ -61,5 +61,5 @@ index 43c6476..a86f2d1 100644
    }
    return 0;
 -- 
-2.9.0
+2.7.4
 

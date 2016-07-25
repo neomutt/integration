@@ -1,4 +1,4 @@
-From b0dc309c246152f70fe0baf7c8513da8a1b673f0 Mon Sep 17 00:00:00 2001
+From ced2e3aeff37dc76ba75a2960c201dc7ef159b24 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 6 May 2016 00:23:44 +0100
 Subject: [PATCH 01/22] misc/am-maintainer-mode
@@ -8,7 +8,7 @@ Subject: [PATCH 01/22] misc/am-maintainer-mode
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/configure.ac b/configure.ac
-index fc5eefc..8420a75 100644
+index e7a5fa7..af9ebaa 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -7,7 +7,7 @@ AC_INIT([mutt],[m4_esyscmd(tr -d \\n <VERSION)])
@@ -21,5 +21,5 @@ index fc5eefc..8420a75 100644
  
  MUTT_VERSION=`env sh "$srcdir/version.sh"`
 -- 
-2.9.0
+2.7.4
 

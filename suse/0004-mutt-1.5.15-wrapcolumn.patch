@@ -1,4 +1,4 @@
-From 24203c8b9c4924a991d67e79d98ba5740af7c360 Mon Sep 17 00:00:00 2001
+From e1e5cfe16c8b6a458cb4b0e7c0aa9bf77b7c81cd Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 03:03:48 +0100
 Subject: [PATCH 04/12] mutt-1.5.15-wrapcolumn
@@ -8,7 +8,7 @@ Subject: [PATCH 04/12] mutt-1.5.15-wrapcolumn
  1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/init.h b/init.h
-index d6596e1..97085b1 100644
+index 378f547..2328846 100644
 --- a/init.h
 +++ b/init.h
 @@ -4052,7 +4052,8 @@ struct option_t MuttVars[] = {
@@ -22,5 +22,5 @@ index d6596e1..97085b1 100644
    ** .pp
    ** When set to a positive value, mutt will wrap text at $$wrap characters.
 -- 
-2.9.0
+2.7.4
 

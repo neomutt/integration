@@ -1,46 +1,46 @@
-From 7b311a136552fef9ddb6d9b7b8dc99e523ef9d16 Mon Sep 17 00:00:00 2001
-From: Richard Russon <rich@flatcap.org>
-Date: Tue, 24 May 2016 17:42:12 +0100
+From cb5dc73989005cdfb1025b1a488637a3f0048eeb Mon Sep 17 00:00:00 2001
+From: David Champion <dgc@bikeshed.us>
+Date: Fri, 8 Apr 2016 01:01:50 +0100
 Subject: [PATCH 09/14] feature: keywords
 
 ---
  OPS                 |   1 +
  PATCHES             |   1 +
- README.keywords     | 105 ++++++++++++++++
+ README.keywords     | 107 +++++++++++++++
  commands.c          |  10 +-
- copy.c              |  67 +++++++++++
+ copy.c              |  67 ++++++++++
  copy.h              |   1 +
- curs_main.c         |  20 ++++
- doc/manual.xml.head | 340 +++++++++++++++++++++++++++++++++++++++++++++++++---
- doc/muttrc.keywords |   0
- doc/vimrc-keywords  |  10 ++
- enter.c             |  43 +++++++
+ curs_main.c         |  20 +++
+ doc/manual.xml.head | 371 +++++++++++++++++++++++++++++++++++++++++++++++++---
+ doc/muttrc.keywords |  23 ++++
+ doc/vimrc.keywords  |  10 ++
+ enter.c             |  43 ++++++
  functions.h         |   2 +
  globals.h           |   3 +
- hash.c              |  27 +++++
- hash.h              |   7 ++
+ hash.c              |  27 ++++
+ hash.h              |   7 +
  hcache.c            |   4 +-
- hdrline.c           |  71 ++++++-----
- headers.c           | 196 ++++++++++++++++++++++++++++++
+ hdrline.c           |  72 ++++++----
+ headers.c           | 196 +++++++++++++++++++++++++++
  imap/imap.c         |   3 +-
  imap/message.c      |   3 +-
- init.c              |  55 +++++++++
+ init.c              |  55 ++++++++
  init.h              |  38 ++++++
  main.c              |   4 +
  mh.c                |   5 +-
  mutt.h              |  13 +-
  muttlib.c           |   5 +-
  pager.c             |  12 ++
- parse.c             |  76 ++++++++++--
- pattern.c           |  14 ++-
+ parse.c             |  76 +++++++++--
+ pattern.c           |  14 +-
  protos.h            |   6 +
  sendlib.c           |   2 -
- sort.c              |  42 +++++++
+ sort.c              |  42 ++++++
  sort.h              |   1 +
- 33 files changed, 1120 insertions(+), 67 deletions(-)
+ 33 files changed, 1176 insertions(+), 68 deletions(-)
  create mode 100644 README.keywords
  create mode 100644 doc/muttrc.keywords
- create mode 100644 doc/vimrc-keywords
+ create mode 100644 doc/vimrc.keywords
 
 diff --git a/OPS b/OPS
 index f14ff39..61f602f 100644
@@ -55,20 +55,20 @@ index f14ff39..61f602f 100644
  OP_EDITOR_BACKSPACE "delete the char in front of the cursor"
  OP_EDITOR_BACKWARD_CHAR "move the cursor one character to the left"
 diff --git a/PATCHES b/PATCHES
-index 51a610b..98c8499 100644
+index d1fb532..d3e6913 100644
 --- a/PATCHES
 +++ b/PATCHES
-@@ -13,3 +13,4 @@ patch-tls-sni-neo-git
- patch-quasi-delete-neo-git
- patch-fmemopen-neo-git
- patch-limit-current-thread-neo-git
+@@ -1,3 +1,4 @@
 +patch-keywords-neo-git
+ patch-limit-current-thread-neo-git
+ patch-fmemopen-neo-git
+ patch-quasi-delete-neo-git
 diff --git a/README.keywords b/README.keywords
 new file mode 100644
-index 0000000..9d14436
+index 0000000..a5c0dc6
 --- /dev/null
 +++ b/README.keywords
-@@ -0,0 +1,105 @@
+@@ -0,0 +1,107 @@
 +Keywords Patch
 +==============
 +
@@ -81,7 +81,7 @@ index 0000000..9d14436
 +    version.
 +
 +    Dependencies
-+    * mutt-1.5.24
++    * mutt-1.6.2
 +
 +Introduction
 +------------
@@ -167,6 +167,8 @@ index 0000000..9d14436
 +
 +Known Bugs
 +----------
++
++    None
 +
 +Credits
 +-------
@@ -352,10 +354,10 @@ index 81807c6..55f37c8 100644
  
  	CHECK_ATTACH;
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index 9647e9a..4429994 100644
+index 4c3cced..66393fc 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
-@@ -1156,7 +1156,7 @@ <table id="tab-keys-editor">
+@@ -1135,7 +1135,7 @@ <table id="tab-keys-editor">
  <row><entry>^E or &lt;End&gt;</entry><entry><literal>&lt;eol&gt;</literal></entry><entry>move to the end of the line</entry></row>
  <row><entry>^F or &lt;Right&gt;</entry><entry><literal>&lt;forward-char&gt;</literal></entry><entry>move forward one char</entry></row>
  <row><entry>Esc F</entry><entry><literal>&lt;forward-word&gt;</literal></entry><entry>move forward one word</entry></row>
@@ -364,7 +366,7 @@ index 9647e9a..4429994 100644
  <row><entry>^T</entry><entry><literal>&lt;complete-query&gt;</literal></entry><entry>complete address with query</entry></row>
  <row><entry>^K</entry><entry><literal>&lt;kill-eol&gt;</literal></entry><entry>delete to the end of the line</entry></row>
  <row><entry>Esc d</entry><entry><literal>&lt;kill-eow&gt;</literal></entry><entry>delete to the end of the word</entry></row>
-@@ -5176,8 +5176,8 @@ <sect2 id="formatstrings-basics">
+@@ -5155,8 +5155,8 @@ <sect2 id="formatstrings-basics">
  symbol (<literal>=</literal>) as a numeric prefix (like the minus
  above), it will force the string to be centered within its minimum space
  range. For example, <literal>%=14y</literal> will reserve 14 characters
@@ -375,7 +377,7 @@ index 9647e9a..4429994 100644
  a string less than 14 characters, it will be centered in a 14-character
  space.  If the X-Label for a message were <quote>test</quote>, that
  expansion would look like
-@@ -5803,7 +5803,7 @@ <table id="tab-patterns">
+@@ -5782,7 +5782,7 @@ <table id="tab-patterns">
  <row><entry>~V</entry><entry>cryptographically verified messages</entry></row>
  <row><entry>~x <emphasis>EXPR</emphasis></entry><entry>messages which contain <emphasis>EXPR</emphasis> in the <quote>References</quote> or <quote>In-Reply-To</quote> field</entry></row>
  <row><entry>~X [<emphasis>MIN</emphasis>]-[<emphasis>MAX</emphasis>]</entry><entry>messages with <emphasis>MIN</emphasis> to <emphasis>MAX</emphasis> attachments *)</entry></row>
@@ -384,7 +386,7 @@ index 9647e9a..4429994 100644
  <row><entry>~z [<emphasis>MIN</emphasis>]-[<emphasis>MAX</emphasis>]</entry><entry>messages with a size in the range <emphasis>MIN</emphasis> to <emphasis>MAX</emphasis> *) **)</entry></row>
  <row><entry>~=</entry><entry>duplicated messages (see <link linkend="duplicate-threads">$duplicate_threads</link>)</entry></row>
  <row><entry>~$</entry><entry>unreferenced messages (requires threaded view)</entry></row>
-@@ -6673,18 +6673,6 @@ <sect1 id="using-lists">
+@@ -6652,18 +6652,6 @@ <sect1 id="using-lists">
  </para>
  
  <para>
@@ -403,7 +405,7 @@ index 9647e9a..4429994 100644
  Lastly, Mutt has the ability to <link linkend="sort">sort</link> the
  mailbox into <link linkend="threads">threads</link>.  A thread is a
  group of messages which all relate to the same subject.  This is usually
-@@ -6697,6 +6685,121 @@ <sect1 id="using-lists">
+@@ -6676,6 +6664,121 @@ <sect1 id="using-lists">
  
  </sect1>
  
@@ -525,231 +527,288 @@ index 9647e9a..4429994 100644
  <sect1 id="new-mail">
  <title>New Mail Detection</title>
  
-@@ -10236,6 +10339,211 @@ <sect1 id="initials">
- 	</sect2>
+@@ -10206,6 +10309,242 @@ <sect1 id="initials">
+   </sect2>
  </sect1>
  
 +<sect1 id="keywords">
-+	<title>Keywords Patch</title>
-+	<subtitle>Labels/Tagging for emails</subtitle>
++  <title>Keywords Patch</title>
++  <subtitle>Labels/Tagging for emails</subtitle>
 +
-+	<sect2 id="keywords-patch">
-+		<title>Patch</title>
++  <sect2 id="keywords-patch">
++    <title>Patch</title>
 +
-+		<para>
-+			To check if Mutt supports <quote>Keywords</quote>, look for
-+			<quote>patch-keywords</quote> in the mutt version.
-+			See: <xref linkend="mutt-patches"/>.
-+		</para>
++    <para>
++      To check if Mutt supports <quote>Keywords</quote>, look for
++      <quote>patch-keywords</quote> in the mutt version.
++      See: <xref linkend="mutt-patches"/>.
++    </para>
 +
-+		<itemizedlist>
-+			<title>Dependencies:</title>
-+			<listitem><para>mutt-1.6.1</para></listitem>
-+		</itemizedlist>
++    <itemizedlist>
++      <title>Dependencies:</title>
++      <listitem><para>mutt-1.6.2</para></listitem>
++    </itemizedlist>
 +
-+		<para>This patch is part of the <ulink url="http://www.neomutt.org/">NeoMutt Project</ulink>.</para>
-+	</sect2>
++    <para>This patch is part of the <ulink url="http://www.neomutt.org/">NeoMutt Project</ulink>.</para>
++  </sect2>
 +
-+	<sect2 id="keywords-intro">
-+		<title>Introduction</title>
++  <sect2 id="keywords-intro">
++    <title>Introduction</title>
 +
-+		<para>
-+		Unify label/keyword handling.
-+		</para>
++    <para>
++    Unify label/keyword handling.
++    </para>
 +
-+		<para>
-+		Since x-labels were added to mutt in 2000, a number of other approaches
-+		to what we now call <quote>tagging</quote> have also emerged.
-+		One of them was even made standard in RFC 2822.
-+		This update unifies the handling of all these strategies.
-+		</para>
++    <para>
++    Since x-labels were added to mutt in 2000, a number of other approaches
++    to what we now call <quote>tagging</quote> have also emerged.
++    One of them was even made standard in RFC 2822.
++    This update unifies the handling of all these strategies.
++    </para>
 +
-+		<para>
-+		We start by changing mutt's internal keyword storage from a single
-+		string which may contain whitespace to a list of discrete keywords.
-+		This has advantages for keyword completion as well as for portabilty
-+		among varying "standards" for keyword storage.  This may represent
-+		a significant change for existing mutt users who have set x-labels
-+		containing spaces, and should be regarded with suspicion.  The
-+		advantages are significant, though.
-+		</para>
++    <para>
++    We start by changing mutt's internal keyword storage from a single
++    string which may contain whitespace to a list of discrete keywords.
++    This has advantages for keyword completion as well as for portabilty
++    among varying "standards" for keyword storage.  This may represent
++    a significant change for existing mutt users who have set x-labels
++    containing spaces, and should be regarded with suspicion.  The
++    advantages are significant, though.
++    </para>
 +
-+		<para>
-+		Next we allow mutt to parse keywords into this internal list from
-+		any of the following headers: X-Label (freeform), X-Keywords
-+		(space-delimited), X-Mozilla-Keys (space-delimited), and Keywords (RFC
-+		2822, comma-space-delimited).  Mutt remembers which headers it sourced
-+		keywords from, and can rewrite those headers when saving messages for
-+		compatibility with the mailer of origin.
-+		</para>
++    <para>
++    Next we allow mutt to parse keywords into this internal list from
++    any of the following headers: X-Label (freeform), X-Keywords
++    (space-delimited), X-Mozilla-Keys (space-delimited), and Keywords (RFC
++    2822, comma-space-delimited).  Mutt remembers which headers it sourced
++    keywords from, and can rewrite those headers when saving messages for
++    compatibility with the mailer of origin.
++    </para>
 +
-+		<para>
-+		(X-Label was specified as freeform text by mutt, its only known
-+		implementation.  X-Labels have been used both as a
-+		<quote>tagging</quote> device, probably with space delimiting, and as a
-+		<quote>memo</quote> field, where space-delimited parsing would ruin the
-+		semantics of the memo.  By default mutt will not split X-Labels at all.
-+		Set $xlabel_delimiter if your needs vary.)
-+		</para>
++    <para>
++    (X-Label was specified as freeform text by mutt, its only known
++    implementation.  X-Labels have been used both as a
++    <quote>tagging</quote> device, probably with space delimiting, and as a
++    <quote>memo</quote> field, where space-delimited parsing would ruin the
++    semantics of the memo.  By default mutt will not split X-Labels at all.
++    Set $xlabel_delimiter if your needs vary.)
++    </para>
 +
-+		<para>
-+		Finally we add two booleans: $keywords_legacy=true and
-+		$keywords_standard=FALSE.  When $keywords_legacy is true, mutt will
-+		always save keyword to whatever original header it came from.  When
-+		$keywords_standard=true, mutt will save to the Keywords: header.  If
-+		both are true mutt saves to both; if neither is true, mutt saves only
-+		to legacy headers to avoid complete loss of keywords.
-+		</para>
++    <para>
++    Finally we add two booleans: $keywords_legacy=true and
++    $keywords_standard=FALSE.  When $keywords_legacy is true, mutt will
++    always save keyword to whatever original header it came from.  When
++    $keywords_standard=true, mutt will save to the Keywords: header.  If
++    both are true mutt saves to both; if neither is true, mutt saves only
++    to legacy headers to avoid complete loss of keywords.
++    </para>
 +
-+		<para>
-+		Overall this represents convergence path for all competing
-+		labelling/tagging/keywording systems toward one that is specified by
-+		RFC.
-+		</para>
++    <para>
++    Overall this represents convergence path for all competing
++    labelling/tagging/keywording systems toward one that is specified by
++    RFC.
++    </para>
 +
-+		<para>
-+		You can change or delete the X-Label: field within
-+		Mutt using the edit-label command, bound to the
-+		y key by default.  This works for tagged messages, too.
-+		</para>
-+	</sect2>
++    <para>
++    You can change or delete the X-Label: field within
++    Mutt using the edit-label command, bound to the
++    y key by default.  This works for tagged messages, too.
++    </para>
++  </sect2>
 +
-+	<sect2 id="keywords-variables">
-+		<title>Variables</title>
++  <sect2 id="keywords-variables">
++    <title>Variables</title>
 +
-+		<table id="table-keywords-variables">
-+			<title>Keywords Variables</title>
-+			<tgroup cols="3">
-+				<thead>
-+					<row>
-+						<entry>Name</entry>
-+						<entry>Type</entry>
-+						<entry>Default</entry>
-+					</row>
-+				</thead>
-+				<tbody>
-+					<row>
-+						<entry><literal>keywords_legacy</literal></entry>
-+						<entry>boolean</entry>
-+						<entry><literal>yes</literal></entry>
-+					</row>
-+					<row>
-+						<entry><literal>keywords_standard</literal></entry>
-+						<entry>boolean</entry>
-+						<entry><literal>no</literal></entry>
-+					</row>
-+					<row>
-+						<entry><literal>xlabel_delimiter</literal></entry>
-+						<entry>string</entry>
-+						<entry>(empty)</entry>
-+					</row>
-+				</tbody>
-+			</tgroup>
-+		</table>
-+	</sect2>
++    <table id="table-keywords-variables">
++      <title>Keywords Variables</title>
++      <tgroup cols="3">
++        <thead>
++          <row>
++            <entry>Name</entry>
++            <entry>Type</entry>
++            <entry>Default</entry>
++          </row>
++        </thead>
++        <tbody>
++          <row>
++            <entry><literal>keywords_legacy</literal></entry>
++            <entry>boolean</entry>
++            <entry><literal>yes</literal></entry>
++          </row>
++          <row>
++            <entry><literal>keywords_standard</literal></entry>
++            <entry>boolean</entry>
++            <entry><literal>no</literal></entry>
++          </row>
++          <row>
++            <entry><literal>xlabel_delimiter</literal></entry>
++            <entry>string</entry>
++            <entry>(empty)</entry>
++          </row>
++        </tbody>
++      </tgroup>
++    </table>
++  </sect2>
 +
-+	<sect2 id="keywords-functions">
-+		<title>Functions</title>
++  <sect2 id="keywords-functions">
++    <title>Functions</title>
 +
-+		<table id="table-keywords-funcions">
-+			<title>Keyword Functions</title>
-+			<tgroup cols="4">
-+				<thead>
-+					<row>
-+						<entry>Menus</entry>
-+						<entry>Default Key</entry>
-+						<entry>Function</entry>
-+						<entry>Description</entry>
-+					</row>
-+				</thead>
-+				<tbody>
-+					<row>
-+						<entry>index,pager</entry>
-+						<entry>y</entry>
-+						<entry><literal>&lt;edit-label&gt;</literal></entry>
-+						<entry>add, change, or delete a message's label</entry>
-+					</row>
-+				</tbody>
-+			</tgroup>
-+		</table>
-+	</sect2>
++    <table id="table-keywords-funcions">
++      <title>Keyword Functions</title>
++      <tgroup cols="4">
++        <thead>
++          <row>
++            <entry>Menus</entry>
++            <entry>Default Key</entry>
++            <entry>Function</entry>
++            <entry>Description</entry>
++          </row>
++        </thead>
++        <tbody>
++          <row>
++            <entry>index,pager</entry>
++            <entry>y</entry>
++            <entry><literal>&lt;edit-label&gt;</literal></entry>
++            <entry>add, change, or delete a message's label</entry>
++          </row>
++        </tbody>
++      </tgroup>
++    </table>
++  </sect2>
 +
 +<!--
-+	<sect2 id="keywords-commands">
-+		<title>Commands</title>
-+	</sect2>
++  <sect2 id="keywords-commands">
++    <title>Commands</title>
++  </sect2>
 +
-+	<sect2 id="keywords-colors">
-+		<title>Colors</title>
-+		<para>None</para>
-+	</sect2>
++  <sect2 id="keywords-colors">
++    <title>Colors</title>
++    <para>None</para>
++  </sect2>
 +-->
 +
-+	<sect2 id="keywords-sort">
-+		<title>Sort</title>
-+		<table id="table-keywords-sort">
-+			<title>Keywords Sort</title>
-+			<tgroup cols="2">
-+				<thead>
-+					<row>
-+						<entry>Sort</entry>
-+						<entry>Description</entry>
-+					</row>
-+				</thead>
-+				<tbody>
-+					<row>
-+						<entry><literal>label</literal></entry>
-+						<entry>Sort by label</entry>
-+					</row>
-+				</tbody>
-+			</tgroup>
-+		</table>
-+	</sect2>
++  <sect2 id="keywords-sort">
++    <title>Sort</title>
++    <table id="table-keywords-sort">
++      <title>Keywords Sort</title>
++      <tgroup cols="2">
++        <thead>
++          <row>
++            <entry>Sort</entry>
++            <entry>Description</entry>
++          </row>
++        </thead>
++        <tbody>
++          <row>
++            <entry><literal>label</literal></entry>
++            <entry>Sort by label</entry>
++          </row>
++        </tbody>
++      </tgroup>
++    </table>
++  </sect2>
 +
-+	<sect2 id="keywords-muttrc">
-+		<title>Muttrc</title>
-+	</sect2>
++  <sect2 id="keywords-muttrc">
++    <title>Muttrc</title>
 +
-+	<sect2 id="keywords-see-also">
-+		<title>See Also</title>
++<screen>
++<emphasis role="comment"># This is a complete list of keywords-related configuration.
++ 
++# --------------------------------------------------------------------------
++# VARIABLES - shown with their default values
++# --------------------------------------------------------------------------
++ 
++# Should Mutt save the keywords to whatever keyword it came from?</emphasis>
++set keywords_legacy = yes
++ 
++<emphasis role="comment"># Should Mutt use the "Keywords:" header?</emphasis>
++set keywords_standard = no
++ 
++<emphasis role="comment"># How should the keywords be separated?</emphasis>
++set xlabel_delimiter = ""
++ 
++<emphasis role="comment"># --------------------------------------------------------------------------
++# FUNCTIONS - shown with an example mapping
++# --------------------------------------------------------------------------
++ 
++# Bind 'y' to edit labels/keywords</emphasis>
++bind index,pager y edit-label
++ 
++<emphasis role="comment"># --------------------------------------------------------------------------
++ 
++# vim: syntax=muttrc</emphasis>
++</screen>
++  </sect2>
 +
-+		<itemizedlist>
-+			<listitem><para><ulink url="https://github.com/neomutt/neomutt/wiki">NeoMutt Project</ulink></para></listitem>
-+			<listitem><para><link linkend="index-format">$index_format</link></para></listitem>
-+			<listitem><para><link linkend="index-color">index-color patch</link></para></listitem>
-+			<listitem><para><link linkend="folder-hook">folder-hook</link></para></listitem>
-+		</itemizedlist>
-+	</sect2>
++  <sect2 id="keywords-see-also">
++    <title>See Also</title>
 +
-+	<sect2 id="keywords-known-bugs">
-+		<title>Known Bugs</title>
-+	</sect2>
++    <itemizedlist>
++      <listitem><para><ulink url="https://github.com/neomutt/neomutt/wiki">NeoMutt Project</ulink></para></listitem>
++      <listitem><para><link linkend="index-format">$index_format</link></para></listitem>
++      <listitem><para><link linkend="index-color">index-color patch</link></para></listitem>
++      <listitem><para><link linkend="folder-hook">folder-hook</link></para></listitem>
++    </itemizedlist>
++  </sect2>
 +
-+	<sect2 id="keywords-credits">
-+		<title>Credits</title>
-+		<itemizedlist>
-+		<listitem><para>David Champion <email>dgc@uchicago.edu</email></para></listitem>
-+		<listitem><para>Richard Russon <email>rich@flatcap.org</email></para></listitem>
-+		</itemizedlist>
-+	</sect2>
++  <sect2 id="keywords-known-bugs">
++    <title>Known Bugs</title>
++    <para>
++      None
++    </para>
++  </sect2>
++
++  <sect2 id="keywords-credits">
++    <title>Credits</title>
++    <itemizedlist>
++    <listitem><para>David Champion <email>dgc@uchicago.edu</email></para></listitem>
++    <listitem><para>Richard Russon <email>rich@flatcap.org</email></para></listitem>
++    </itemizedlist>
++  </sect2>
 +</sect1>
 +
  <sect1 id="limit-current-thread">
- 	<title>Limit-Current-Thread Patch</title>
- 	<subtitle>Focus on one Email Thread</subtitle>
+   <title>Limit-Current-Thread Patch</title>
+   <subtitle>Focus on one Email Thread</subtitle>
 diff --git a/doc/muttrc.keywords b/doc/muttrc.keywords
 new file mode 100644
-index 0000000..e69de29
-diff --git a/doc/vimrc-keywords b/doc/vimrc-keywords
-new file mode 100644
-index 0000000..2725191
+index 0000000..5b72d4b
 --- /dev/null
-+++ b/doc/vimrc-keywords
++++ b/doc/muttrc.keywords
+@@ -0,0 +1,23 @@
++# This is a complete list of keywords-related configuration.
++
++# --------------------------------------------------------------------------
++# VARIABLES - shown with their default values
++# --------------------------------------------------------------------------
++
++# Should Mutt save the keywords to whatever keyword it came from?
++set keywords_legacy = yes
++
++# Should Mutt use the "Keywords:" header?
++set keywords_standard = no
++
++# How should the keywords be separated?
++set xlabel_delimiter = ""
++
++# --------------------------------------------------------------------------
++# FUNCTIONS - shown with an example mapping
++# --------------------------------------------------------------------------
++
++# Bind 'y' to edit labels/keywords
++bind index,pager y edit-label
++
++# vim: syntax=muttrc
+diff --git a/doc/vimrc.keywords b/doc/vimrc.keywords
+new file mode 100644
+index 0000000..e217ed3
+--- /dev/null
++++ b/doc/vimrc.keywords
 @@ -0,0 +1,10 @@
 +" Vim syntax file for the mutt keywords patch
 +
-+syntax keyword muttrcVarBool    skipwhite contained keywords_legacy       nextgroup=muttrcSetBoolAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
-+syntax keyword muttrcVarBool    skipwhite contained keywords_standard     nextgroup=muttrcSetBoolAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
++syntax keyword muttrcVarBool    contained skipwhite keywords_legacy       nextgroup=muttrcSetBoolAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
++syntax keyword muttrcVarBool    contained skipwhite keywords_standard     nextgroup=muttrcSetBoolAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
 +
 +syntax keyword muttrcVarStr     contained skipwhite xlabel_delimiter      nextgroup=muttrcVarEqualsIdxFmt
 +
@@ -944,10 +1003,10 @@ index f4c0ecf..d91b9c6 100644
  
  static int
 diff --git a/hdrline.c b/hdrline.c
-index 5cedd7d..b0d61cd 100644
+index 5cedd7d..03822ad 100644
 --- a/hdrline.c
 +++ b/hdrline.c
-@@ -877,42 +877,57 @@ hdr_format_str (char *dest,
+@@ -877,43 +877,57 @@ hdr_format_str (char *dest,
  
       case 'y':
         if (optional)
@@ -995,6 +1054,7 @@ index 5cedd7d..b0d61cd 100644
 -      else
 -        mutt_format_s (dest + colorlen, destlen - colorlen, prefix, "");
 -      add_index_color (dest + colorlen, destlen - colorlen, flags, MT_COLOR_INDEX);
+-
 +      {
 +        char labels[HUGE_STRING];
 +        char labelstmp[HUGE_STRING];
@@ -1030,9 +1090,9 @@ index 5cedd7d..b0d61cd 100644
 +          mutt_format_s (dest + colorlen, destlen - colorlen, prefix, "");
 +        add_index_color (dest + colorlen, destlen - colorlen, flags, MT_COLOR_INDEX);
 +      }
- 
        break;
  
+     default:
 diff --git a/headers.c b/headers.c
 index 0a75998..a7d1036 100644
 --- a/headers.c
@@ -1413,7 +1473,7 @@ index 3e53f72..4b75d22 100644
  };
  
 diff --git a/main.c b/main.c
-index 5e6b597..a6b4a1e 100644
+index 3c0f408..3e01213 100644
 --- a/main.c
 +++ b/main.c
 @@ -819,9 +819,13 @@ int main (int argc, char **argv)
@@ -1827,5 +1887,5 @@ index 26afdc6..3727835 100644
  /* dgc: Sort & SortAux are shorts, so I'm bumping these bitflags up from
   * bits 4 & 5 to bits 8 & 9 to make room for more sort keys in the future. */
 -- 
-2.9.0
+2.7.4
 

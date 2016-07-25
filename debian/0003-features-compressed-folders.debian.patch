@@ -1,4 +1,4 @@
-From eaace6f1839e22315748af2a54738dc0e2d52077 Mon Sep 17 00:00:00 2001
+From e5ba6ec15c6d82b0f141150783196f7ef9a2797a Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 6 May 2016 00:23:57 +0100
 Subject: [PATCH 03/22] features/compressed-folders.debian
@@ -19,5 +19,5 @@ index 0000000..fdf5322
 +#error "Run sh debian/update-autotools.sh"
 +#endif
 -- 
-2.9.0
+2.7.4
 

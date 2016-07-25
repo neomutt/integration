@@ -1,4 +1,4 @@
-From e3449d48921dde599f588f91c41b8a87d0d72422 Mon Sep 17 00:00:00 2001
+From 6cb889f79582667485465c858b1307de79bf7986 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 03:09:05 +0100
 Subject: [PATCH 10/12] mutt-1.5.23-cariage-return
@@ -131,5 +131,5 @@ index 0caff87..99b61d6 100644
      else
        fputs (buffer, fp);
 -- 
-2.9.0
+2.7.4
 

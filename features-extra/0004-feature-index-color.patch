@@ -1,12 +1,13 @@
-From 917126b7d65f7c8559c85b3cebc0133661ad5086 Mon Sep 17 00:00:00 2001
-From: Richard Russon <rich@flatcap.org>
-Date: Tue, 24 May 2016 17:26:21 +0100
+From 688a8ff97922614c3ead8ebe05d470e4b97d5b9d Mon Sep 17 00:00:00 2001
+From: Christian Aichinger <Greek0@gmx.net>
+Date: Mon, 25 Jan 2016 17:02:57 +0000
 Subject: [PATCH 04/14] feature: index-color
 
+Custom rules for theming the email index
 ---
  PATCHES                |   1 +
  README.index-color     |  82 ++++++++++++++++
- color.c                | 151 ++++++++++++++++++----------
+ color.c                | 148 ++++++++++++++++++----------
  curs_lib.c             |  23 ++++-
  doc/manual.xml.head    | 262 ++++++++++++++++++++++++++++++++++++++++++++++++-
  doc/muttrc.index-color |  37 +++++++
@@ -15,23 +16,23 @@ Subject: [PATCH 04/14] feature: index-color
  menu.c                 |  62 ++++++++++--
  mutt.h                 |   2 +
  mutt_curses.h          |  15 ++-
- 11 files changed, 675 insertions(+), 88 deletions(-)
+ 11 files changed, 673 insertions(+), 87 deletions(-)
  create mode 100644 README.index-color
  create mode 100644 doc/muttrc.index-color
  create mode 100644 doc/vimrc.index-color
 
 diff --git a/PATCHES b/PATCHES
-index 2aad783..0944b0b 100644
+index c0c3401..270568a 100644
 --- a/PATCHES
 +++ b/PATCHES
-@@ -8,3 +8,4 @@ patch-sidebar-neo-git
- patch-progress-neo-git
- patch-skip-quoted-neo-git
- patch-status-color-neo-git
+@@ -1,3 +1,4 @@
 +patch-index-color-neo-git
+ patch-status-color-neo-git
+ patch-skip-quoted-neo-git
+ patch-progress-neo-git
 diff --git a/README.index-color b/README.index-color
 new file mode 100644
-index 0000000..51c0001
+index 0000000..fca7c18
 --- /dev/null
 +++ b/README.index-color
 @@ -0,0 +1,82 @@
@@ -47,7 +48,7 @@ index 0000000..51c0001
 +    the mutt version.
 +
 +    Dependencies
-+    * mutt-1.6.1
++    * mutt-1.6.2
 +    * status-color patch
 +
 +Introduction
@@ -118,7 +119,7 @@ index 0000000..51c0001
 +    * Richard Russon <rich@flatcap.org>
 +
 diff --git a/color.c b/color.c
-index 0efc743..1893b49 100644
+index 46c927c..ff69f41 100644
 --- a/color.c
 +++ b/color.c
 @@ -36,6 +36,9 @@ COLOR_LINE *ColorHdrList = NULL;
@@ -280,22 +281,20 @@ index 0efc743..1893b49 100644
  
    if (do_cache && !option (OPTNOCURSES))
    {
-@@ -730,12 +758,17 @@ _mutt_parse_color (BUFFER *buf, BUFFER *s, BUFFER *err,
-   if(callback(buf, s, &fg, &bg, &attr, err) == -1)
-     return -1;
+@@ -732,12 +760,16 @@ _mutt_parse_color (BUFFER *buf, BUFFER *s, BUFFER *err,
  
+   /* extract a regular expression if needed */
+   
 -  if (object == MT_COLOR_HEADER || object == MT_COLOR_BODY || object == MT_COLOR_INDEX)
--  {
--    if (!MoreArgs (s))
--    {
-+  /* extract a regular expression if needed */
-+  
 +  if ((object == MT_COLOR_BODY) ||
 +      (object == MT_COLOR_HEADER) ||
 +      (object == MT_COLOR_INDEX) ||
 +      (object == MT_COLOR_INDEX_AUTHOR) ||
 +      (object == MT_COLOR_INDEX_FLAGS) ||
-+      (object == MT_COLOR_INDEX_SUBJECT)) {
++      (object == MT_COLOR_INDEX_SUBJECT))
+   {
+-    if (!MoreArgs (s))
+-    {
 +    if (!MoreArgs (s)) {
        strfcpy (err->data, _("too few arguments"), err->dsize);
 -      return (-1);
@@ -303,7 +302,7 @@ index 0efc743..1893b49 100644
      }
  
      mutt_extract_token (buf, s, 0);
-@@ -798,6 +831,18 @@ _mutt_parse_color (BUFFER *buf, BUFFER *s, BUFFER *err,
+@@ -800,6 +832,18 @@ _mutt_parse_color (BUFFER *buf, BUFFER *s, BUFFER *err,
      r = add_pattern (&ColorIndexList, buf->data, 1,
  		    fg, bg, attr, err, 1, match);
      set_option (OPTFORCEREDRAWINDEX);
@@ -322,7 +321,7 @@ index 0efc743..1893b49 100644
    }
    else if (object == MT_COLOR_QUOTED)
    {
-@@ -824,7 +869,11 @@ _mutt_parse_color (BUFFER *buf, BUFFER *s, BUFFER *err,
+@@ -826,7 +870,11 @@ _mutt_parse_color (BUFFER *buf, BUFFER *s, BUFFER *err,
        ColorQuote[q_level] = fgbgattr_to_color(fg, bg, attr);
    }
    else
@@ -391,28 +390,28 @@ index 1ab6d2d..3086ad7 100644
      {
        k = (k == (size_t)(-1)) ? 1 : n;
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index 1d68abc..7dcc22a 100644
+index ddad314..64ea520 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
-@@ -3259,7 +3259,7 @@ <sect1 id="color">
+@@ -3238,7 +3238,7 @@ <sect1 id="color">
  
  <command>color</command>
  <arg choice="plain">
 -<option>index</option>
-+<option><emphasis>index-object</emphasis></option>
++<option>index-object</option>
  </arg>
  <arg choice="plain">
  <replaceable class="parameter">foreground</replaceable>
-@@ -3274,7 +3274,7 @@ <sect1 id="color">
+@@ -3253,7 +3253,7 @@ <sect1 id="color">
  <command>uncolor</command>
  <group choice="req">
  <arg choice="plain">
 -<option>index</option>
-+<option><emphasis>index-object</emphasis></option>
++<option>index-object</option>
  </arg>
  <arg choice="plain">
  <option>header</option>
-@@ -3304,8 +3304,8 @@ <sect1 id="color">
+@@ -3283,8 +3283,8 @@ <sect1 id="color">
  <para>
  <emphasis>header</emphasis> and <emphasis>body</emphasis> match
  <emphasis>regexp</emphasis> in the header/body of a message,
@@ -423,7 +422,7 @@ index 1d68abc..7dcc22a 100644
  server-side searches (=b, =B, =h) are not supported for color index
  patterns.
  </para>
-@@ -3319,6 +3319,14 @@ <sect1 id="color">
+@@ -3298,6 +3298,14 @@ <sect1 id="color">
  <listitem><para>bold (highlighting bold patterns in the body of messages)</para></listitem>
  <listitem><para>error (error messages printed by Mutt)</para></listitem>
  <listitem><para>hdrdefault (default color of the message header in the pager)</para></listitem>
@@ -438,7 +437,7 @@ index 1d68abc..7dcc22a 100644
  <listitem><para>indicator (arrow or bar used to indicate the current item in a menu)</para></listitem>
  <listitem><para>markers (the <quote>+</quote> markers at the beginning of wrapped lines in the pager)</para></listitem>
  <listitem><para>message (informational messages)</para></listitem>
-@@ -3335,6 +3343,24 @@ <sect1 id="color">
+@@ -3314,6 +3322,24 @@ <sect1 id="color">
  </itemizedlist>
  
  <para>
@@ -463,95 +462,95 @@ index 1d68abc..7dcc22a 100644
  <emphasis>foreground</emphasis> and <emphasis>background</emphasis> can
  be one of the following:
  </para>
-@@ -3451,7 +3477,7 @@ <sect1 id="color">
+@@ -3430,7 +3456,7 @@ <sect1 id="color">
  <command>unmono</command>
  <group choice="req">
  <arg choice="plain">
 -<option>index</option>
-+<option><emphasis>index-object</emphasis></option>
++<option>index-object</option>
  </arg>
  <arg choice="plain">
  <option>header</option>
-@@ -9755,6 +9781,232 @@ <sect1 id="ifdef">
- 	</sect2>
+@@ -9725,6 +9751,232 @@ <sect1 id="ifdef">
+   </sect2>
  </sect1>
  
 +<sect1 id="index-color">
-+	<title>Index Color Patch</title>
-+	<subtitle>Custom rules for theming the email index</subtitle>
++  <title>Index Color Patch</title>
++  <subtitle>Custom rules for theming the email index</subtitle>
 +
-+	<sect2 id="index-color-patch">
-+		<title>Patch</title>
++  <sect2 id="index-color-patch">
++    <title>Patch</title>
 +
-+		<para>
-+			To check if Mutt supports <quote>Index Color</quote>, look for
-+			<quote>patch-index-color</quote> in the mutt version.
-+			See: <xref linkend="mutt-patches"/>.
-+		</para>
++    <para>
++      To check if Mutt supports <quote>Index Color</quote>, look for
++      <quote>patch-index-color</quote> in the mutt version.
++      See: <xref linkend="mutt-patches"/>.
++    </para>
 +
-+		<itemizedlist>
-+			<title>Dependencies:</title>
-+			<listitem><para>mutt-1.6.1</para></listitem>
-+			<listitem><para><link linkend="status-color">status-color patch</link></para></listitem>
-+		</itemizedlist>
++    <itemizedlist>
++      <title>Dependencies:</title>
++      <listitem><para>mutt-1.6.2</para></listitem>
++      <listitem><para><link linkend="status-color">status-color patch</link></para></listitem>
++    </itemizedlist>
 +
-+		<para>This patch is part of the <ulink url="http://www.neomutt.org/">NeoMutt Project</ulink>.</para>
-+	</sect2>
++    <para>This patch is part of the <ulink url="http://www.neomutt.org/">NeoMutt Project</ulink>.</para>
++  </sect2>
 +
-+	<sect2 id="index-color-intro">
-+		<title>Introduction</title>
++  <sect2 id="index-color-intro">
++    <title>Introduction</title>
 +
 +        <para>
-+		The <quote>index-color</quote> patch allows you to specify colors for
-+		individual parts of the email index. e.g. Subject, Author, Flags.
++    The <quote>index-color</quote> patch allows you to specify colors for
++    individual parts of the email index. e.g. Subject, Author, Flags.
 +        </para>
 +
 +        <para>
-+		First choose which part of the index you'd like to color.
-+		Then, if needed, pick a pattern to match.
++    First choose which part of the index you'd like to color.
++    Then, if needed, pick a pattern to match.
 +        </para>
 +
-+		<para>
-+		Note: The pattern does not have to refer to the object you wish to
-+		color.  e.g.
-+		</para>
++    <para>
++    Note: The pattern does not have to refer to the object you wish to
++    color.  e.g.
++    </para>
 +
 +<screen>
 +color index_author red default &quot;~smutt&quot;
 +</screen>
 +
 +        <para>
-+		The author appears red when the subject (~s) contains <quote>mutt</quote>.
++    The author appears red when the subject (~s) contains <quote>mutt</quote>.
 +        </para>
-+	</sect2>
++  </sect2>
 +
 +<!--
-+	<sect2 id="index-color-variables">
-+		<title>Variables</title>
-+		<para>None</para>
-+	</sect2>
++  <sect2 id="index-color-variables">
++    <title>Variables</title>
++    <para>None</para>
++  </sect2>
 +
-+	<sect2 id="index-color-functions">
-+		<title>Functions</title>
-+		<para>None</para>
-+	</sect2>
++  <sect2 id="index-color-functions">
++    <title>Functions</title>
++    <para>None</para>
++  </sect2>
 +
-+	<sect2 id="index-color-commands">
-+		<title>Commands</title>
-+		<para>None</para>
-+	</sect2>
++  <sect2 id="index-color-commands">
++    <title>Commands</title>
++    <para>None</para>
++  </sect2>
 +-->
 +
-+	<sect2 id="index-color-colors">
-+		<title>Colors</title>
++  <sect2 id="index-color-colors">
++    <title>Colors</title>
 +
 +        <para>
-+		All the colors default to <literal>default</literal>, i.e. unset.
++    All the colors default to <literal>default</literal>, i.e. unset.
 +        </para>
 +
 +        <para>
-+		The index objects can be themed using the <literal>color</literal> command.
-+		Some objects require a pattern.
++    The index objects can be themed using the <literal>color</literal> command.
++    Some objects require a pattern.
 +        </para>
 +
 +<screen>
@@ -559,76 +558,76 @@ index 1d68abc..7dcc22a 100644
 +color index-object foreground background pattern
 +</screen>
 +
-+		<table id="table-index-color-colors">
-+			<title>Index Colors</title>
-+			<tgroup cols="3">
-+				<thead>
-+					<row>
-+						<entry>Object</entry>
-+						<entry>Pattern</entry>
-+						<entry>Highlights</entry>
-+					</row>
-+				</thead>
-+				<tbody>
-+					<row>
-+						<entry><literal>index</literal></entry>
-+						<entry>yes</entry>
-+						<entry>Entire index line</entry>
-+					</row>
-+					<row>
-+						<entry><literal>index_author</literal></entry>
-+						<entry>yes</entry>
-+						<entry>Author name, %A %a %F %L %n</entry>
-+					</row>
-+					<row>
-+						<entry><literal>index_collapsed</literal></entry>
-+						<entry>no</entry>
-+						<entry>Number of messages in a collapsed thread, %M</entry>
-+					</row>
-+					<row>
-+						<entry><literal>index_date</literal></entry>
-+						<entry>no</entry>
-+						<entry>Date field</entry>
-+					</row>
-+					<row>
-+						<entry><literal>index_flags</literal></entry>
-+						<entry>yes</entry>
-+						<entry>Message flags, %S %Z</entry>
-+					</row>
-+					<row>
-+						<entry><literal>index_label</literal></entry>
-+						<entry>no</entry>
-+						<entry>Message label, %y %Y</entry>
-+					</row>
-+					<row>
-+						<entry><literal>index_number</literal></entry>
-+						<entry>no</entry>
-+						<entry>Message number, %C</entry>
-+					</row>
-+					<row>
-+						<entry><literal>index_size</literal></entry>
-+						<entry>no</entry>
-+						<entry>Message size, %c %l</entry>
-+					</row>
-+					<row>
-+						<entry><literal>index_subject</literal></entry>
-+						<entry>yes</entry>
-+						<entry>Subject, %s</entry>
-+					</row>
-+				</tbody>
-+			</tgroup>
-+		</table>
-+	</sect2>
++    <table id="table-index-color-colors">
++      <title>Index Colors</title>
++      <tgroup cols="3">
++        <thead>
++          <row>
++            <entry>Object</entry>
++            <entry>Pattern</entry>
++            <entry>Highlights</entry>
++          </row>
++        </thead>
++        <tbody>
++          <row>
++            <entry><literal>index</literal></entry>
++            <entry>yes</entry>
++            <entry>Entire index line</entry>
++          </row>
++          <row>
++            <entry><literal>index_author</literal></entry>
++            <entry>yes</entry>
++            <entry>Author name, %A %a %F %L %n</entry>
++          </row>
++          <row>
++            <entry><literal>index_collapsed</literal></entry>
++            <entry>no</entry>
++            <entry>Number of messages in a collapsed thread, %M</entry>
++          </row>
++          <row>
++            <entry><literal>index_date</literal></entry>
++            <entry>no</entry>
++            <entry>Date field</entry>
++          </row>
++          <row>
++            <entry><literal>index_flags</literal></entry>
++            <entry>yes</entry>
++            <entry>Message flags, %S %Z</entry>
++          </row>
++          <row>
++            <entry><literal>index_label</literal></entry>
++            <entry>no</entry>
++            <entry>Message label, %y %Y</entry>
++          </row>
++          <row>
++            <entry><literal>index_number</literal></entry>
++            <entry>no</entry>
++            <entry>Message number, %C</entry>
++          </row>
++          <row>
++            <entry><literal>index_size</literal></entry>
++            <entry>no</entry>
++            <entry>Message size, %c %l</entry>
++          </row>
++          <row>
++            <entry><literal>index_subject</literal></entry>
++            <entry>yes</entry>
++            <entry>Subject, %s</entry>
++          </row>
++        </tbody>
++      </tgroup>
++    </table>
++  </sect2>
 +
 +<!--
-+	<sect2 id="index-color-sort">
-+		<title>Sort</title>
-+		<para>None</para>
-+	</sect2>
++  <sect2 id="index-color-sort">
++    <title>Sort</title>
++    <para>None</para>
++  </sect2>
 +-->
 +
-+	<sect2 id="index-color-muttrc">
-+		<title>Muttrc</title>
++  <sect2 id="index-color-muttrc">
++    <title>Muttrc</title>
 +<screen>
 +<emphasis role="comment"># Example Mutt config file for the 'index-color' feature.
 + 
@@ -668,43 +667,43 @@ index 1d68abc..7dcc22a 100644
 + 
 +<emphasis role="comment"># vim: syntax=muttrc</emphasis>
 +</screen>
-+	</sect2>
++  </sect2>
 +
-+	<sect2 id="index-color-see-also">
-+		<title>See Also</title>
++  <sect2 id="index-color-see-also">
++    <title>See Also</title>
 +
-+		<itemizedlist>
-+			<listitem><para><ulink url="http://www.neomutt.org/">NeoMutt Project</ulink></para></listitem>
-+			<listitem><para><link linkend="regexp">Regular Expressions</link></para></listitem>
-+			<listitem><para><link linkend="patterns">Patterns</link></para></listitem>
-+			<listitem><para><link linkend="index-format">$index_format</link></para></listitem>
-+			<listitem><para><link linkend="color">Color command</link></para></listitem>
-+			<listitem><para><link linkend="status-color">Status-Color patch</link></para></listitem>
-+			<listitem><para><link linkend="keywords">Keywords patch</link></para></listitem>
-+		</itemizedlist>
-+	</sect2>
++    <itemizedlist>
++      <listitem><para><ulink url="http://www.neomutt.org/">NeoMutt Project</ulink></para></listitem>
++      <listitem><para><link linkend="regexp">Regular Expressions</link></para></listitem>
++      <listitem><para><link linkend="patterns">Patterns</link></para></listitem>
++      <listitem><para><link linkend="index-format">$index_format</link></para></listitem>
++      <listitem><para><link linkend="color">Color command</link></para></listitem>
++      <listitem><para><link linkend="status-color">Status-Color patch</link></para></listitem>
++      <listitem><para><link linkend="keywords">Keywords patch</link></para></listitem>
++    </itemizedlist>
++  </sect2>
 +
-+	<sect2 id="index-color-known-bugs">
-+		<title>Known Bugs</title>
-+		<para>None</para>
-+	</sect2>
++  <sect2 id="index-color-known-bugs">
++    <title>Known Bugs</title>
++    <para>None</para>
++  </sect2>
 +
-+	<sect2 id="index-color-credits">
-+		<title>Credits</title>
-+		<itemizedlist>
-+		<listitem><para>Christian Aichinger <email>Greek0@gmx.net</email></para></listitem>
-+		<listitem><para>Christoph <quote>Myon</quote> Berg <email>myon@debian.org</email></para></listitem>
-+		<listitem><para>Elimar Riesebieter <email>riesebie@lxtec.de</email></para></listitem>
-+		<listitem><para>Eric Davis <email>edavis@insanum.com</email></para></listitem>
-+		<listitem><para>Vladimir Marek <email>Vladimir.Marek@oracle.com</email></para></listitem>
-+		<listitem><para>Richard Russon <email>rich@flatcap.org</email></para></listitem>
-+		</itemizedlist>
-+	</sect2>
++  <sect2 id="index-color-credits">
++    <title>Credits</title>
++    <itemizedlist>
++    <listitem><para>Christian Aichinger <email>Greek0@gmx.net</email></para></listitem>
++    <listitem><para>Christoph <quote>Myon</quote> Berg <email>myon@debian.org</email></para></listitem>
++    <listitem><para>Elimar Riesebieter <email>riesebie@lxtec.de</email></para></listitem>
++    <listitem><para>Eric Davis <email>edavis@insanum.com</email></para></listitem>
++    <listitem><para>Vladimir Marek <email>Vladimir.Marek@oracle.com</email></para></listitem>
++    <listitem><para>Richard Russon <email>rich@flatcap.org</email></para></listitem>
++    </itemizedlist>
++  </sect2>
 +</sect1>
 +
  <sect1 id="initials">
- 	<title>Initials Expando Patch</title>
- 	<subtitle>Expando for author's initials</subtitle>
+   <title>Initials Expando Patch</title>
+   <subtitle>Expando for author's initials</subtitle>
 diff --git a/doc/muttrc.index-color b/doc/muttrc.index-color
 new file mode 100644
 index 0000000..3ec91f5
@@ -1013,7 +1012,7 @@ index 5434d50..5cedd7d 100644
        break;
  
 diff --git a/menu.c b/menu.c
-index 729200e..0b3229c 100644
+index b01a1b7..9fd25fa 100644
 --- a/menu.c
 +++ b/menu.c
 @@ -30,7 +30,39 @@
@@ -1109,7 +1108,7 @@ index 729200e..0b3229c 100644
      menu_make_entry (buf, sizeof (buf), menu, menu->current);
      menu_pad_string (buf, sizeof (buf));
      SETCOLOR(MT_COLOR_INDICATOR);
-     move(menu->current - menu->top + menu->offset, SidebarWidth);
+     move (menu->current - menu->top + menu->offset, SidebarWidth);
 -    print_enriched_string (menu->color(menu->current), (unsigned char *) buf, 0);
 +    print_enriched_string (menu->current, menu->color (menu->current), (unsigned char *) buf, 0);
    }
@@ -1142,7 +1141,7 @@ index f27d507..7e608e4 100644
  #define M_THREAD_UNCOLLAPSE	(1<<1)
  #define M_THREAD_GET_HIDDEN	(1<<2)
 diff --git a/mutt_curses.h b/mutt_curses.h
-index 69d06c5..9c4eeb1 100644
+index aa3a50b..8d3530b 100644
 --- a/mutt_curses.h
 +++ b/mutt_curses.h
 @@ -125,7 +125,6 @@ enum
@@ -1151,12 +1150,12 @@ index 69d06c5..9c4eeb1 100644
    MT_COLOR_UNDERLINE,
 -  MT_COLOR_INDEX,
    MT_COLOR_PROMPT,
+   MT_COLOR_PROGRESS,
  #ifdef USE_SIDEBAR
-   MT_COLOR_DIVIDER,
 @@ -136,6 +135,17 @@ enum
+   MT_COLOR_SB_INDICATOR,
    MT_COLOR_SB_SPOOLFILE,
  #endif
-   MT_COLOR_PROGRESS,
 +  /* please no non-MT_COLOR_INDEX objects after this point */
 +  MT_COLOR_INDEX,
 +  MT_COLOR_INDEX_AUTHOR,
@@ -1182,5 +1181,5 @@ index 69d06c5..9c4eeb1 100644
  void ci_init_color (void);
  void ci_start_color (void);
 -- 
-2.9.0
+2.7.4
 

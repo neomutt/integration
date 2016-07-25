@@ -1,4 +1,4 @@
-From 85b2731d26be79a3efa00b9cdaf59bb2527a27d0 Mon Sep 17 00:00:00 2001
+From e048290dc70c76eeb946df5bce14c2295ce84b9c Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 03:08:25 +0100
 Subject: [PATCH 09/12] widechar.sidebar
@@ -59,5 +59,5 @@ index 6068291..274fedc 100644
    char *buf = NULL;
    size_t l = 0, sz = 0;
 -- 
-2.9.0
+2.7.4
 

@@ -1,4 +1,4 @@
-From 88cc5f9aac4c6b8d574627af94229f228760373e Mon Sep 17 00:00:00 2001
+From 6bb71523b6b9ab212e4313f77c77b8ba8564ced0 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 6 May 2016 00:23:58 +0100
 Subject: [PATCH 05/22] debian-specific/Md.etc_mailname_gethostbyname
@@ -65,5 +65,5 @@ index b22e8e9..b34fa91 100644
      /* we have a compile-time domain name, use that for Fqdn */
      Fqdn = safe_malloc (mutt_strlen (domain) + mutt_strlen (Hostname) + 2);
 -- 
-2.9.0
+2.7.4
 

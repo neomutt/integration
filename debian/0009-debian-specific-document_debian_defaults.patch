@@ -1,4 +1,4 @@
-From d4bde757e98d7b6585c28de4f332be6e7a903b9c Mon Sep 17 00:00:00 2001
+From 0fd962f1b3a6cb7209e8b8634669d2ca273a6c77 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 6 May 2016 00:23:59 +0100
 Subject: [PATCH 09/22] debian-specific/document_debian_defaults
@@ -8,7 +8,7 @@ Subject: [PATCH 09/22] debian-specific/document_debian_defaults
  1 file changed, 22 insertions(+)
 
 diff --git a/init.h b/init.h
-index b7728d7..379004a 100644
+index a0f0ede..9ccc384 100644
 --- a/init.h
 +++ b/init.h
 @@ -336,6 +336,9 @@ struct option_t MuttVars[] = {
@@ -83,5 +83,5 @@ index b7728d7..379004a 100644
    { "write_inc",	DT_NUM,	 R_NONE, UL &WriteInc, 10 },
    /*
 -- 
-2.9.0
+2.7.4
 

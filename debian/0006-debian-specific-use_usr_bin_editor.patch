@@ -1,4 +1,4 @@
-From e0db94e04ccc5ee70cf8e1490f91070d3306b66f Mon Sep 17 00:00:00 2001
+From 04f7ede025565eb8f6302c23bf90a4b621bad385 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 6 May 2016 00:23:58 +0100
 Subject: [PATCH 06/22] debian-specific/use_usr_bin_editor
@@ -22,7 +22,7 @@ index b34fa91..d6cbfbe 100644
    Editor = safe_strdup (p);
    Visual = safe_strdup (p);
 diff --git a/init.h b/init.h
-index b2089f6..bc6e7a4 100644
+index 9e49e48..cdb5437 100644
 --- a/init.h
 +++ b/init.h
 @@ -750,7 +750,7 @@ struct option_t MuttVars[] = {
@@ -35,5 +35,5 @@ index b2089f6..bc6e7a4 100644
    ** The \fC$$editor\fP string may contain a \fI%s\fP escape, which will be replaced by the name
    ** of the file to be edited.  If the \fI%s\fP escape does not appear in \fC$$editor\fP, a
 -- 
-2.9.0
+2.7.4
 

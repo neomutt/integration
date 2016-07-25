@@ -1,8 +1,12 @@
-From 217d69182264b8d323916bca603b4762a4d26e9b Mon Sep 17 00:00:00 2001
-From: Richard Russon <rich@flatcap.org>
-Date: Tue, 24 May 2016 17:19:14 +0100
+From 29be404887ce01a40d88786e643b7b9516b396bb Mon Sep 17 00:00:00 2001
+From: David Sterba <dsterba@suse.cz>
+Date: Fri, 15 Nov 2013 14:21:02 +0100
 Subject: [PATCH 02/14] feature: skip-quoted
 
+Tunable for number of lines of quoted text that are displayed before the
+unquoted text after 'skip to quoted' command (S).
+
+Signed-off-by: David Sterba <dsterba@suse.cz>
 ---
  PATCHES                |   1 +
  README.skip-quoted     |  47 +++++++++++++++++++
@@ -16,17 +20,17 @@ Subject: [PATCH 02/14] feature: skip-quoted
  create mode 100644 doc/muttrc.skip-quoted
 
 diff --git a/PATCHES b/PATCHES
-index 4f06445..75a4f03 100644
+index 58ef6c9..b8b631e 100644
 --- a/PATCHES
 +++ b/PATCHES
-@@ -6,3 +6,4 @@ patch-cond-date-neo-git
- patch-compress-neo-git
- patch-sidebar-neo-git
- patch-progress-neo-git
+@@ -1,3 +1,4 @@
 +patch-skip-quoted-neo-git
+ patch-progress-neo-git
+ patch-sidebar-neo-git
+ patch-compress-neo-git
 diff --git a/README.skip-quoted b/README.skip-quoted
 new file mode 100644
-index 0000000..e9b0ac3
+index 0000000..fe611d1
 --- /dev/null
 +++ b/README.skip-quoted
 @@ -0,0 +1,47 @@
@@ -38,11 +42,11 @@ index 0000000..e9b0ac3
 +Patch
 +-----
 +
-+    To check if Mutt supports "Skip-Quoted", look for "patch-skip-quoted" in
++    To check if Mutt supports "skip-quoted", look for "patch-skip-quoted" in
 +    the mutt version.
 +
 +    Dependencies
-+    * mutt-1.6.1
++    * mutt-1.6.2
 +
 +Introduction
 +------------
@@ -78,97 +82,97 @@ index 0000000..e9b0ac3
 +    * Richard Russon <rich@flatcap.org>
 +
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index bbaa1ef..761dacf 100644
+index 0bde796..f13d3c1 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
-@@ -10676,6 +10676,127 @@ <sect1 id="sidebar">
+@@ -10648,6 +10648,127 @@ <sect1 id="sidebar">
    </sect2>
  </sect1>
  
 +<sect1 id="skip-quoted-patch">
-+	<title>Skip-Quoted Patch</title>
-+	<subtitle>Leave some context visible</subtitle>
++  <title>Skip-Quoted Patch</title>
++  <subtitle>Leave some context visible</subtitle>
 +
-+	<sect2 id="skip-quoted-patch2">
-+		<title>Patch</title>
++  <sect2 id="skip-quoted-patch2">
++    <title>Patch</title>
 +
-+		<para>
-+			To check if Mutt supports <quote>skip-quoted</quote>, look for
-+			<quote>patch-skip-quoted</quote> in the mutt version.
-+			See: <xref linkend="mutt-patches"/>.
-+		</para>
++    <para>
++      To check if Mutt supports <quote>skip-quoted</quote>, look for
++      <quote>patch-skip-quoted</quote> in the mutt version.
++      See: <xref linkend="mutt-patches"/>.
++    </para>
 +
-+		<itemizedlist>
-+			<title>Dependencies:</title>
-+			<listitem><para>mutt-1.6.1</para></listitem>
-+		</itemizedlist>
++    <itemizedlist>
++      <title>Dependencies:</title>
++      <listitem><para>mutt-1.6.2</para></listitem>
++    </itemizedlist>
 +
-+		<para>This patch is part of the <ulink url="http://www.neomutt.org/">NeoMutt Project</ulink>.</para>
-+	</sect2>
++    <para>This patch is part of the <ulink url="http://www.neomutt.org/">NeoMutt Project</ulink>.</para>
++  </sect2>
 +
-+	<sect2 id="skip-quoted-intro">
-+		<title>Introduction</title>
++  <sect2 id="skip-quoted-intro">
++    <title>Introduction</title>
 +
-+		<para>
-+			When viewing an email, the
-+			<literal>&lt;skip-to-quoted&gt;</literal> function (by default the
-+			<literal>S</literal> key) will scroll past any quoted text.
-+			Sometimes, a little context is useful.
-+		</para>
++    <para>
++      When viewing an email, the
++      <literal>&lt;skip-to-quoted&gt;</literal> function (by default the
++      <literal>S</literal> key) will scroll past any quoted text.
++      Sometimes, a little context is useful.
++    </para>
 +
-+		<para>
-+			By setting the <literal>$skip_quoted_offset</literal> variable, you
-+			can select how much of the quoted text is left visible.
-+		</para>
-+	</sect2>
++    <para>
++      By setting the <literal>$skip_quoted_offset</literal> variable, you
++      can select how much of the quoted text is left visible.
++    </para>
++  </sect2>
 +
-+	<sect2 id="skip-quoted-variables">
-+		<title>Variables</title>
-+		<table id="table-skip-quoted-variables">
-+			<title>Skip-Quoted Variables</title>
-+			<tgroup cols="3">
-+				<thead>
-+					<row>
-+						<entry>Name</entry>
-+						<entry>Type</entry>
-+						<entry>Default</entry>
-+					</row>
-+				</thead>
-+				<tbody>
-+					<row>
-+						<entry><literal>skip_quoted_offset</literal></entry>
-+						<entry>number</entry>
-+						<entry>0</entry>
-+					</row>
-+				</tbody>
-+			</tgroup>
-+		</table>
-+	</sect2>
++  <sect2 id="skip-quoted-variables">
++    <title>Variables</title>
++    <table id="table-skip-quoted-variables">
++      <title>Skip-Quoted Variables</title>
++      <tgroup cols="3">
++        <thead>
++          <row>
++            <entry>Name</entry>
++            <entry>Type</entry>
++            <entry>Default</entry>
++          </row>
++        </thead>
++        <tbody>
++          <row>
++            <entry><literal>skip_quoted_offset</literal></entry>
++            <entry>number</entry>
++            <entry>0</entry>
++          </row>
++        </tbody>
++      </tgroup>
++    </table>
++  </sect2>
 +
 +<!--
-+	<sect2 id="skip-quoted-functions">
-+		<title>Functions</title>
-+		<para>None</para>
-+	</sect2>
++  <sect2 id="skip-quoted-functions">
++    <title>Functions</title>
++    <para>None</para>
++  </sect2>
 +
-+	<sect2 id="skip-quoted-commands">
-+		<title>Commands</title>
-+		<para>None</para>
-+	</sect2>
++  <sect2 id="skip-quoted-commands">
++    <title>Commands</title>
++    <para>None</para>
++  </sect2>
 +
-+	<sect2 id="skip-quoted-colors">
-+		<title>Colors</title>
-+		<para>None</para>
-+	</sect2>
++  <sect2 id="skip-quoted-colors">
++    <title>Colors</title>
++    <para>None</para>
++  </sect2>
 +
-+	<sect2 id="skip-quoted-sort">
-+		<title>Sort</title>
-+		<para>None</para>
-+	</sect2>
++  <sect2 id="skip-quoted-sort">
++    <title>Sort</title>
++    <para>None</para>
++  </sect2>
 +-->
 +
-+	<sect2 id="skip-quoted-muttrc">
-+		<title>Muttrc</title>
++  <sect2 id="skip-quoted-muttrc">
++    <title>Muttrc</title>
 +
 +<screen>
 +<emphasis role="comment"># Example Mutt config file for the 'skip-quoted' patch.
@@ -182,33 +186,33 @@ index bbaa1ef..761dacf 100644
 + 
 +<emphasis role="comment"># vim: syntax=muttrc</emphasis>
 +</screen>
-+	</sect2>
++  </sect2>
 +
-+	<sect2 id="skip-quoted-see-also">
-+		<title>See Also</title>
++  <sect2 id="skip-quoted-see-also">
++    <title>See Also</title>
 +
-+		<itemizedlist>
-+			<listitem><para><ulink url="http://www.neomutt.org/">NeoMutt Project</ulink></para></listitem>
-+		</itemizedlist>
-+	</sect2>
++    <itemizedlist>
++      <listitem><para><ulink url="http://www.neomutt.org/">NeoMutt Project</ulink></para></listitem>
++    </itemizedlist>
++  </sect2>
 +
-+	<sect2 id="skip-quoted-known-bugs">
-+		<title>Known Bugs</title>
-+		<para>None</para>
-+	</sect2>
++  <sect2 id="skip-quoted-known-bugs">
++    <title>Known Bugs</title>
++    <para>None</para>
++  </sect2>
 +
-+	<sect2 id="skip-quoted-credits">
-+		<title>Credits</title>
-+		<itemizedlist>
-+		<listitem><para>David Sterba <email>dsterba@suse.cz</email></para></listitem>
-+		<listitem><para>Richard Russon <email>rich@flatcap.org</email></para></listitem>
-+		</itemizedlist>
-+	</sect2>
++  <sect2 id="skip-quoted-credits">
++    <title>Credits</title>
++    <itemizedlist>
++    <listitem><para>David Sterba <email>dsterba@suse.cz</email></para></listitem>
++    <listitem><para>Richard Russon <email>rich@flatcap.org</email></para></listitem>
++    </itemizedlist>
++  </sect2>
 +</sect1>
 +
  <sect1 id="trash-folder">
- 	<title>Trash Folder Patch</title>
- 	<subtitle>Automatically move "deleted" emails to a trash bin</subtitle>
+   <title>Trash Folder Patch</title>
+   <subtitle>Automatically move <quote>deleted</quote> emails to a trash bin</subtitle>
 diff --git a/doc/muttrc.skip-quoted b/doc/muttrc.skip-quoted
 new file mode 100644
 index 0000000..cd13ed4
@@ -287,5 +291,5 @@ index e8b2b04..226fe15 100644
  
  	  if (dretval < 0)
 -- 
-2.9.0
+2.7.4
 

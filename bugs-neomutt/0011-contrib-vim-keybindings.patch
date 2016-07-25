@@ -1,0 +1,75 @@
+From 9edc7a633aa014ed32ad69efea8f6c7724d8834a Mon Sep 17 00:00:00 2001
+From: Richard Russon <rich@flatcap.org>
+Date: Tue, 12 Jul 2016 17:30:30 +0100
+Subject: [PATCH 11/12] contrib: vim-keybindings
+
+---
+ contrib/vim-keybindings/README.md          | 13 +++++++++++
+ contrib/vim-keybindings/vim-keybindings.rc | 35 ++++++++++++++++++++++++++++++
+ 2 files changed, 48 insertions(+)
+ create mode 100644 contrib/vim-keybindings/README.md
+ create mode 100644 contrib/vim-keybindings/vim-keybindings.rc
+
+diff --git a/contrib/vim-keybindings/README.md b/contrib/vim-keybindings/README.md
+new file mode 100644
+index 0000000..2beeb08
+--- /dev/null
++++ b/contrib/vim-keybindings/README.md
+@@ -0,0 +1,13 @@
++# Vim Keybindings
++
++This Mutt config file sets up some keyboard mappings that make Mutt more
++friendly for Vim users.  For example:
++
++- gg  Move to top of Index
++- G   Move to bottom of Index
++- dd  Delete email from Index
++
++## Credits
++
++- Ivan Tham <pickfire@riseup.net>
++
+diff --git a/contrib/vim-keybindings/vim-keybindings.rc b/contrib/vim-keybindings/vim-keybindings.rc
+new file mode 100644
+index 0000000..cb64889
+--- /dev/null
++++ b/contrib/vim-keybindings/vim-keybindings.rc
+@@ -0,0 +1,35 @@
++#------------------------------------------------------------
++# Vi Key Bindings
++#------------------------------------------------------------
++
++# Moving around
++bind attach,browser,index       gg  first-entry
++bind attach,browser,index       G   last-entry
++bind pager                      gg  top
++bind pager                      G   bottom
++bind pager                      k   previous-line
++bind pager                      j   next-line
++
++# Scrolling
++bind attach,browser,pager,index \CF next-page
++bind attach,browser,pager,index \CB previous-page
++bind attach,browser,pager,index \Cu half-up
++bind attach,browser,pager,index \Cd half-down
++bind browser,pager              \Ce next-line
++bind browser,pager              \Cy previous-line
++bind index                      \Ce next-line
++bind index                      \Cy previous-line
++
++bind pager,index                dd  delete-message
++
++# Mail & Reply
++bind index                      \Cm list-reply # Doesn't work currently
++
++# Threads
++bind browser,pager,index        N   search-opposite
++bind pager,index                dT  delete-thread
++bind pager,index                dt  delete-subthread
++bind pager,index                gt  next-thread
++bind pager,index                gT  previous-thread
++bind index                      za  collapse-thread
++bind index                      zA  collapse-all # Missing :folddisable/foldenable
+-- 
+2.7.4
+

@@ -1,58 +1,64 @@
-From d4ab1c094f96f6d4325b43ded3a0feb5c95accb3 Mon Sep 17 00:00:00 2001
-From: Richard Russon <rich@flatcap.org>
-Date: Wed, 25 May 2016 01:20:54 +0100
+From 0f0a688b8df7cf863641873d38f14a124b718620 Mon Sep 17 00:00:00 2001
+From: Karel Zak <kzak@redhat.com>
+Date: Wed, 14 Dec 2011 11:58:47 +0100
 Subject: [PATCH 11/14] feature: notmuch
 
+Signed-off-by: Karel Zak <kzak@redhat.com>
 ---
  Makefile.am             |   14 +-
  OPS.NOTMUCH             |    5 +
  OPS.SIDEBAR             |    1 +
- README.notmuch          |  402 ++++++++++
+ README.notmuch          |  115 +++
+ UPDATING                |    4 +
  UPDATING.kz             |   68 ++
- browser.c               |  125 ++-
+ browser.c               |  102 ++-
  buffy.c                 |  223 ++++--
  buffy.h                 |    6 +
- color.c                 |   27 +-
- commands.c              |   31 +-
+ color.c                 |   28 +-
+ commands.c              |   38 +-
  compose.c               |    5 +-
  configure.ac            |   28 +-
  copy.c                  |   25 +-
- copy.h                  |    1 +
+ copy.h                  |    3 +-
  curs_lib.c              |   18 +-
- curs_main.c             |  322 ++++++--
- doc/manual.xml.head     |    2 +-
+ curs_main.c             |  324 ++++++--
+ doc/manual.xml.head     |  426 +++++++++-
+ doc/muttrc.notmuch      |  114 +++
  doc/muttrc.status-color |    2 +-
+ doc/vimrc.notmuch       |   28 +
  enter.c                 |   21 +
  functions.h             |   17 +
  globals.h               |   15 +
- hdrline.c               |   61 +-
+ hdrline.c               |   60 ++
  init.c                  |  261 ++++++-
- init.h                  |  107 ++-
+ init.h                  |  108 ++-
  mailbox.h               |    1 +
  menu.c                  |   11 +
  mh.c                    |  225 +++---
- mutt.h                  |   16 +-
+ mutt.h                  |   15 +-
  mutt_curses.h           |    9 +
  mutt_notmuch.c          | 1984 +++++++++++++++++++++++++++++++++++++++++++++++
  mutt_notmuch.h          |   39 +
  muttlib.c               |   21 +-
- mx.c                    |   91 ++-
+ mx.c                    |   87 ++-
  mx.h                    |   20 +-
  pattern.c               |   14 +
  protos.h                |   15 +-
  send.c                  |   21 +-
  sendlib.c               |    5 +-
- sidebar.c               |   97 ++-
- sidebar.h               |    3 +-
- sort.h                  |    1 +
+ sidebar.c               |   92 ++-
+ sidebar.h               |    1 +
+ sort.h                  |    3 +-
  status.c                |   17 +-
  url.c                   |    5 +-
  url.h                   |    4 +
  version.c               |    5 +
- 45 files changed, 4088 insertions(+), 303 deletions(-)
+ 48 files changed, 4360 insertions(+), 293 deletions(-)
  create mode 100644 OPS.NOTMUCH
  create mode 100644 README.notmuch
  create mode 100644 UPDATING.kz
+ create mode 100644 doc/muttrc.notmuch
+ create mode 100644 doc/vimrc.notmuch
  create mode 100644 mutt_notmuch.c
  create mode 100644 mutt_notmuch.h
 
@@ -91,14 +97,14 @@ index 1d7c4ad..cfdb258 100644
  
 diff --git a/OPS.NOTMUCH b/OPS.NOTMUCH
 new file mode 100644
-index 0000000..162dd62
+index 0000000..4508e4e
 --- /dev/null
 +++ b/OPS.NOTMUCH
 @@ -0,0 +1,5 @@
 +OP_MAIN_CHANGE_VFOLDER "open a different virtual folder"
 +OP_MAIN_VFOLDER_FROM_QUERY "generate virtual folder from query"
 +OP_MAIN_MODIFY_LABELS "modify (notmuch) tags"
-+OP_MAIN_MODIFY_LABELS_THEN_HIDE "modify labeld and then hide message"
++OP_MAIN_MODIFY_LABELS_THEN_HIDE "modify labels and then hide message"
 +OP_MAIN_ENTIRE_THREAD "read entire thread of the current message"
 diff --git a/OPS.SIDEBAR b/OPS.SIDEBAR
 index 7e5b504..e39f80c 100644
@@ -112,412 +118,140 @@ index 7e5b504..e39f80c 100644
  OP_SIDEBAR_TOGGLE_VISIBLE "make the sidebar (in)visible"
 diff --git a/README.notmuch b/README.notmuch
 new file mode 100644
-index 0000000..b106727
+index 0000000..e7ec564
 --- /dev/null
 +++ b/README.notmuch
-@@ -0,0 +1,402 @@
-+notmuch support for mutt
-+------------------------
-+
-+ * notmuch is e-mail fulltext indexing and tagging engine; see
-+   http://notmuchmail.org/ for more information.
-+
-+ * home page (wiki) and git:
-+
-+   https://github.com/karelzak/mutt-kz
-+
-+   Note that the master branch is rebased to be up to date with mutt upstream. Use
-+   stable/v<version> branches for downstream packaging.
-+
-+ * mailing list:
-+
-+   https://admin.fedoraproject.org/mailman/listinfo/mutt-kz
-+
-+ * requirements:
-+
-+   notmuch >= 0.9
-+
-+ * compile:
-+
-+  $ git clone git://github.com/karelzak/mutt-kz.git
-+  $ cd mutt-kz
-+  $ ./prepare
-+  $ ./configure --enable-notmuch [--enable-debug]
-+  $ make
-+
-+ * Folders URI
-+
-+   notmuch://[<path>][?<item>=<name>[& ...]]
-+
-+   The <path> is an absolute path to the directory where the notmuch database
-+   is found as returned by 'notmuch config get database.path' command. Note that
-+   the <path> should NOT include .notmuch directory name.
-+
-+   If the "<path>" is not defined then $nm_default_uri or $folder is used,
-+   for example:
-+
-+	set nm_default_uri = "notmuch:///home/foo/maildir"
-+	virtual-mailboxes "My INBOX" "notmuch://?query=tag:inbox"
-+
-+   Items:
-+
-+      query=<string>
-+
-+	 See SEARCH SYNTAX in notmuch man page. Don't forget to use "and" and
-+         "or" operators in your queries.
-+
-+      Note that proper URI should not contain blank space and all "bad" chars
-+      should be encoded, for example
-+
-+	 "tag:AAA and tag:BBB" --encoding-> tag:AAA%20and%20tag:BBB
-+
-+      but mutt config file parser is smart enough to accept space in quoted
-+      strings. It means that you can use
-+
-+         "notmuch:///foo?query=tag:AAA and tag:BBB"
-+
-+      in your config files to keep things readable.
-+
-+      See http://xapian.org/docs/queryparser.html for more details about Xapian
-+      queries.
-+
-+
-+      limit=<number>
-+
-+         Restricts number of messages/threads in the result. The default limit
-+         is nm_db_limit.
-+
-+      type=<threads|messages>
-+
-+         Reads all matching messages or whole-threads. The default is 'messages'
-+         or nm_query_type.
-+
-+
-+ * commands:
-+
-+   change-vfolder:
-+      - switch to another virtual folder, a new folder maybe be specified by
-+        vfolder description (see virtual-mailboxes) or URI
-+      - the default is next vfolder with unread messages
-+      - default key: X
-+
-+   vfolder-from-query:
-+      - generate new virtual folder from notmuch search query
-+      - default key: <Esc>X
-+      - note: TAB completion of 'tag:' names is available
-+
-+   modify-labels:
-+      - add or remove notmuch tags; [+]<tag> to add, -<tag> to remove
-+      - default key: `
-+      - note: TAB completion of tag names is available
-+      - example: "+AAA +BBB -CCC"
-+
-+   modify-labels-then-hide:
-+      - same as <modify-labels> but message is marked by <quasi-delete>
-+      - not mapped to any key
-+      - note: TAB completion of tag names is available
-+      - example (add "archive" notmuch tag and remove message from screen):
-+
-+       macro index A "<modify-labels-then-hide>+archive -inbox\n<sync-mailbox>"
-+       macro index I "<modify-labels-then-hide>-inbox\n<sync-mailbox>"
-+
-+   quasi-delete:
-+      - delete message from mutt (usually after <sync-mailbox> function), but
-+        don't touch message on disk
-+
-+   entire-thread:
-+      - add to the current list of the messages all messages that belongs to the same thread
-+        as the current message. This command is useful when you have a new email in your INBOX
-+        and you want to see the rest of the archived thread.
-+      - default key: +
-+
-+ * Pattern modifiers:
-+
-+   Many of Mutt's commands allow you to specify a pattern to match (limit,
-+   tag-pattern, delete-pattern, color, etc.). The following notmuch specific
-+   mutt pattern modifiers are available:
-+
-+   - '~Y EXPR': Messages which contain EXPR in the list of labels.
-+     Example:
-+        # Color red all messages labeled as 'spam'.
-+        color index    red      default        "~Y '\W?spam\W?'"
-+
-+ * muttrc:
-+
-+   Note that you can use notmuch specific mutt config file, see -F <config> in
-+   mutt docs.
-+
-+
-+   virtual-mailboxes <description> <uri> [ ...]
-+
-+      This command specifies one or more virtual folder. The folders are
-+      accessible by command 'X'. It's possible to use the virtual mailbox
-+      description as a sort key (e.g set sort_sidebar=desc)
-+
-+      example:
-+
-+      virtual-mailboxes "Linux Kernel" "notmuch:///whereis/db?query=tag:lkml&limit=1000" \
-+                        "Filesystems"  "notmuch:///whereis/db?query=tag:fs" \
-+                        "Music"        "notmuch:///another/db?query=tag:hard and tag:heavy"
-+
-+      The folder description is used for status line, folders browser, sidebar
-+      and <change-vfolder> command (this command also accepts vfolder URI). The
-+      folder-hook regex uses the URI.
-+
-+   virtual_spoolfile = <boolean>
-+
-+      When set, mutt will use the first virtual mailbox (see virtual-mailboxes)
-+      as a spoolfile.
-+
-+      When set together with sidebar, mutt will use list of virtual folders in
-+      the sidebar. It's possible to toggle between virtual and normal folders by
-+      sidebar-toggle command.
-+
-+   tag-transforms <tag> <transform> [ ...]
-+
-+      This command specifies text transforms to be shown instead of the actual
-+      tag names with '%g' in the index and pager formats. Note that Unicode
-+      symbols can be used for transforms.
-+
-+      example:
-+
-+      tag-transforms "inbox"   "i"   \
-+                     "unread"  "u"   \
-+                     "replied" "↻ "  \
-+                     "sent"    "➥ "  \
-+                     "todo"    "T"   \
-+                     "deleted" "DEL" \
-+                     "invites" "CAL"
-+
-+   tag-formats <tag> <format sequence> [ ...]
-+
-+      Specify index formatting sequences for individual tags for direct
-+      placement in the $index_format. The formats must start with 'G' and
-+      the entire sequence is case sensitive.
-+
-+      example:
-+
-+      tag-formats "inbox"   "GI" \
-+                  "unread"  "GU" \
-+                  "replied" "GR" \
-+                  "sent"    "GS" \
-+                  "todo"    "Gt" \
-+                  "deleted" "GD" \
-+                  "invites" "Gi"
-+
-+      Now instead of using '%g' in your $index_format, which lists all tags
-+      in a non-deterministic order, you can something like the following which puts
-+      a transformed tag name in a specific spot on the index line:
-+
-+      set index_format='4C %S %[%y.%m.%d] %-18.18n %?GU?%GU& ? %?GR?%GR& ? %?GI?%GI& ? %s'
-+
-+      The %G formatting sequence may display all tags including tags hidden by
-+      nm_hidden_tags.
-+
-+   nm_record = <boolean>
-+
-+      Add messages stored to the mutt record (see $record in the mutt docs)
-+      also to notmuch DB. If you reply to an email then the new email inherits
-+      tags from the original email.
-+
-+   nm_record_tags = <comma delimited list>
-+
-+      Tags that should be removed or added to the to the messages stored in the mutt record.
-+
-+      example:
-+
-+      set record = "~/sent-mails"
-+      set nm_record = yes
-+      set nm_record_tags = "-inbox,archive,me"
-+
-+   nm_open_timeout = <seconds>
-+
-+      This option specifies timeout for Notmuch database. Default is 5 seconds.
-+
-+   nm_default_uri = <uri>
-+
-+      This variable specifies the default Notmuch database in format
-+      notmuch://<absolute path>, the URI is used for notmuch queries (ESC+X) when the
-+      current folder is not based on notmuch. If the default URI is not specified
-+      then mutt will try to use $folder variable (see mutt manual for more details).
-+
-+   nm_hidden_tags = <comma delimited list>
-+
-+      This variable specifies private notmuch tags which should not be printed
-+      on screen (index, pager).
-+
-+      Default is "unread,draft,flagged,passed,replied,attachment".
-+
-+   nm_exclude_tags = <comma delimited list>
-+
-+      The messages tagged with these tags are excluded and not loaded
-+      from notmuch DB to mutt unless specified explicitly.
-+
-+      Not set by default.
-+
-+   nm_unread_tag = <name>
-+
-+      This variable specifies notmuch tag which is used for unread messages. The
-+      variable is used to count unread messages in DB only. All other mutt
-+      commands use standard (e.g. maildir) flags.
-+
-+      Default is "unread".
-+
-+   nm_db_limit = <num>
-+
-+     This variable specifies notmuch query limit.
-+
-+     Default is unlimited.
-+
-+   nm_query_type = <threads|messages>
-+
-+     This variable specifies notmuch query type, supported types: 'threads' and
-+     'messages'.
-+
-+     Default is 'messages'.
-+
-+   vfolder_format = <string>
-+
-+      This variable allows you to customize the file browser display for virtual
-+      folders to your personal taste.  This string is similar to $index_format,
-+      but has its own set of printf(3)-like sequences:
-+
-+	%f   folder name (description)
-+	%n   number of all messages
-+	%N   number of new messages
-+	%>X  right justify the rest of the string and pad with character ``X''
-+	%|X  pad to the end of the line with character ``X''
-+	%*X  soft-fill with character ``X'' as pad
-+
-+      Default is "%6n(%6N) %f ".
-+
-+   index_format and pager_format
-+
-+        %g   notmuch tags (labels)
-+        %Gx  specific notmuch tag defined by tag-formats (see above)
-+
-+        for example:
-+
-+        tag-formats "inbox" "GI"
-+        set index_format = "%4C %Z %?GI?%GI? ?  %[%d/%b]  %-16.15F %s %> %?g?(%g)?"
-+        set pager_format = "-%Z- %C/%m: %-20.20n   %s%*  -- %?g?(%g)? - (%P)"
-+
-+
-+* .muttrc example:
-+
-+	set record="~/Mail/Maildir/sent-mail"
-+	set nm_record = yes
-+	set nm_record_tags ="-inbox me archive"
-+
-+	set nm_default_uri="notmuch:///home/kzak/Mail/Maildir"
-+	set virtual_spoolfile	= yes
-+	set sort_browser        = unsorted
-+
-+	# normal folders
-+	set mbox_type=Maildir
-+	set folder="~/Mail/Maildir"
-+	mailboxes =rh =fedora =misc
-+
-+	set sidebar_width	 = 35
-+	set sidebar_visible	 = yes
-+	set sidebar_sort_method  = unsorted
-+	set sidebar_divider_char = │
-+
-+	color sidebar_new yellow default
-+	color progress default magenta
-+
-+	bind index <left> sidebar-prev
-+	bind index <right> sidebar-next
-+	bind index <space> sidebar-open
-+	bind index <Esc>S sidebar-toggle-virtual
-+
-+	set index_format="%4C %Z %?GI?%GI& ? %[%d/%b]  %-16.15F %?M?(%3M)&     ? %s %> %?g?%g?"
-+
-+        # virtual folders
-+	virtual-mailboxes \
-+	   "INBOX"                "notmuch://?query=tag:inbox and NOT tag:archive" \
-+	   "Util-linux"           "notmuch://?query=tag:ul and NOT tag:archive" \
-+	   "Bugs"                 "notmuch://?query=tag:bug NOT tag:archive" \
-+	   "RH"                   "notmuch://?query=tag:rh and NOT tag:archive" \
-+	   "Fedora"               "notmuch://?query=tag:fed and NOT tag:archive" \
-+	   "Linux"                "notmuch://?query=tag:lk and NOT tag:archive" \
-+	   "NFS"                  "notmuch://?query=tag:nfs and NOT tag:archive" \
-+	   "Filesystems"          "notmuch://?query=tag:fs and NOT tag:archive" \
-+	   "Security"             "notmuch://?query=tag:sec" \
-+	   "Partitioning"         "notmuch://?query=tag:part" \
-+	   "GNU"                  "notmuch://?query=tag:gnu" \
-+	   "udev"                 "notmuch://?query=tag:udev" \
-+	   "initrd"               "notmuch://?query=tag:initrd" \
-+	   "Linux CZ"             "notmuch://?query=tag:cz" \
-+	   "Notmuch"              "notmuch://?query=tag:nm" \
-+	   "Procps"               "notmuch://?query=tag:proc" \
-+	\
-+	   " Util-linux  [archive]" "notmuch://?query=tag:ul and tag:archive" \
-+	   " Bugs        [archive]" "notmuch://?query=tag:bug and tag:archive" \
-+	   " RH          [archive]" "notmuch://?query=tag:rh and tag:archive" \
-+	   " Fedora      [archive]" "notmuch://?query=tag:fed and tag:archive" \
-+	   " Linux       [archive]" "notmuch://?query=tag:lk and tag:archive" \
-+	   " Filesystems [archive]" "notmuch://?query=tag:fs and tag:archive" \
-+
-+	# move message to archive
-+	macro index A "<modify-labels-then-hide>+archive -inbox\n<sync-mailbox>"
-+
-+	# remove message from inbox
-+	macro index I "<modify-labels-then-hide>-inbox\n<sync-mailbox>"
-+
-+	# mark emails for git-am
-+	# (e.g. "git am -i -3 $(notmuch search --output=files tag:PATCH)"
-+	#
-+	macro index P "<modify-labels>PATCH\n"
-+	macro index <Esc>P "<modify-labels>-PATCH\n"
-+
-+
-+* .procmailrc example:
-+
-+	NOINBOX="-r inbox"
-+
-+	### Add 'kw' (keyword) tag to all interesting e-mails and make the emails
-+	### visible in inbox.
-+	:0
-+	* ^Subject:.*(mount|umount|libmount|losetup|util-linux|blkid|hwclock|mkswap|fdisk|parted|partition|gpt|topology)
-+	{
-+		TAGS="-t kw"
-+		NOINBOX=""
-+	}
-+
-+	### Deliver emails to maildirs by notmuch-deliver
-+	### from notmuch contrib/
-+	###
-+	###    notmuch-deliver -t <tags> [-t ...] <maildir>
-+
-+	:0:notmuch.lock
-+	* ^List-Id:.*linux.linux.cz
-+	| notmuch-deliver $NOINBOX -t cz $TAGS linux.cz
-+
-+	:0:notmuch.lock
-+	* ^X-Mailing-List:.*util-linux@vger.kernel.org
-+	| notmuch-deliver -t ul $TAGS util-linux
-+
-+	:0:notmuch.lock
-+	* ^List-Id:.*parted-devel.lists.alioth.debian.org
-+	| notmuch-deliver $NOINBOX -t part $TAGS parted
-+
-+	### [...cut to make the example short...] ###
-+
-+	### All unmatched mails
-+	:0:notmuch.lock
-+	* ^From
-+	| notmuch-deliver $TAGS misc
-+
-+	### fallback if notmuch does not work
-+	:0:
-+	* ^From
-+	Mail/Maildir/misc/
-+
-+
-+* another example:
-+
-+  http://notmuchmail.org/mutttips/
+@@ -0,0 +1,115 @@
++Notmuch Patch
++=============
++
++    Email search engine
++
++Patch
++-----
++
++    To check if Mutt supports "Notmuch", look for "+USE_NOTMUCH" in the mutt
++    version.
++
++    Dependencies
++    * mutt-1.6.2
++    * sidebar patch
++    * quasi-delete patch
++    * index-color patch
++    * Notmuch libraries
++
++Introduction
++------------
++
++Variables
++---------
++
++    Notmuch Variables
++
++    | Name                | Type    | Default                                                           |
++    |---------------------|---------|-------------------------------------------------------------------|
++    | 'nm_db_limit'       | number  | '0'                                                               |
++    | 'nm_default_uri'    | string  | (empty)                                                           |
++    | 'nm_exclude_tags'   | string  | (empty)                                                           |
++    | 'nm_hidden_tags'    | string  | 'unread,draft,flagged,passed,replied,attachment,signed,encrypted' |
++    | 'nm_open_timeout'   | number  | '5'                                                               |
++    | 'nm_query_type'     | string  | 'messages'                                                        |
++    | 'nm_record'         | boolean | 'no'                                                              |
++    | 'nm_record_tags'    | string  | (empty)                                                           |
++    | 'nm_unread_tag'     | string  | 'unread'                                                          |
++    | 'vfolder_format'    | string  | '%6n(%6N) %f'                                                     |
++    | 'virtual_spoolfile' | boolean | 'no'                                                              |
++
++Functions
++---------
++
++    Notmuch Functions
++
++    | Menus       | Default Key | Function                    | Description                                    |
++    |-------------|-------------|-----------------------------|------------------------------------------------|
++    | index,pager | X           | '<change-vfolder>'          | open a different virtual folder                |
++    | index,pager | +           | '<entire-thread>'           | read entire thread of the current message      |
++    | index,pager | `           | '<modify-labels>'           | modify (notmuch) tags                          |
++    | index,pager | (none)      | '<modify-labels-then-hide>' | modify labels and then hide message            |
++    | index,pager | (none)      | '<sidebar-toggle-virtual>'  | toggle between mailboxes and virtual mailboxes |
++    | index,pager | Alt-X       | '<vfolder-from-query>'      | generate virtual folder from query             |
++
++Commands
++--------
++
++    Notmuch Commands
++
++        virtual-mailboxes description notmuch-URI { description notmuch-URI ...}
++        tag-transforms tag transformed-string { tag transformed-string ...}
++        tag-formats tag format-string { tag format-string ...}
++
++Colors
++------
++
++    Adds these to index-color patch:
++
++    Index Colors
++
++    | Object       | Pattern | Highlights                                   |
++    |--------------|---------|----------------------------------------------|
++    | 'index_tag'  | yes     | an individual message tag, %G, uses tag name |
++    | 'index_tags' | no      | the transformed message tags, %g             |
++
++
++See Also
++--------
++
++    * NeoMutt project
++    * Compile-Time Features
++
++Known Bugs
++----------
++
++    None
++
++Credits
++-------
++
++    * Karel Zak <kzak@redhat.com>
++    * Chris Mason <clm@fb.com>
++    * Christoph Rissner <cri@visotech.at>
++    * David Riebenbauer <davrieb@liegesta.at>
++    * David Sterba <dsterba@suse.cz>
++    * David Wilson <dw@botanicus.net>
++    * Don Zickus <dzickus@redhat.com>
++    * Eric Davis <edavis@insanum.com>
++    * Jan Synacek <jsynacek@redhat.com>
++    * Jeremiah C. Foster <jeremiah@jeremiahfoster.com>
++    * Josh Poimboeuf <jpoimboe@redhat.com>
++    * Kirill A. Shutemov <kirill@shutemov.name>
++    * Luke Macken <lmacken@redhat.com>
++    * Mantas Mikulėnas <grawity@gmail.com>
++    * Patrick Brisbin <pbrisbin@gmail.com>
++    * Philippe Le Brouster <plb@nebkha.net>
++    * Raghavendra D Prabhu <rprabhu@wnohang.net>
++    * Sami Farin <hvtaifwkbgefbaei@gmail.com>
++    * Stefan Assmann <sassmann@kpanic.de>
++    * Stefan Kuhn <p_regius@gmx.ch>
++    * Tim Stoakes <tim@stoakes.net>
++    * Vladimir Marek <Vladimir.Marek@oracle.com>
++    * Víctor Manuel Jáquez Leal <vjaquez@igalia.com>
++    * Richard Russon <rich@flatcap.org>
++
+diff --git a/UPDATING b/UPDATING
+index db5cd6f..ded9ea4 100644
+--- a/UPDATING
++++ b/UPDATING
+@@ -12,6 +12,10 @@ The keys used are:
+ 
+   ! Bug fix release.  No features were modified or added.
+ 
++1.6.1 (2016-05-01):
++
++  ! Bug fix release.  No features were modified or added.
++
+ 1.6.0 (2016-04-04):
+ 
+   + Enabled utf-8 mailbox support for IMAP.
 diff --git a/UPDATING.kz b/UPDATING.kz
 new file mode 100644
 index 0000000..1df36c0
@@ -593,10 +327,10 @@ index 0000000..1df36c0
 ++ vfolder_format = <string> to specify vfolders browser entry format
 ++ %g and %Gx index_format and pager_format formatting sequences
 diff --git a/browser.c b/browser.c
-index 5712f63..895acff 100644
+index 5712f63..90765f0 100644
 --- a/browser.c
 +++ b/browser.c
-@@ -29,12 +29,16 @@
+@@ -29,9 +29,13 @@
  #include "sort.h"
  #include "mailbox.h"
  #include "browser.h"
@@ -604,15 +338,12 @@ index 5712f63..895acff 100644
  #ifdef USE_IMAP
  #include "imap.h"
  #endif
- #ifdef USE_NNTP
- #include "nntp.h"
- #endif
 +#ifdef USE_NOTMUCH
 +#include "mutt_notmuch.h"
 +#endif
- 
- #include <stdlib.h>
- #include <dirent.h>
+ #ifdef USE_NNTP
+ #include "nntp.h"
+ #endif
 @@ -216,6 +220,12 @@ folder_format_str (char *dest, size_t destlen, size_t col, int cols, char op, co
      case 'f':
      {
@@ -645,37 +376,7 @@ index 5712f63..895acff 100644
        snprintf (tmp, sizeof (tmp), "%%%sc", fmt);
        snprintf (dest, destlen, tmp, folder->ff->new ? 'N' : ' ');
        break;
-@@ -452,8 +474,8 @@ newsgroup_format_str (char *dest, size_t destlen, size_t col, int cols, char op,
- #endif /* USE_NNTP */
- 
- static void add_folder (MUTTMENU *m, struct browser_state *state,
--			const char *name, const struct stat *s,
--			void *data, unsigned int new)
-+		const char *name, const char *desc, const struct stat *s,
-+		unsigned int new, unsigned int all, void *data)
- {
-   if (state->entrylen == state->entrymax)
-   {
-@@ -524,8 +546,7 @@ static int examine_directory (MUTTMENU *menu, struct browser_state *state,
- 	continue;
-       if (!((regexec (Mask.rx, nntp_data->group, 0, NULL, 0) == 0) ^ Mask.not))
- 	continue;
--      add_folder (menu, state, nntp_data->group, NULL,
--		  nntp_data, nntp_data->new);
-+      add_folder (menu, state, nntp_data->group, NULL, NULL, nntp_data->new, nntp_data->newsrc_len, nntp_data);
-     }
-   }
-   else
-@@ -591,7 +612,7 @@ static int examine_directory (MUTTMENU *menu, struct browser_state *state,
-     tmp = Incoming;
-     while (tmp && mutt_strcmp (buffer, tmp->path))
-       tmp = tmp->next;
--    add_folder (menu, state, de->d_name, &s, NULL, (tmp) ? tmp->new : 0);
-+    add_folder (menu, state, de->d_name, NULL, &s, (tmp) ? tmp->new : 0, (tmp) ? tmp->msg_count : 0, NULL);
-   }
-   closedir (dp);  
-   }
-@@ -599,6 +620,32 @@ static int examine_directory (MUTTMENU *menu, struct browser_state *state,
+@@ -599,6 +621,32 @@ static int examine_directory (MUTTMENU *menu, struct browser_state *state,
    return 0;
  }
  
@@ -695,7 +396,7 @@ index 5712f63..895acff 100644
 +    if (mx_is_notmuch (tmp->path))
 +    {
 +      nm_nonctx_get_count(tmp->path, &tmp->msg_count, &tmp->msg_unread);
-+      add_folder (menu, state, tmp->path, tmp->desc, NULL, tmp->msg_unread, tmp->msg_count, NULL);
++      add_folder (menu, state, tmp->path, NULL, NULL, tmp->msg_unread);
 +      continue;
 +    }
 +  }
@@ -708,51 +409,7 @@ index 5712f63..895acff 100644
  /* get list of mailboxes/subscribed newsgroups */
  static int examine_mailboxes (MUTTMENU *menu, struct browser_state *state)
  {
-@@ -619,8 +666,7 @@ static int examine_mailboxes (MUTTMENU *menu, struct browser_state *state)
-       NNTP_DATA *nntp_data = nserv->groups_list[i];
-       if (nntp_data && (nntp_data->new || (nntp_data->subscribed &&
- 	 (nntp_data->unread || !option (OPTSHOWONLYUNREAD)))))
--	add_folder (menu, state, nntp_data->group, NULL,
--		    nntp_data, nntp_data->new);
-+	add_folder (menu, state, nntp_data->group, NULL, NULL, nntp_data->new, nntp_data->newsrc_len, nntp_data);
-     }
-   }
-   else
-@@ -643,21 +689,21 @@ static int examine_mailboxes (MUTTMENU *menu, struct browser_state *state)
-     if (mx_is_imap (tmp->path))
-     {
-       imap_mailbox_state (tmp->path, &mbox);
--      add_folder (menu, state, tmp->path, NULL, NULL, mbox.new);
-+      add_folder (menu, state, tmp->path, NULL, NULL, mbox.new, mbox.messages, NULL);
-       continue;
-     }
- #endif
- #ifdef USE_POP
-     if (mx_is_pop (tmp->path))
-     {
--      add_folder (menu, state, tmp->path, NULL, NULL, tmp->new);
-+      add_folder (menu, state, tmp->path, NULL, NULL, tmp->new, tmp->msg_count, NULL);
-       continue;
-     }
- #endif
- #ifdef USE_NNTP
-     if (mx_is_nntp (tmp->path))
-     {
--      add_folder (menu, state, tmp->path, NULL, NULL, tmp->new);
-+      add_folder (menu, state, tmp->path, NULL, NULL, tmp->new, tmp->msg_count, NULL);
-       continue;
-     }
- #endif
-@@ -686,7 +732,7 @@ static int examine_mailboxes (MUTTMENU *menu, struct browser_state *state)
-     strfcpy (buffer, NONULL(tmp->path), sizeof (buffer));
-     mutt_pretty_mailbox (buffer, sizeof (buffer));
- 
--    add_folder (menu, state, buffer, &s, NULL, tmp->new);
-+    add_folder (menu, state, buffer, NULL, &s, tmp->new, tmp->msg_count, NULL);
-   }
-   while ((tmp = tmp->next));
-   }
-@@ -703,6 +749,13 @@ static int select_file_search (MUTTMENU *menu, regex_t *re, int n)
+@@ -703,6 +751,13 @@ static int select_file_search (MUTTMENU *menu, regex_t *re, int n)
    return (regexec (re, ((struct folder_file *) menu->data)[n].name, 0, NULL, 0));
  }
  
@@ -766,7 +423,7 @@ index 5712f63..895acff 100644
  static void folder_entry (char *s, size_t slen, MUTTMENU *menu, int num)
  {
    FOLDER folder;
-@@ -720,6 +773,19 @@ static void folder_entry (char *s, size_t slen, MUTTMENU *menu, int num)
+@@ -720,6 +775,19 @@ static void folder_entry (char *s, size_t slen, MUTTMENU *menu, int num)
        (unsigned long) &folder, M_FORMAT_ARROWCURSOR);
  }
  
@@ -786,7 +443,7 @@ index 5712f63..895acff 100644
  static void init_menu (struct browser_state *state, MUTTMENU *menu, char *title,
  		       size_t titlelen, int buffy)
  {
-@@ -796,7 +862,7 @@ void _mutt_select_file (char *f, size_t flen, int flags, char ***files, int *num
+@@ -796,7 +864,7 @@ void _mutt_select_file (char *f, size_t flen, int flags, char ***files, int *num
    int buffy    = (flags & M_SEL_BUFFY)  ? 1 : 0;
  
    buffy = buffy && folder;
@@ -795,7 +452,7 @@ index 5712f63..895acff 100644
    memset (&state, 0, sizeof (struct browser_state));
  
    if (!folder)
-@@ -874,13 +940,17 @@ void _mutt_select_file (char *f, size_t flen, int flags, char ***files, int *num
+@@ -874,13 +942,17 @@ void _mutt_select_file (char *f, size_t flen, int flags, char ***files, int *num
      }
  #endif
    }
@@ -815,7 +472,7 @@ index 5712f63..895acff 100644
  #ifdef USE_IMAP
      if (!buffy && mx_is_imap (LastDir))
      {
-@@ -902,6 +972,12 @@ void _mutt_select_file (char *f, size_t flen, int flags, char ***files, int *num
+@@ -902,6 +974,12 @@ void _mutt_select_file (char *f, size_t flen, int flags, char ***files, int *num
  
    *f = 0;
  
@@ -828,7 +485,7 @@ index 5712f63..895acff 100644
    if (buffy)
    {
      if (examine_mailboxes (NULL, &state) == -1)
-@@ -911,17 +987,25 @@ void _mutt_select_file (char *f, size_t flen, int flags, char ***files, int *num
+@@ -911,17 +989,25 @@ void _mutt_select_file (char *f, size_t flen, int flags, char ***files, int *num
  #ifdef USE_IMAP
    if (!state.imap_browse)
  #endif
@@ -856,7 +513,7 @@ index 5712f63..895acff 100644
    menu->help = mutt_compile_help (helpstr, sizeof (helpstr), MENU_FOLDER,
  #ifdef USE_NNTP
      option (OPTNEWS) ? FolderNewsHelp :
-@@ -1077,6 +1161,10 @@ void _mutt_select_file (char *f, size_t flen, int flags, char ***files, int *num
+@@ -1077,6 +1163,10 @@ void _mutt_select_file (char *f, size_t flen, int flags, char ***files, int *num
  	else if (state.imap_browse)
            strfcpy (f, state.entry[menu->current].name, flen);
  #endif
@@ -867,7 +524,7 @@ index 5712f63..895acff 100644
  	else
  	  mutt_concat_path (f, LastDir, state.entry[menu->current].name, flen);
  
-@@ -1223,7 +1311,7 @@ void _mutt_select_file (char *f, size_t flen, int flags, char ***files, int *num
+@@ -1223,7 +1313,7 @@ void _mutt_select_file (char *f, size_t flen, int flags, char ***files, int *num
          }
          break;
  #endif
@@ -876,16 +533,6 @@ index 5712f63..895acff 100644
        case OP_CHANGE_DIRECTORY:
  
  #ifdef USE_NNTP
-@@ -1672,8 +1760,7 @@ void _mutt_select_file (char *f, size_t flen, int flags, char ***files, int *num
- 		if (regexec (rx, nntp_data->group, 0, NULL, 0) == 0)
- 		{
- 		  mutt_newsgroup_subscribe (nserv, nntp_data->group);
--		  add_folder (menu, &state, nntp_data->group, NULL,
--			      nntp_data, nntp_data->new);
-+		  add_folder (menu, &state, nntp_data->group, NULL, NULL, nntp_data->new, nntp_data->newsrc_len, nntp_data);
- 		}
- 	      }
- 	    }
 diff --git a/buffy.c b/buffy.c
 index f1e5d5a..7d90ca4 100644
 --- a/buffy.c
@@ -1215,7 +862,7 @@ index 16191f8..f77bda2 100644
  
  BUFFY *mutt_find_mailbox (const char *path);
 diff --git a/color.c b/color.c
-index 1893b49..172bc59 100644
+index ff69f41..172bc59 100644
 --- a/color.c
 +++ b/color.c
 @@ -39,6 +39,9 @@ COLOR_LINE *ColorIndexList = NULL;
@@ -1250,11 +897,12 @@ index 1893b49..172bc59 100644
  
    if (do_cache && !option (OPTNOCURSES))
    {
-@@ -765,7 +776,11 @@ _mutt_parse_color (BUFFER *buf, BUFFER *s, BUFFER *err,
+@@ -765,8 +776,11 @@ _mutt_parse_color (BUFFER *buf, BUFFER *s, BUFFER *err,
        (object == MT_COLOR_INDEX) ||
        (object == MT_COLOR_INDEX_AUTHOR) ||
        (object == MT_COLOR_INDEX_FLAGS) ||
--      (object == MT_COLOR_INDEX_SUBJECT)) {
+-      (object == MT_COLOR_INDEX_SUBJECT))
+-  {
 +      (object == MT_COLOR_INDEX_SUBJECT)
 +#ifdef USE_NOTMUCH
 +      || (object == MT_COLOR_INDEX_TAG)
@@ -1263,7 +911,7 @@ index 1893b49..172bc59 100644
      if (!MoreArgs (s)) {
        strfcpy (err->data, _("too few arguments"), err->dsize);
        return -1;
-@@ -803,7 +818,7 @@ _mutt_parse_color (BUFFER *buf, BUFFER *s, BUFFER *err,
+@@ -804,7 +818,7 @@ _mutt_parse_color (BUFFER *buf, BUFFER *s, BUFFER *err,
    else if (object == MT_COLOR_BODY)
      r = add_pattern (&ColorBodyList, buf->data, 1, fg, bg, attr, err, 0, match);
    else if ((object == MT_COLOR_STATUS) && MoreArgs (s)) {
@@ -1272,7 +920,7 @@ index 1893b49..172bc59 100644
       * 0 arguments: sets the default status color (handled below by else part)
       * 1 argument : colorize pattern on match
       * 2 arguments: colorize nth submatch of pattern
-@@ -844,6 +859,14 @@ _mutt_parse_color (BUFFER *buf, BUFFER *s, BUFFER *err,
+@@ -845,6 +859,14 @@ _mutt_parse_color (BUFFER *buf, BUFFER *s, BUFFER *err,
  		    fg, bg, attr, err, 1, match);
      set_option (OPTFORCEREDRAWINDEX);
    }
@@ -1288,7 +936,7 @@ index 1893b49..172bc59 100644
    {
      if (q_level >= ColorQuoteSize)
 diff --git a/commands.c b/commands.c
-index 4970c3a..dd067d5 100644
+index 4970c3a..1af59f4 100644
 --- a/commands.c
 +++ b/commands.c
 @@ -40,6 +40,10 @@
@@ -1302,18 +950,32 @@ index 4970c3a..dd067d5 100644
  #include "buffy.h"
  
  #include <errno.h>
-@@ -146,7 +150,9 @@ int mutt_display_message (HEADER *cur)
+@@ -61,6 +65,7 @@ int mutt_display_message (HEADER *cur)
+   char tempfile[_POSIX_PATH_MAX], buf[LONG_STRING];
+   int rc = 0, builtin = 0;
+   int cmflags = M_CM_DECODE | M_CM_DISPLAY | M_CM_CHARCONV;
++  int chflags;
+   FILE *fpout = NULL;
+   FILE *fpfilterout = NULL;
+   pid_t filterpid = -1;
+@@ -145,8 +150,14 @@ int mutt_display_message (HEADER *cur)
+     fputs ("\n\n", fpout);
    }
  
-   res = mutt_copy_message (fpout, Context, cur, cmflags,
+-  res = mutt_copy_message (fpout, Context, cur, cmflags,
 -       	(option (OPTWEED) ? (CH_WEED | CH_REORDER) : 0) | CH_DECODE | CH_FROM | CH_DISPLAY);
-+		(option (OPTWEED) ? (CH_WEED | CH_REORDER) : 0)
-+		| CH_DECODE | CH_FROM | CH_DISPLAY | CH_VIRTUAL);
++  chflags = (option (OPTWEED) ? (CH_WEED | CH_REORDER) : 0)
++           | CH_DECODE | CH_FROM | CH_DISPLAY;
++#ifdef USE_NOTMUCH
++  if (Context->magic == M_NOTMUCH)
++    chflags |= CH_VIRTUAL;
++#endif
++  res = mutt_copy_message (fpout, Context, cur, cmflags, chflags);
 +
    if ((safe_fclose (&fpout) != 0 && errno != EPIPE) || res < 0)
    {
      mutt_error (_("Could not copy message"));
-@@ -851,19 +857,30 @@ int mutt_save_message (HEADER *h, int delete,
+@@ -851,19 +862,30 @@ int mutt_save_message (HEADER *h, int delete,
      }
      else
      {
@@ -1427,7 +1089,7 @@ index f184f67..c1910c0 100644
  dnl -- iconv/gettext --
  
 diff --git a/copy.c b/copy.c
-index a09ba57..be027cc 100644
+index a09ba57..4167411 100644
 --- a/copy.c
 +++ b/copy.c
 @@ -30,6 +30,10 @@
@@ -1458,8 +1120,8 @@ index a09ba57..be027cc 100644
    if (mutt_copy_hdr (in, out, h->offset, h->content->offset, flags, prefix) == -1)
      return -1;
  
-@@ -478,6 +483,15 @@ mutt_copy_header (FILE *in, HEADER *h, FILE *out, int flags, const char *prefix)
-     }
+@@ -423,6 +428,15 @@ mutt_copy_header (FILE *in, HEADER *h, FILE *out, int flags, const char *prefix)
+       fprintf (out, "Lines: %d\n", h->lines);
    }
  
 +#ifdef USE_NOTMUCH
@@ -1471,9 +1133,9 @@ index a09ba57..be027cc 100644
 +  }
 +#endif
 +
-   if ((flags & CH_NONEWLINE) == 0)
+   if (flags & CH_UPDATE_LABEL && h->label_changed)
    {
-     if (flags & CH_PREFIX)
+     h->label_changed = 0;
 @@ -750,7 +764,7 @@ mutt_copy_message (FILE *fpout, CONTEXT *src, HEADER *hdr, int flags,
  {
    MESSAGE *msg;
@@ -1505,14 +1167,16 @@ index a09ba57..be027cc 100644
    return r;
  }
 diff --git a/copy.h b/copy.h
-index 9a98d21..9f3c4e3 100644
+index 9a98d21..4dcec52 100644
 --- a/copy.h
 +++ b/copy.h
-@@ -54,6 +54,7 @@
+@@ -53,7 +53,8 @@
+ #define CH_UPDATE_IRT     (1<<16) /* update In-Reply-To: */
  #define CH_UPDATE_REFS    (1<<17) /* update References: */
  #define CH_DISPLAY        (1<<18) /* display result to user */
- #define CH_UPDATE_LABEL   (1<<19) /* update X-Label: from hdr->env->x_label? */
-+#define CH_VIRTUAL	  (1<<20) /* write virtual header lines too */
+-#define CH_UPDATE_LABEL   (1<<19) /* update X-Label: from hdr->env->x_label? */
++#define CH_VIRTUAL	  (1<<19) /* write virtual header lines too */
++#define CH_UPDATE_LABEL   (1<<20) /* update X-Label: from hdr->env->x_label? */
  
  
  int mutt_copy_hdr (FILE *, FILE *, LOFF_T, LOFF_T, int, const char *);
@@ -1567,7 +1231,7 @@ index 3086ad7..2145946 100644
  
    return 0;
 diff --git a/curs_main.c b/curs_main.c
-index e123c1e..27e1448 100644
+index e123c1e..5631e8a 100644
 --- a/curs_main.c
 +++ b/curs_main.c
 @@ -42,6 +42,10 @@
@@ -1655,7 +1319,7 @@ index e123c1e..27e1448 100644
 +    menu->current = 0;
 +
 +#ifdef USE_SIDEBAR
-+  mutt_sb_set_open_buffy();
++        mutt_sb_set_open_buffy ();
 +#endif
 +
 +  mutt_clear_error ();
@@ -1851,19 +1515,15 @@ index e123c1e..27e1448 100644
  	  }
  	}
  
-+	main_change_folder(menu, op, buf, sizeof (buf), &oldcount, &index_hint, flags);
- #ifdef USE_NNTP
+-#ifdef USE_NNTP
 -	if (option (OPTNEWS))
 -	{
 -	  unset_option (OPTNEWS);
 -	  nntp_expand_path (buf, sizeof (buf), &CurrentNewsSrv->conn->account);
 -	}
 -	else
-+	/* mutt_buffy_check() must be done with mail-reader mode! */
-+	menu->help = mutt_compile_help (helpstr, sizeof (helpstr), MENU_MAIN,
-+	  (Context && (Context->magic == M_NNTP)) ? IndexNewsHelp : IndexHelp);
- #endif
- 	mutt_expand_path (buf, sizeof (buf));
+-#endif
+-	mutt_expand_path (buf, sizeof (buf));
 -	if (mx_get_magic (buf) <= 0)
 -	{
 -	  mutt_error (_("%s is not a mailbox."), buf);
@@ -1921,20 +1581,25 @@ index e123c1e..27e1448 100644
 -	else
 -	  menu->current = 0;
 -
- #ifdef USE_SIDEBAR
-         mutt_sb_set_open_buffy ();
- #endif
--
--#ifdef USE_NNTP
--	/* mutt_buffy_check() must be done with mail-reader mode! */
--	menu->help = mutt_compile_help (helpstr, sizeof (helpstr), MENU_MAIN,
--	  (Context && (Context->magic == M_NNTP)) ? IndexNewsHelp : IndexHelp);
+-#ifdef USE_SIDEBAR
+-        mutt_sb_set_open_buffy ();
 -#endif
+-
++	main_change_folder(menu, op, buf, sizeof (buf), &oldcount, &index_hint, flags);
+ #ifdef USE_NNTP
+ 	/* mutt_buffy_check() must be done with mail-reader mode! */
+ 	menu->help = mutt_compile_help (helpstr, sizeof (helpstr), MENU_MAIN,
+ 	  (Context && (Context->magic == M_NNTP)) ? IndexNewsHelp : IndexHelp);
+ #endif
 -	mutt_clear_error ();
 -	mutt_buffy_check(1); /* force the buffy check after we have changed
 -			      the folder */
 -	menu->redraw = REDRAW_FULL;
 -	set_option (OPTSEARCHINVALID);
++	mutt_expand_path (buf, sizeof (buf));
++#ifdef USE_SIDEBAR
++	mutt_sb_set_open_buffy();
++#endif
  	break;
  
        case OP_DISPLAY_MESSAGE:
@@ -1961,10 +1626,456 @@ index e123c1e..27e1448 100644
      {
        menu->menu = MENU_MAIN;
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index 4aa1a85..16f1a54 100644
+index 6b66c32..15a9557 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
-@@ -12243,7 +12243,7 @@ <sect1 id="status-color">
+@@ -9256,7 +9256,7 @@ <sect1 id="compress">
+     <title>See Also</title>
+ 
+     <itemizedlist>
+-      <listitem><para><ulink url="https://github.com/neomutt/neomutt/wiki">NeoMutt Project</ulink></para></listitem>
++      <listitem><para><ulink url="http://www.neomutt.org/">NeoMutt Project</ulink></para></listitem>
+       <listitem><para><link linkend="compile-time-features">Compile-Time Features</link></para></listitem>
+       <listitem><para><link linkend="regexp">Regular Expressions</link></para></listitem>
+       <listitem><para><link linkend="tmpdir">$tmpdir</link></para></listitem>
+@@ -10520,9 +10520,8 @@ <sect1 id="keywords">
+ 
+   <sect2 id="keywords-see-also">
+     <title>See Also</title>
+-
+     <itemizedlist>
+-      <listitem><para><ulink url="https://github.com/neomutt/neomutt/wiki">NeoMutt Project</ulink></para></listitem>
++      <listitem><para><ulink url="http://www.neomutt.org/">NeoMutt Project</ulink></para></listitem>
+       <listitem><para><link linkend="index-format">$index_format</link></para></listitem>
+       <listitem><para><link linkend="index-color">index-color patch</link></para></listitem>
+       <listitem><para><link linkend="folder-hook">folder-hook</link></para></listitem>
+@@ -11397,6 +11396,425 @@ <sect1 id="nntp">
+   </sect2>
+ </sect1>
+ 
++<sect1 id="notmuch">
++  <title>Notmuch Patch</title>
++  <subtitle>Email search engine</subtitle>
++
++  <sect2 id="notmuch-patch">
++    <title>Patch</title>
++
++    <para>
++      To check if Mutt supports <quote>Notmuch</quote>, look for
++      <quote>+USE_NOTMUCH</quote> in the mutt version.
++      See: <xref linkend="compile-time-features"/>.
++    </para>
++
++    <itemizedlist>
++      <title>Dependencies:</title>
++      <listitem><para>mutt-1.6.2</para></listitem>
++      <listitem><para><link linkend="sidebar">sidebar patch</link></para></listitem>
++      <listitem><para><link linkend="quasi-delete">quasi-delete patch</link></para></listitem>
++      <listitem><para><link linkend="index-color">index-color patch</link></para></listitem>
++      <listitem><para>Notmuch libraries</para></listitem>
++    </itemizedlist>
++
++    <para>This patch is part of the <ulink url="http://www.neomutt.org/">NeoMutt Project</ulink>.</para>
++  </sect2>
++
++<!--
++  <sect2 id="notmuch-intro">
++    <title>Introduction</title>
++  </sect2>
++-->
++
++  <sect2 id="notmuch-variables">
++    <title>Variables</title>
++
++    <table id="table-notmuch-variables">
++      <title>Notmuch Variables</title>
++      <tgroup cols="3">
++        <thead>
++          <row>
++            <entry>Name</entry>
++            <entry>Type</entry>
++            <entry>Default</entry>
++          </row>
++        </thead>
++        <tbody>
++          <row>
++            <entry><literal>nm_db_limit</literal></entry>
++            <entry>number</entry>
++            <entry><literal>0</literal></entry>
++          </row>
++          <row>
++            <entry><literal>nm_default_uri</literal></entry>
++            <entry>string</entry>
++            <entry>(empty)</entry>
++          </row>
++          <row>
++            <entry><literal>nm_exclude_tags</literal></entry>
++            <entry>string</entry>
++            <entry>(empty)</entry>
++          </row>
++          <row>
++            <entry><literal>nm_hidden_tags</literal></entry>
++            <entry>string</entry>
++            <entry><literal>unread,draft,flagged,passed,replied,attachment,signed,encrypted</literal></entry>
++          </row>
++          <row>
++            <entry><literal>nm_open_timeout</literal></entry>
++            <entry>number</entry>
++            <entry><literal>5</literal></entry>
++          </row>
++          <row>
++            <entry><literal>nm_query_type</literal></entry>
++            <entry>string</entry>
++            <entry><literal>messages</literal></entry>
++          </row>
++          <row>
++            <entry><literal>nm_record</literal></entry>
++            <entry>boolean</entry>
++            <entry><literal>no</literal></entry>
++          </row>
++          <row>
++            <entry><literal>nm_record_tags</literal></entry>
++            <entry>string</entry>
++            <entry>(empty)</entry>
++          </row>
++          <row>
++            <entry><literal>nm_unread_tag</literal></entry>
++            <entry>string</entry>
++            <entry><literal>unread</literal></entry>
++          </row>
++          <row>
++            <entry><literal>vfolder_format</literal></entry>
++            <entry>string</entry>
++            <entry><literal>%6n(%6N) %f</literal></entry>
++          </row>
++          <row>
++            <entry><literal>virtual_spoolfile</literal></entry>
++            <entry>boolean</entry>
++            <entry><literal>no</literal></entry>
++          </row>
++        </tbody>
++      </tgroup>
++    </table>
++  </sect2>
++
++  <sect2 id="notmuch-functions">
++    <title>Functions</title>
++
++    <table id="table-notmuch-functions">
++      <title>Notmuch Functions</title>
++      <tgroup cols="4">
++        <thead>
++          <row>
++            <entry>Menus</entry>
++            <entry>Default Key</entry>
++            <entry>Function</entry>
++            <entry>Description</entry>
++          </row>
++        </thead>
++        <tbody>
++          <row>
++            <entry>index,pager</entry>
++            <entry>X</entry>
++            <entry><literal>&lt;change-vfolder&gt;</literal></entry>
++            <entry>open a different virtual folder</entry>
++          </row>
++          <row>
++            <entry>index,pager</entry>
++            <entry>+</entry>
++            <entry><literal>&lt;entire-thread&gt;</literal></entry>
++            <entry>read entire thread of the current message</entry>
++          </row>
++          <row>
++            <entry>index,pager</entry>
++            <entry>`</entry>
++            <entry><literal>&lt;modify-labels&gt;</literal></entry>
++            <entry>modify (notmuch) tags</entry>
++          </row>
++          <row>
++            <entry>index,pager</entry>
++            <entry>(none)</entry>
++            <entry><literal>&lt;modify-labels-then-hide&gt;</literal></entry>
++            <entry>modify labels and then hide message</entry>
++          </row>
++          <row>
++            <entry>index,pager</entry>
++            <entry>(none)</entry>
++            <entry><literal>&lt;sidebar-toggle-virtual&gt;</literal></entry>
++            <entry>toggle between mailboxes and virtual mailboxes</entry>
++          </row>
++          <row>
++            <entry>index,pager</entry>
++            <entry>Alt-X</entry>
++            <entry><literal>&lt;vfolder-from-query&gt;</literal></entry>
++            <entry>generate virtual folder from query</entry>
++          </row>
++        </tbody>
++      </tgroup>
++    </table>
++  </sect2>
++
++  <sect2 id="notmuch-commands">
++    <title>Commands</title>
++    <cmdsynopsis>
++
++      <command>virtual-mailboxes</command>
++      <arg choice="plain">
++        <replaceable class="parameter">description</replaceable>
++        <arg choice="plain">
++          <replaceable class="parameter">notmuch-URI</replaceable>
++        </arg>
++      </arg>
++      <group choice="req" rep="repeat">
++        <arg choice="plain">
++          <replaceable class="parameter">description</replaceable>
++          <arg choice="plain">
++            <replaceable class="parameter">notmuch-URI</replaceable>
++          </arg>
++        </arg>
++      </group>
++
++      <command>tag-transforms</command>
++      <arg choice="plain">
++        <replaceable class="parameter">tag</replaceable>
++        <arg choice="plain">
++          <replaceable class="parameter">transformed-string</replaceable>
++        </arg>
++      </arg>
++      <group choice="req" rep="repeat">
++        <arg choice="plain">
++          <replaceable class="parameter">tag</replaceable>
++          <arg choice="plain">
++            <replaceable class="parameter">transformed-string</replaceable>
++          </arg>
++        </arg>
++      </group>
++
++      <command>tag-formats</command>
++      <arg choice="plain">
++        <replaceable class="parameter">tag</replaceable>
++        <arg choice="plain">
++          <replaceable class="parameter">format-string</replaceable>
++        </arg>
++      </arg>
++      <group choice="req" rep="repeat">
++        <arg choice="plain">
++          <replaceable class="parameter">tag</replaceable>
++          <arg choice="plain">
++            <replaceable class="parameter">format-string</replaceable>
++          </arg>
++        </arg>
++      </group>
++
++    </cmdsynopsis>
++  </sect2>
++
++  <sect2 id="notmuch-colors">
++    <title>Colors</title>
++
++    <para>Adds these to index-color patch:</para>
++
++    <table id="table-notmuch-colors">
++      <title>Index Colors</title>
++      <tgroup cols="3">
++        <thead>
++          <row>
++            <entry>Object</entry>
++            <entry>Pattern</entry>
++            <entry>Highlights</entry>
++          </row>
++        </thead>
++        <tbody>
++          <row>
++            <entry><literal>index_tag</literal></entry>
++            <entry>yes</entry>
++            <entry>an individual message tag, %G, uses tag name</entry>
++          </row>
++          <row>
++            <entry><literal>index_tags</literal></entry>
++            <entry>no</entry>
++            <entry>the transformed message tags, %g</entry>
++          </row>
++        </tbody>
++      </tgroup>
++    </table>
++  </sect2>
++
++<!--
++  <sect2 id="notmuch-sort">
++    <title>Sort</title>
++  </sect2>
++-->
++
++  <sect2 id="notmuch-muttrc">
++    <title>Muttrc</title>
++
++<screen>
++<emphasis role="comment"># This is a complete list of notmuch-related configuration.
++ 
++# --------------------------------------------------------------------------
++# VARIABLES - shown with their default values
++# --------------------------------------------------------------------------
++ 
++# This variable specifies notmuch query limit.</emphasis>
++set nm_db_limit = 0
++ 
++<emphasis role="comment"># This variable specifies the default Notmuch database in format:
++# notmuch://&lt;absolute path&gt;</emphasis>
++set nm_default_uri = ""
++ 
++<emphasis role="comment"># The messages tagged with these tags are excluded and not loaded
++# from notmuch DB to mutt unless specified explicitly.</emphasis>
++set nm_exclude_tags = ""
++ 
++<emphasis role="comment"># This variable specifies private notmuch tags which should not be printed
++# on screen (index, pager).</emphasis>
++set nm_hidden_tags = "unread,draft,flagged,passed,replied,attachment,signed,encrypted"
++ 
++<emphasis role="comment"># This option specifies timeout for Notmuch database. Default is 5 seconds.</emphasis>
++set nm_open_timeout = 5
++ 
++<emphasis role="comment"># This variable specifies notmuch query type, supported types: 'threads' and</emphasis>
++# 'messages'.
++set nm_query_type = messages
++ 
++<emphasis role="comment"># Add messages stored to the mutt record (see $record in the mutt docs)
++# also to notmuch DB.</emphasis>
++set nm_record = no
++ 
++<emphasis role="comment"># Tags that should be removed or added to the to the messages stored in the mutt record.</emphasis>
++set nm_record_tags = ""
++ 
++<emphasis role="comment"># This variable specifies notmuch tag which is used for unread messages.</emphasis>
++set nm_unread_tag = unread
++ 
++<emphasis role="comment"># This variable allows you to customize the file browser display for virtual
++# folders to your personal taste.</emphasis>
++set vfolder_format = "%6n(%6N) %f"
++ 
++<emphasis role="comment"># When set, mutt will use the first virtual mailbox (see virtual-mailboxes)
++# as a spoolfile.</emphasis>
++set virtual_spoolfile = no
++ 
++<emphasis role="comment"># --------------------------------------------------------------------------
++# FUNCTIONS - shown with an example mapping
++# --------------------------------------------------------------------------
++ 
++# open a different virtual folder</emphasis>
++bind index,pager X change-vfolder 
++ 
++<emphasis role="comment"># read entire thread of the current message</emphasis>
++bind index,pager + entire-thread 
++ 
++<emphasis role="comment"># modify (notmuch) tags</emphasis>
++bind index,pager ` modify-labels 
++ 
++<emphasis role="comment"># generate virtual folder from query</emphasis>
++bind index,pager \eX vfolder-from-query 
++ 
++<emphasis role="comment"># modify labels and then hide message
++# bind index,pager ??? modify-labels-then-hide 
++ 
++# toggle between mailboxes and virtual mailboxes
++# bind index,pager ??? sidebar-toggle-virtual 
++ 
++# --------------------------------------------------------------------------
++# COMMANDS - shown with an example
++# --------------------------------------------------------------------------
++ 
++# virtual-mailboxes description notmuch-URI { description notmuch-URI ...}
++# virtual-mailboxes "Climbing" "notmuch://?query=climbing"
++ 
++# Replace some tags with icons
++# tag-transforms tag transformed-string { tag transformed-string ...}
++# tag-transforms "inbox"   "i"   \
++#                "unread"  "u"   \
++#                "replied" "↻ "  \
++#                "sent"    "➥ "  \
++#                "todo"    "T"   \
++#                "deleted" "DEL" \
++#                "invites" "CAL"
++ 
++# See README.notmuch for an explanation
++# tag-formats tag format-string { tag format-string ...}
++# tag-formats "inbox"   "GI" \
++#              "unread"  "GU" \
++#              "replied" "GR" \
++#              "sent"    "GS" \
++#              "todo"    "Gt" \
++#              "deleted" "GD" \
++#              "invites" "Gi"
++ 
++# set index_format='4C %S %[%y.%m.%d] %-18.18n %?GU?%GU&amp; ? %?GR?%GR&amp; ? %?GI?%GI&amp; ? %s'
++ 
++# --------------------------------------------------------------------------
++# COLORS - some unpleasant examples are given
++# --------------------------------------------------------------------------
++ 
++# These symbols are added to the index-color patch:
++ 
++# an individual message tag, %G, uses tag name
++# this symbol uses a pattern</emphasis>
++color index_tag red white "inbox"
++ 
++<emphasis role="comment"># the transformed message tags, %g
++# this symbol does not use a pattern</emphasis>
++color index_tags green default
++ 
++<emphasis role="comment"># --------------------------------------------------------------------------
++ 
++# vim: syntax=muttrc</emphasis>
++</screen>
++  </sect2>
++
++  <sect2 id="notmuch-see-also">
++    <title>See Also</title>
++
++    <itemizedlist>
++      <listitem><para><ulink url="http://www.neomutt.org/">NeoMutt Project</ulink></para></listitem>
++      <listitem><para><link linkend="compile-time-features">Compile-Time Features</link></para></listitem>
++    </itemizedlist>
++  </sect2>
++
++  <sect2 id="notmuch-known-bugs">
++    <title>Known Bugs</title>
++    <para>None</para>
++  </sect2>
++
++  <sect2 id="notmuch-credits">
++    <title>Credits</title>
++    <itemizedlist>
++    <listitem><para>Karel Zak <email>kzak@redhat.com</email></para></listitem>
++    <listitem><para>Chris Mason <email>clm@fb.com</email></para></listitem>
++    <listitem><para>Christoph Rissner <email>cri@visotech.at</email></para></listitem>
++    <listitem><para>David Riebenbauer <email>davrieb@liegesta.at</email></para></listitem>
++    <listitem><para>David Sterba <email>dsterba@suse.cz</email></para></listitem>
++    <listitem><para>David Wilson <email>dw@botanicus.net</email></para></listitem>
++    <listitem><para>Don Zickus <email>dzickus@redhat.com</email></para></listitem>
++    <listitem><para>Eric Davis <email>edavis@insanum.com</email></para></listitem>
++    <listitem><para>Jan Synacek <email>jsynacek@redhat.com</email></para></listitem>
++    <listitem><para>Jeremiah C. Foster <email>jeremiah@jeremiahfoster.com</email></para></listitem>
++    <listitem><para>Josh Poimboeuf <email>jpoimboe@redhat.com</email></para></listitem>
++    <listitem><para>Kirill A. Shutemov <email>kirill@shutemov.name</email></para></listitem>
++    <listitem><para>Luke Macken <email>lmacken@redhat.com</email></para></listitem>
++    <listitem><para>Mantas Mikulėnas <email>grawity@gmail.com</email></para></listitem>
++    <listitem><para>Patrick Brisbin <email>pbrisbin@gmail.com</email></para></listitem>
++    <listitem><para>Philippe Le Brouster <email>plb@nebkha.net</email></para></listitem>
++    <listitem><para>Raghavendra D Prabhu <email>rprabhu@wnohang.net</email></para></listitem>
++    <listitem><para>Sami Farin <email>hvtaifwkbgefbaei@gmail.com</email></para></listitem>
++    <listitem><para>Stefan Assmann <email>sassmann@kpanic.de</email></para></listitem>
++    <listitem><para>Stefan Kuhn <email>p_regius@gmx.ch</email></para></listitem>
++    <listitem><para>Tim Stoakes <email>tim@stoakes.net</email></para></listitem>
++    <listitem><para>Vladimir Marek <email>Vladimir.Marek@oracle.com</email></para></listitem>
++    <listitem><para>Víctor Manuel Jáquez Leal <email>vjaquez@igalia.com</email></para></listitem>
++    <listitem><para>Richard Russon <email>rich@flatcap.org</email></para></listitem>
++    </itemizedlist>
++  </sect2>
++</sect1>
++
+ <sect1 id="progress">
+   <title>Progress Bar Patch</title>
+   <subtitle>Show a visual progress bar on slow operations</subtitle>
+@@ -12367,7 +12785,7 @@ <sect1 id="status-color">
  # First, highlight anything (*/*)</emphasis>
  color status brightred default '\([^)]+/[^)]+\)'
   
@@ -1973,6 +2084,126 @@ index 4aa1a85..16f1a54 100644
  color status default   default '\(threads/last-date-received\)'
   
  <emphasis role="comment"># 2 extra parameters
+diff --git a/doc/muttrc.notmuch b/doc/muttrc.notmuch
+new file mode 100644
+index 0000000..c752395
+--- /dev/null
++++ b/doc/muttrc.notmuch
+@@ -0,0 +1,114 @@
++# This is a complete list of notmuch-related configuration.
++
++# --------------------------------------------------------------------------
++# VARIABLES - shown with their default values
++# --------------------------------------------------------------------------
++
++# This variable specifies notmuch query limit.
++set nm_db_limit = 0
++
++# This variable specifies the default Notmuch database in format:
++# notmuch://<absolute path>
++set nm_default_uri = ""
++
++# The messages tagged with these tags are excluded and not loaded
++# from notmuch DB to mutt unless specified explicitly.
++set nm_exclude_tags = ""
++
++# This variable specifies private notmuch tags which should not be printed
++# on screen (index, pager).
++set nm_hidden_tags = "unread,draft,flagged,passed,replied,attachment,signed,encrypted"
++
++# This option specifies timeout for Notmuch database. Default is 5 seconds.
++set nm_open_timeout = 5
++
++# This variable specifies notmuch query type, supported types: 'threads' and
++# 'messages'.
++set nm_query_type = messages
++
++# Add messages stored to the mutt record (see $record in the mutt docs)
++# also to notmuch DB.
++set nm_record = no
++
++# Tags that should be removed or added to the to the messages stored in the mutt record.
++set nm_record_tags = ""
++
++# This variable specifies notmuch tag which is used for unread messages.
++set nm_unread_tag = unread
++
++# This variable allows you to customize the file browser display for virtual
++# folders to your personal taste.
++set vfolder_format = "%6n(%6N) %f"
++
++# When set, mutt will use the first virtual mailbox (see virtual-mailboxes)
++# as a spoolfile.
++set virtual_spoolfile = no
++
++# --------------------------------------------------------------------------
++# FUNCTIONS - shown with an example mapping
++# --------------------------------------------------------------------------
++
++# open a different virtual folder
++bind index,pager X change-vfolder
++
++# read entire thread of the current message
++bind index,pager + entire-thread
++
++# modify (notmuch) tags
++bind index,pager ` modify-labels
++
++# generate virtual folder from query
++bind index,pager \eX vfolder-from-query
++
++# modify labels and then hide message
++# bind index,pager ??? modify-labels-then-hide
++
++# toggle between mailboxes and virtual mailboxes
++# bind index,pager ??? sidebar-toggle-virtual
++
++# --------------------------------------------------------------------------
++# COMMANDS - shown with an example
++# --------------------------------------------------------------------------
++
++# virtual-mailboxes description notmuch-URI { description notmuch-URI ...}
++# virtual-mailboxes "Climbing" "notmuch://?query=climbing"
++
++# Replace some tags with icons
++# tag-transforms tag transformed-string { tag transformed-string ...}
++# tag-transforms "inbox"   "i"   \
++#                "unread"  "u"   \
++#                "replied" "↻ "  \
++#                "sent"    "➥ "  \
++#                "todo"    "T"   \
++#                "deleted" "DEL" \
++#                "invites" "CAL"
++
++# See README.notmuch for an explanation
++# tag-formats tag format-string { tag format-string ...}
++# tag-formats "inbox"   "GI" \
++#              "unread"  "GU" \
++#              "replied" "GR" \
++#              "sent"    "GS" \
++#              "todo"    "Gt" \
++#              "deleted" "GD" \
++#              "invites" "Gi"
++
++# set index_format='4C %S %[%y.%m.%d] %-18.18n %?GU?%GU& ? %?GR?%GR& ? %?GI?%GI& ? %s'
++
++# --------------------------------------------------------------------------
++# COLORS - some unpleasant examples are given
++# --------------------------------------------------------------------------
++
++# These symbols are added to the index-color patch:
++
++# an individual message tag, %G, uses tag name
++# this symbol uses a pattern
++color index_tag red white "inbox"
++
++# the transformed message tags, %g
++# this symbol does not use a pattern
++color index_tags green default
++
++# --------------------------------------------------------------------------
++
++# vim: syntax=muttrc
 diff --git a/doc/muttrc.status-color b/doc/muttrc.status-color
 index 385396f..9a1350c 100644
 --- a/doc/muttrc.status-color
@@ -1986,6 +2217,40 @@ index 385396f..9a1350c 100644
  color status default   default '\(threads/last-date-received\)'
  
  # 2 extra parameters
+diff --git a/doc/vimrc.notmuch b/doc/vimrc.notmuch
+new file mode 100644
+index 0000000..918d23d
+--- /dev/null
++++ b/doc/vimrc.notmuch
+@@ -0,0 +1,28 @@
++" Vim syntax file for the mutt notmuch patch
++
++syntax keyword muttrcVarBool    contained skipwhite nm_record             nextgroup=muttrcSetBoolAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
++syntax keyword muttrcVarBool    contained skipwhite virtual_spoolfile     nextgroup=muttrcSetBoolAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
++
++syntax keyword muttrcVarNum     contained skipwhite nm_db_limit           nextgroup=muttrcSetNumAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
++syntax keyword muttrcVarNum     contained skipwhite nm_open_timeout       nextgroup=muttrcSetNumAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
++
++syntax keyword muttrcVarStr     contained skipwhite nm_default_uri        nextgroup=muttrcVarEqualsIdxFmt
++syntax keyword muttrcVarStr     contained skipwhite nm_exclude_tags       nextgroup=muttrcVarEqualsIdxFmt
++syntax keyword muttrcVarStr     contained skipwhite nm_hidden_tags        nextgroup=muttrcVarEqualsIdxFmt
++syntax keyword muttrcVarStr     contained skipwhite nm_query_type         nextgroup=muttrcVarEqualsIdxFmt
++syntax keyword muttrcVarStr     contained skipwhite nm_record_tags        nextgroup=muttrcVarEqualsIdxFmt
++syntax keyword muttrcVarStr     contained skipwhite nm_unread_tag         nextgroup=muttrcVarEqualsIdxFmt
++syntax keyword muttrcVarStr     contained skipwhite vfolder_format        nextgroup=muttrcVarEqualsIdxFmt
++
++syntax keyword muttrcCommand    virtual-mailboxes
++syntax keyword muttrcCommand    tag-transforms
++syntax keyword muttrcCommand    tag-formats
++
++syntax match muttrcFunction     contained "<change-vfolder>"
++syntax match muttrcFunction     contained "<entire-thread>"
++syntax match muttrcFunction     contained "<modify-labels-then-hide>"
++syntax match muttrcFunction     contained "<modify-labels>"
++syntax match muttrcFunction     contained "<sidebar-toggle>"
++syntax match muttrcFunction     contained "<vfolder-from-query>"
++
++" vim: syntax=vim
 diff --git a/enter.c b/enter.c
 index d1373ea..467bccf 100644
 --- a/enter.c
@@ -2093,7 +2358,7 @@ index f04e9c0..07e77ed 100644
  
  
 diff --git a/hdrline.c b/hdrline.c
-index 5b8dd01..48bddc5 100644
+index c29107b..ccddd05 100644
 --- a/hdrline.c
 +++ b/hdrline.c
 @@ -36,6 +36,10 @@
@@ -2107,29 +2372,20 @@ index 5b8dd01..48bddc5 100644
  int mutt_is_mail_list (ADDRESS *addr)
  {
    if (!mutt_match_rx_list (addr->mailbox, UnMailLists))
-@@ -244,6 +248,7 @@ int mutt_user_is_recipient (HEADER *h)
+@@ -243,6 +247,7 @@ int mutt_user_is_recipient (HEADER *h)
+  * %E = number of messages in current thread
   * %f = entire from line
   * %F = like %n, unless from self
-  * %g = newsgroup name (if compiled with NNTP support)
 + * %g = message labels (e.g. notmuch tags)
+  * %g = newsgroup name (if compiled with NNTP support)
   * %i = message-id
   * %I = initials of author
-  * %l = number of lines in the message
-@@ -590,14 +595,25 @@ hdr_format_str (char *dest,
+@@ -590,6 +595,19 @@ hdr_format_str (char *dest,
          optional = 0;
        break;
  
--#ifdef USE_NNTP
-     case 'g':
-+#ifdef USE_NNTP
-       if (hdr->env->newsgroups)
-       {
- 	mutt_format_s (dest, destlen, prefix, hdr->env->newsgroups);
-+        break;
-       }
--      break;
- #endif
 +#ifdef USE_NOTMUCH
++    case 'g':
 +      if (!optional)
 +      {
 +        colorlen = add_index_color(dest, destlen, flags, MT_COLOR_INDEX_TAGS);
@@ -2138,17 +2394,16 @@ index 5b8dd01..48bddc5 100644
 +      }
 +      else if (!nm_header_get_tags_transformed(hdr))
 +        optional = 0;
-+#endif
 +      break;
- 
++#endif
++
      case 'H':
        /* (Hormel) spam score */
-@@ -956,8 +972,49 @@ hdr_format_str (char *dest,
-           mutt_format_s (dest + colorlen, destlen - colorlen, prefix, "");
-         add_index_color (dest + colorlen, destlen - colorlen, flags, MT_COLOR_INDEX);
+       if (optional)
+@@ -955,6 +973,48 @@ hdr_format_str (char *dest,
        }
-+      break;
-+
+       break;
+ 
 +#ifdef USE_NOTMUCH
 +    case 'G':
 +    {
@@ -2186,13 +2441,14 @@ index 5b8dd01..48bddc5 100644
 +          if (nm_header_get_tag_transformed(tag, hdr) == NULL)
 +            optional = 0;
 +      }
- 
-       break;
++
++      break;
 +    }
 +#endif
- 
++
      default:
        snprintf (dest, destlen, "%%%s%c", prefix, op);
+       break;
 diff --git a/init.c b/init.c
 index 663b914..7b7c4c5 100644
 --- a/init.c
@@ -2501,17 +2757,17 @@ index 663b914..7b7c4c5 100644
  {
    myvar_t** cur;
 diff --git a/init.h b/init.h
-index 86a4cae..806ee72 100644
+index 86a4cae..93a1fac 100644
 --- a/init.h
 +++ b/init.h
-@@ -1371,6 +1371,7 @@ struct option_t MuttVars[] = {
+@@ -1370,6 +1370,7 @@ struct option_t MuttVars[] = {
+   ** .dt %E .dd number of messages in current thread
    ** .dt %f .dd sender (address + real name), either From: or Return-Path:
    ** .dt %F .dd author name, or recipient name if the message is from you
-   ** .dt %g .dd newsgroup name (if compiled with NNTP support)
 +  ** .dt %g .dd message labels (e.g. notmuch tags)
+   ** .dt %g .dd newsgroup name (if compiled with NNTP support)
    ** .dt %H .dd spam attribute(s) of this message
    ** .dt %i .dd message-id of the current message
-   ** .dt %l .dd number of lines in the message (does not work with maildir,
 @@ -1891,6 +1892,60 @@ struct option_t MuttVars[] = {
    ** etc.).
    */
@@ -2629,7 +2885,15 @@ index 86a4cae..806ee72 100644
    { "wait_key",		DT_BOOL, R_NONE, OPTWAITKEY, 1 },
    /*
    ** .pp
-@@ -4126,13 +4207,16 @@ static int parse_unsubscribe (BUFFER *, BUFFER *, unsigned long, BUFFER *);
+@@ -4091,6 +4172,7 @@ const struct mapping_t SortKeyMethods[] = {
+ const struct mapping_t SortSidebarMethods[] = {
+   { "alpha",		SORT_PATH },
+   { "count",		SORT_COUNT },
++  { "desc",		SORT_DESC },
+   { "flagged",		SORT_FLAGGED },
+   { "mailbox-order",	SORT_ORDER },
+   { "name",		SORT_PATH },
+@@ -4126,13 +4208,16 @@ static int parse_unsubscribe (BUFFER *, BUFFER *, unsigned long, BUFFER *);
  static int parse_attachments (BUFFER *, BUFFER *, unsigned long, BUFFER *);
  static int parse_unattachments (BUFFER *, BUFFER *, unsigned long, BUFFER *);
  
@@ -2647,7 +2911,7 @@ index 86a4cae..806ee72 100644
  
  struct command_t
  {
-@@ -4181,6 +4265,11 @@ const struct command_t Commands[] = {
+@@ -4181,6 +4266,11 @@ const struct command_t Commands[] = {
    { "macro",		mutt_parse_macro,	0 },
    { "mailboxes",	mutt_parse_mailboxes,	M_MAILBOXES },
    { "unmailboxes",	mutt_parse_mailboxes,	M_UNMAILBOXES },
@@ -2672,7 +2936,7 @@ index 99ea706..1b1cad1 100644
    short write;	/* nonzero if message is open for writing */
    struct {
 diff --git a/menu.c b/menu.c
-index 0b3229c..830da25 100644
+index 9fd25fa..567b962 100644
 --- a/menu.c
 +++ b/menu.c
 @@ -50,6 +50,17 @@ get_color (int index, unsigned char *s)
@@ -3070,7 +3334,7 @@ index b75de6d..cb6967e 100644
    {
      if (new_hits < UINT_MAX && cur_hits < UINT_MAX)
 diff --git a/mutt.h b/mutt.h
-index 8060859..de1ab73 100644
+index 825cc41..754705e 100644
 --- a/mutt.h
 +++ b/mutt.h
 @@ -89,6 +89,10 @@
@@ -3102,36 +3366,35 @@ index 8060859..de1ab73 100644
  
  /* flags for parse_spam_list */
  #define M_SPAM          1
-@@ -578,6 +586,11 @@ enum
-   OPTNEWSSEND,		/* (pseudo) used to change behavior when posting */
- #endif
+@@ -573,6 +581,10 @@ enum
+   OPTDONTHANDLEPGPKEYS,	/* (pseudo) used to extract PGP keys */
+   OPTIGNOREMACROEVENTS, /* (pseudo) don't process macro/push/exec events while set */
  
 +#ifdef USE_NOTMUCH
 +  OPTVIRTSPOOLFILE,
 +  OPTNOTMUCHRECORD,
 +#endif
-+
-   OPTMAX
- };
- 
-@@ -854,8 +867,9 @@ typedef struct header
+ #ifdef USE_NNTP
+   OPTNEWS,		/* (pseudo) used to change reader mode */
+   OPTNEWSSEND,		/* (pseudo) used to change behavior when posting */
+@@ -853,8 +865,9 @@ typedef struct header
    int refno;			/* message number on server */
  #endif
  
 -#if defined USE_POP || defined USE_IMAP || defined USE_NNTP
-+#if defined USE_POP || defined USE_IMAP || defined USE_NNTP || defined USE_NOTMUCH
++#if defined USE_POP || defined USE_IMAP || defined USE_NOTMUCH || defined USE_NNTP
    void *data;            	/* driver-specific data */
 +  void (*free_cb)(struct header *); /* driver-specific data free function */
  #endif
    
    char *maildir_flags;		/* unknown maildir flags */
 diff --git a/mutt_curses.h b/mutt_curses.h
-index 9c4eeb1..b647a2a 100644
+index 8d3530b..bdeb6a6 100644
 --- a/mutt_curses.h
 +++ b/mutt_curses.h
 @@ -136,6 +136,9 @@ enum
+   MT_COLOR_SB_SPOOLFILE,
  #endif
-   MT_COLOR_PROGRESS,
    /* please no non-MT_COLOR_INDEX objects after this point */
 +#ifdef USE_NOTMUCH
 +  MT_COLOR_INDEX_TAG,
@@ -5195,7 +5458,7 @@ index 0000000..df4baa2
 +
 +#endif /* _MUTT_NOTMUCH_H_ */
 diff --git a/muttlib.c b/muttlib.c
-index 1403fa6..2265e14 100644
+index 37e8adf..760851b 100644
 --- a/muttlib.c
 +++ b/muttlib.c
 @@ -32,11 +32,18 @@
@@ -5222,7 +5485,7 @@ index 1403fa6..2265e14 100644
    mutt_free_list (&(*h)->chain);
  #endif
 -#if defined USE_POP || defined USE_IMAP || defined USE_NNTP
-+#if defined USE_POP || defined USE_IMAP || defined USE_NNTP || defined USE_NOTMUCH
++#if defined USE_POP || defined USE_IMAP || defined USE_NOTMUCH || defined USE_NNTP
 +  if ((*h)->free_cb)
 +    (*h)->free_cb(*h);
    FREE (&(*h)->data);
@@ -5240,7 +5503,7 @@ index 1403fa6..2265e14 100644
  	if (Maildir && *Maildir && Maildir[strlen (Maildir) - 1] == '/')
  	  strfcpy (p, NONULL (Maildir), sizeof (p));
  	else
-@@ -828,6 +842,11 @@ void mutt_pretty_mailbox (char *s, size_t buflen)
+@@ -827,6 +841,11 @@ void mutt_pretty_mailbox (char *s, size_t buflen)
    }
  #endif
  
@@ -5253,20 +5516,20 @@ index 1403fa6..2265e14 100644
    if (scheme != U_UNKNOWN)
    {
 diff --git a/mx.c b/mx.c
-index e813ca4..96ee564 100644
+index e813ca4..7299ba0 100644
 --- a/mx.c
 +++ b/mx.c
-@@ -49,6 +49,10 @@
- #include "nntp.h"
+@@ -45,6 +45,10 @@
+ #include "pop.h"
  #endif
  
 +#ifdef USE_NOTMUCH
 +#include "mutt_notmuch.h"
 +#endif
 +
- #include "buffy.h"
- 
- #ifdef USE_DOTLOCK
+ #ifdef USE_NNTP
+ #include "nntp.h"
+ #endif
 @@ -68,6 +72,10 @@
  #include <ctype.h>
  #include <utime.h>
@@ -5303,21 +5566,21 @@ index e813ca4..96ee564 100644
  int mx_get_magic (const char *path)
  {
    struct stat st;
-@@ -392,6 +418,11 @@ int mx_get_magic (const char *path)
-     return M_NNTP;
- #endif /* USE_NNTP */
+@@ -387,6 +413,11 @@ int mx_get_magic (const char *path)
+     return M_POP;
+ #endif /* USE_POP */
  
 +#ifdef USE_NOTMUCH
 +  if (mx_is_notmuch(path))
 +    return M_NOTMUCH;
 +#endif
 +
-   if (stat (path, &st) == -1)
-   {
-     dprint (1, (debugfile, "mx_get_magic(): unable to stat %s: %s (errno %d).\n",
-@@ -727,6 +758,12 @@ CONTEXT *mx_open_mailbox (const char *path, int flags, CONTEXT *pctx)
+ #ifdef USE_NNTP
+   if (mx_is_nntp (path))
+     return M_NNTP;
+@@ -721,6 +752,12 @@ CONTEXT *mx_open_mailbox (const char *path, int flags, CONTEXT *pctx)
        break;
- #endif /* USE_NNTP */
+ #endif /* USE_POP */
  
 +#ifdef USE_NOTMUCH
 +    case M_NOTMUCH:
@@ -5325,38 +5588,43 @@ index e813ca4..96ee564 100644
 +      break;
 +#endif /* USE_IMAP */
 +
-     default:
-       rc = -1;
+ #ifdef USE_NNTP
+     case M_NNTP:
+       rc = nntp_open_mailbox (ctx);
+@@ -838,6 +875,12 @@ static int sync_mailbox (CONTEXT *ctx, int *index_hint)
        break;
-@@ -843,6 +880,13 @@ static int sync_mailbox (CONTEXT *ctx, int *index_hint)
-       rc = nntp_sync_mailbox (ctx);
-       break;
- #endif /* USE_NNTP */
-+
+ #endif /* USE_POP */
+ 
 +#ifdef USE_NOTMUCH
 +    case M_NOTMUCH:
 +      rc = nm_sync (ctx, index_hint);
 +      break;
 +#endif /* USE_NOTMUCH */
 +
-   }
+ #ifdef USE_NNTP
+     case M_NNTP:
+       rc = nntp_sync_mailbox (ctx);
+@@ -1166,7 +1209,6 @@ int mx_close_mailbox (CONTEXT *ctx, int *index_hint)
+   if (ctx->compress_info && comp_slow_close (ctx))
+     return (-1);
+ #endif
+-
+ #ifdef USE_SIDEBAR
+   ctx->msgcount -= ctx->deleted;
+   mutt_sb_set_buffystats (ctx);
+@@ -1553,6 +1595,11 @@ int mx_check_mailbox (CONTEXT *ctx, int *index_hint, int lock)
+ 	return (pop_check_mailbox (ctx, index_hint));
+ #endif /* USE_POP */
  
- #if 0
-@@ -1557,7 +1601,12 @@ int mx_check_mailbox (CONTEXT *ctx, int *index_hint, int lock)
-       case M_NNTP:
- 	return (nntp_check_mailbox (ctx, 0));
- #endif /* USE_NNTP */
--    }
-+
 +#ifdef USE_NOTMUCH
 +      case M_NOTMUCH:
 +	return nm_check_database(ctx, index_hint);
 +#endif
-+}
-   }
- 
-   dprint (1, (debugfile, "mx_check_mailbox: null or invalid context.\n"));
-@@ -1568,7 +1617,7 @@ int mx_check_mailbox (CONTEXT *ctx, int *index_hint, int lock)
++
+ #ifdef USE_NNTP
+       case M_NNTP:
+ 	return (nntp_check_mailbox (ctx, 0));
+@@ -1568,7 +1615,7 @@ int mx_check_mailbox (CONTEXT *ctx, int *index_hint, int lock)
  MESSAGE *mx_open_message (CONTEXT *ctx, int msgno)
  {
    MESSAGE *msg;
@@ -5365,7 +5633,7 @@ index e813ca4..96ee564 100644
    msg = safe_calloc (1, sizeof (MESSAGE));
    switch (msg->magic = ctx->magic)
    {
-@@ -1579,15 +1628,24 @@ MESSAGE *mx_open_message (CONTEXT *ctx, int msgno)
+@@ -1579,15 +1626,24 @@ MESSAGE *mx_open_message (CONTEXT *ctx, int msgno)
  
      case M_MH:
      case M_MAILDIR:
@@ -5395,7 +5663,7 @@ index e813ca4..96ee564 100644
        
        if (msg->fp == NULL)
        {
-@@ -1671,13 +1729,17 @@ int mx_commit_message (MESSAGE *msg, CONTEXT *ctx)
+@@ -1671,13 +1727,17 @@ int mx_commit_message (MESSAGE *msg, CONTEXT *ctx)
        break;
      }
  #endif
@@ -5415,7 +5683,7 @@ index e813ca4..96ee564 100644
      case M_MH:
      {
        r = mh_commit_message (ctx, msg, NULL);
-@@ -1691,7 +1753,7 @@ int mx_commit_message (MESSAGE *msg, CONTEXT *ctx)
+@@ -1691,7 +1751,7 @@ int mx_commit_message (MESSAGE *msg, CONTEXT *ctx)
      mutt_perror _("Can't write message");
      r = -1;
    }
@@ -5424,16 +5692,15 @@ index e813ca4..96ee564 100644
    return r;
  }
  
-@@ -1704,14 +1766,18 @@ int mx_close_message (MESSAGE **msg)
+@@ -1704,6 +1764,7 @@ int mx_close_message (MESSAGE **msg)
  #ifdef USE_NNTP
        || (*msg)->magic == M_NNTP
  #endif
--      || (*msg)->magic == M_IMAP || (*msg)->magic == M_POP)
-+      || (*msg)->magic == M_IMAP || (*msg)->magic == M_POP
-+      || (*msg)->magic == M_NOTMUCH)
++      || (*msg)->magic == M_NOTMUCH
+       || (*msg)->magic == M_IMAP || (*msg)->magic == M_POP)
    {
      r = safe_fclose (&(*msg)->fp);
-   }
+@@ -1711,7 +1772,10 @@ int mx_close_message (MESSAGE **msg)
    else
      (*msg)->fp = NULL;
  
@@ -5445,7 +5712,7 @@ index e813ca4..96ee564 100644
    {
      dprint (1, (debugfile, "mx_close_message (): unlinking %s\n",
  		(*msg)->path));
-@@ -1719,6 +1785,7 @@ int mx_close_message (MESSAGE **msg)
+@@ -1719,6 +1783,7 @@ int mx_close_message (MESSAGE **msg)
      FREE (&(*msg)->path);
    }
  
@@ -5687,7 +5954,7 @@ index bf86c4a..b661e71 100644
    mx_close_mailbox (&f, NULL);
  
 diff --git a/sidebar.c b/sidebar.c
-index ea81e1e..d465491 100644
+index 4cb2101..1cbdbfb 100644
 --- a/sidebar.c
 +++ b/sidebar.c
 @@ -26,7 +26,9 @@
@@ -5759,12 +6026,7 @@ index ea81e1e..d465491 100644
    int i = 0, j;
    SBENTRY *tmp;
  
-@@ -430,11 +468,12 @@ static int prepare_sidebar (int page_size)
-   return 1;
- }
- 
-+
- /**
+@@ -435,7 +473,7 @@ static int prepare_sidebar (int page_size)
   * visible - Should we display the sidebar?
   *
   * After validating the config options "sidebar_visible" and "sidebar_width",
@@ -5773,16 +6035,7 @@ index ea81e1e..d465491 100644
   *
   * When not visible, set the global SidebarWidth to 0.
   *
-@@ -669,7 +708,7 @@ static void draw_sidebar (int first_row, int num_rows, int div_width)
-         if (option (OPTSIDEBARSHORTPATH))
-           tmp_folder_name += lastsep;  /* basename */
-         sidebar_folder_name = malloc (strlen (tmp_folder_name) + sidebar_folder_depth*strlen (NONULL(SidebarIndentString)) + 1);
--                                 int sfn_len = strlen (tmp_folder_name) + sidebar_folder_depth*strlen (NONULL(SidebarIndentString)) + 1;
-+        int sfn_len = strlen (tmp_folder_name) + sidebar_folder_depth*strlen (NONULL(SidebarIndentString)) + 1;
-         sidebar_folder_name = safe_malloc (sfn_len);
-         sidebar_folder_name[0]=0;
-         for (i=0; i < sidebar_folder_depth; i++)
-@@ -677,6 +716,12 @@ static void draw_sidebar (int first_row, int num_rows, int div_width)
+@@ -678,6 +716,12 @@ static void draw_sidebar (int first_row, int num_rows, int div_width)
          safe_strcat (sidebar_folder_name, sfn_len, tmp_folder_name);
        }
      }
@@ -5795,7 +6048,7 @@ index ea81e1e..d465491 100644
      char str[STRING];
      make_sidebar_entry (str, sizeof (str), w, sidebar_folder_name, entry);
      printw ("%s", str);
-@@ -725,6 +770,11 @@ void mutt_sb_draw (void)
+@@ -726,6 +770,11 @@ void mutt_sb_draw (void)
    /* if (OldVisible == 0) */
    /* 	mutt_buffy_check (1); we probably have bad or no numbers */
  
@@ -5807,7 +6060,7 @@ index ea81e1e..d465491 100644
  #ifdef USE_SLANG_CURSES
    int x = SLsmg_get_column();
    int y = SLsmg_get_row();
-@@ -746,7 +796,7 @@ void mutt_sb_draw (void)
+@@ -747,7 +796,7 @@ void mutt_sb_draw (void)
    if (div_width < 0)
      return;
  
@@ -5816,7 +6069,7 @@ index ea81e1e..d465491 100644
    {
      int w = MIN(COLS, (SidebarWidth - div_width));
      fill_empty_space (first_row, num_rows, w);
-@@ -946,7 +996,7 @@ void mutt_sb_set_buffystats (const CONTEXT *ctx)
+@@ -947,7 +996,7 @@ void mutt_sb_set_buffystats (const CONTEXT *ctx)
  {
    /* Even if the sidebar's hidden,
     * we should take note of the new data. */
@@ -5825,19 +6078,17 @@ index ea81e1e..d465491 100644
    if (!ctx || !b)
      return;
  
-@@ -1023,6 +1073,11 @@ void mutt_sb_notify_mailbox (BUFFY *b, int created)
+@@ -1024,6 +1073,9 @@ void mutt_sb_notify_mailbox (BUFFY *b, int created)
    if (!b)
      return;
  
 +  if (sidebar_source == SB_SRC_NONE)
 +    return;
 +
-+  dprint(1,(debugfile,"Mailbox: %s (%d)\n", b->path, created));
-+
    /* Any new/deleted mailboxes will cause a refresh.  As long as
     * they're valid, our pointers will be updated in prepare_sidebar() */
  
-@@ -1075,3 +1130,35 @@ void mutt_sb_notify_mailbox (BUFFY *b, int created)
+@@ -1076,3 +1128,35 @@ void mutt_sb_notify_mailbox (BUFFY *b, int created)
  
    SidebarNeedsRedraw = 1;
  }
@@ -5874,27 +6125,27 @@ index ea81e1e..d465491 100644
 +}
 +
 diff --git a/sidebar.h b/sidebar.h
-index f7875ea..f1ffcb1 100644
+index 78ec436..f1ffcb1 100644
 --- a/sidebar.h
 +++ b/sidebar.h
-@@ -29,6 +29,7 @@ const char * mutt_sb_get_highlight (void);
- void         mutt_sb_init (void);
+@@ -30,5 +30,6 @@ void         mutt_sb_init (void);
  void         mutt_sb_notify_mailbox (BUFFY *b, int created);
  void         mutt_sb_set_buffystats (const CONTEXT *ctx);
--BUFFY *      mutt_sb_set_open_buffy (void);
-+void         mutt_sb_set_open_buffy (void);
+ void         mutt_sb_set_open_buffy (void);
 +void         mutt_sb_toggle_virtual (void);
  
  #endif /* SIDEBAR_H */
 diff --git a/sort.h b/sort.h
-index 3727835..23dd91e 100644
+index 3727835..c969c09 100644
 --- a/sort.h
 +++ b/sort.h
-@@ -36,6 +36,7 @@
+@@ -35,7 +35,8 @@
+ #define SORT_COUNT_NEW	16
  #define SORT_FLAGGED	17
  #define SORT_PATH	18
- #define SORT_LABEL	19
-+#define SORT_DESC	20
+-#define SORT_LABEL	19
++#define SORT_DESC	19
++#define SORT_LABEL	20
  
  /* dgc: Sort & SortAux are shorts, so I'm bumping these bitflags up from
   * bits 4 & 5 to bits 8 & 9 to make room for more sort keys in the future. */
@@ -5985,21 +6236,21 @@ index 15ec9ce..d07150f 100644
  
  #endif
 diff --git a/version.c b/version.c
-index ac3c8ed..f67ae3c 100644
+index ac3c8ed..e7b4f21 100644
 --- a/version.c
 +++ b/version.c
-@@ -276,6 +276,11 @@ static struct compile_options comp_opts[] = {
+@@ -271,6 +271,11 @@ static struct compile_options comp_opts[] = {
  #else
- 	{ "USE_NNTP", 0 },
+ 	{ "USE_IMAP", 0 },
  #endif
 +#ifdef USE_NOTMUCH
 +	{ "USE_NOTMUCH", 1 },
 +#else
 +	{ "USE_NOTMUCH", 0 },
 +#endif
- #ifdef USE_POP
- 	{ "USE_POP", 1 },
+ #ifdef USE_NNTP
+ 	{ "USE_NNTP", 1 },
  #else
 -- 
-2.9.0
+2.7.4
 

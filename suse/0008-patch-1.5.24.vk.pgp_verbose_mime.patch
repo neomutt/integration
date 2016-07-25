@@ -1,24 +1,25 @@
-From 6e4590583534c4c852f6b6a9456a2142ff29cb65 Mon Sep 17 00:00:00 2001
+From 8c1b6ba94f7aa67d4933f7ef58f9b86adf31fff5 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 03:08:08 +0100
 Subject: [PATCH 08/12] patch-1.5.24.vk.pgp_verbose_mime
 
 ---
- PATCHES   |  1 +
+ PATCHES   |  2 ++
  globals.h |  2 ++
  init.h    | 12 ++++++++++++
  pgp.c     |  3 ++-
- 4 files changed, 17 insertions(+), 1 deletion(-)
+ 4 files changed, 18 insertions(+), 1 deletion(-)
 
 diff --git a/PATCHES b/PATCHES
-index dc063aa..0fbeede 100644
+index 9ea7e99..4e26687 100644
 --- a/PATCHES
 +++ b/PATCHES
-@@ -16,3 +16,4 @@ patch-limit-current-thread-neo-git
- patch-keywords-neo-git
- patch-nntp-neo-git
+@@ -19,3 +19,5 @@ patch-initials-neo-git
+ patch-ifdef-neo-git
+ patch-smime-encrypt-to-self-neo-git
  patch-1.5.9.aw.listreply.1
 +patch-1.5.3.vk.pgp_verbose_mime
++patch-1.5.9.aw.listreply.1
 diff --git a/globals.h b/globals.h
 index 336fa64..78952ad 100644
 --- a/globals.h
@@ -33,7 +34,7 @@ index 336fa64..78952ad 100644
  WHERE char *PgpDecodeCommand;
  WHERE char *PgpVerifyCommand;
 diff --git a/init.h b/init.h
-index a31d256..ef6aa03 100644
+index 71988ed..b28e777 100644
 --- a/init.h
 +++ b/init.h
 @@ -3210,6 +3210,18 @@ struct option_t MuttVars[] = {
@@ -70,5 +71,5 @@ index fb7be4c..0caff87 100644
    return (a);
  }
 -- 
-2.9.0
+2.7.4
 

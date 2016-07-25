@@ -1,14 +1,17 @@
-From f1cbf94a97af2f5658772038b9a01db0ac34c2be Mon Sep 17 00:00:00 2001
-From: Richard Russon <rich@flatcap.org>
-Date: Tue, 24 May 2016 17:12:45 +0100
+From c8c37ce730f6dc6687fe6e85741822b860005e8b Mon Sep 17 00:00:00 2001
+From: Terry Chan <tchan@lunar-linux.org>
+Date: Mon, 16 Nov 2015 20:39:28 +0000
 Subject: [PATCH 7/7] feature: sidebar
 
+Official Mutt-Sidebar patch against mutt-1.5.24
+http://www.lunar-linux.org/mutt-sidebar/
+http://lunar-linux.org/~tchan/mutt/patch-1.5.24.sidebar.20151111.txt
 ---
  Makefile.am         |    8 +-
  OPS.MIX             |   12 +-
  OPS.SIDEBAR         |    8 +
  PATCHES             |    1 +
- README.sidebar      |  145 +++++++
+ README.sidebar      |  143 +++++++
  addrbook.c          |    5 +-
  browser.c           |    8 +-
  buffy.c             |  214 +++++++---
@@ -21,10 +24,10 @@ Subject: [PATCH 7/7] feature: sidebar
  crypt-gpgme.c       |    7 +-
  curs_main.c         |   81 +++-
  doc/makedoc-defs.h  |    3 +
- doc/manual.xml.head | 1127 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ doc/manual.xml.head | 1093 +++++++++++++++++++++++++++++++++++++++++++++++++++
  doc/mutt.css        |   17 +-
  doc/muttrc.sidebar  |  116 ++++++
- doc/vimrc.sidebar   |   35 ++
+ doc/vimrc.sidebar   |   34 ++
  filter.c            |    2 +-
  flags.c             |    5 +
  functions.h         |   21 +
@@ -54,13 +57,13 @@ Subject: [PATCH 7/7] feature: sidebar
  query.c             |    9 +-
  recvattach.c        |    7 +-
  remailer.c          |    7 +-
- sidebar.c           | 1077 ++++++++++++++++++++++++++++++++++++++++++++++++
+ sidebar.c           | 1078 ++++++++++++++++++++++++++++++++++++++++++++++++++
  sidebar.h           |   34 ++
  smime.c             |    7 +-
  sort.h              |    6 +
  status.c            |   14 +-
  version.c           |    5 +
- 56 files changed, 3457 insertions(+), 226 deletions(-)
+ 56 files changed, 3421 insertions(+), 226 deletions(-)
  create mode 100644 OPS.SIDEBAR
  create mode 100644 README.sidebar
  create mode 100644 doc/muttrc.sidebar
@@ -135,20 +138,20 @@ index 0000000..7e5b504
 +OP_SIDEBAR_PREV_NEW "move the highlight to previous mailbox with new mail"
 +OP_SIDEBAR_TOGGLE_VISIBLE "make the sidebar (in)visible"
 diff --git a/PATCHES b/PATCHES
-index 7464b8d..a994654 100644
+index 3bf1049..2260cee 100644
 --- a/PATCHES
 +++ b/PATCHES
-@@ -4,3 +4,4 @@ patch-trash-neo-git
- patch-nested-if-neo-git
- patch-cond-date-neo-git
- patch-compress-neo-git
+@@ -1,3 +1,4 @@
 +patch-sidebar-neo-git
+ patch-compress-neo-git
+ patch-cond-date-neo-git
+ patch-nested-if-neo-git
 diff --git a/README.sidebar b/README.sidebar
 new file mode 100644
-index 0000000..53f56c1
+index 0000000..6ee820b
 --- /dev/null
 +++ b/README.sidebar
-@@ -0,0 +1,145 @@
+@@ -0,0 +1,143 @@
 +Sidebar Patch
 +=============
 +
@@ -173,7 +176,7 @@ index 0000000..53f56c1
 +    version.
 +
 +    Dependencies
-+    * mutt-1.6.1
++    * mutt-1.6.2
 +
 +Introduction
 +------------
@@ -185,30 +188,28 @@ index 0000000..53f56c1
 +    introduction with examples see the Sidebar Howto. If you just want to get
 +    started, you could use the sample Sidebar muttrc.
 +
-+    This version of Sidebar is based on Terry Chan's [2015-11-11
-+    release](http://www.lunar-linux.org/mutt-sidebar/). It contains many new
-+    features, lots of bugfixes.
-+
 +Variables
 +---------
 +
 +    Sidebar Variables
 +
-+    | Name                    | Type    | Default                     |
-+    |-------------------------|---------|-----------------------------|
-+    | 'sidebar_delim_chars'   | string  | '/.'                        |
-+    | 'sidebar_divider_char'  | string  | '|'                         |
-+    | 'sidebar_folder_indent' | boolean | 'no'                        |
-+    | 'sidebar_format'        | string  | '%B%?F? [%F]?%* %?N?%N/?%S' |
-+    | 'sidebar_indent_string' | string  | '  ' (two spaces)           |
-+    | 'sidebar_new_mail_only' | boolean | 'no'                        |
-+    | 'sidebar_next_new_wrap' | boolean | 'no'                        |
-+    | 'sidebar_refresh_time'  | number  | '60'                        |
-+    | 'sidebar_short_path'    | boolean | 'no'                        |
-+    | 'sidebar_sort_method'   | enum    | 'SORT_ORDER'                |
-+    | 'sidebar_visible'       | boolean | 'no'                        |
-+    | 'sidebar_whitelist'     | list    | (empty)                     |
-+    | 'sidebar_width'         | number  | '20'                        |
++    | Name                    | Type    | Default           |
++    |-------------------------|---------|-------------------|
++    | 'sidebar_delim_chars'   | string  | '/.'              |
++    | 'sidebar_divider_char'  | string  | '|'               |
++    | 'sidebar_folder_indent' | boolean | 'no'              |
++    | 'sidebar_format'        | string  | '%B%*  %n'        |
++    | 'sidebar_indent_string' | string  | '  ' (two spaces) |
++    | 'sidebar_new_mail_only' | boolean | 'no'              |
++    | 'sidebar_next_new_wrap' | boolean | 'no'              |
++    | 'sidebar_short_path'    | boolean | 'no'              |
++    | 'sidebar_sort_method'   | enum    | 'unsorted'        |
++    | 'sidebar_visible'       | boolean | 'no'              |
++    | 'sidebar_whitelist'     | list    | (empty)           |
++    | 'sidebar_width'         | number  | '20'              |
++
++    For more details, and examples, about the '$sidebar_format', see the
++    Sidebar Intro.
 +
 +Functions
 +---------
@@ -248,7 +249,7 @@ index 0000000..53f56c1
 +    | 'sidebar_new'       | default          | Mailboxes containing new mail                                    |
 +    | 'sidebar_spoolfile' | default          | Mailbox that receives incoming mail                              |
 +
-+    If the sidebar_indicator color isn't set, then the default Mutt indicator
++    If the 'sidebar_indicator' color isn't set, then the default Mutt indicator
 +    color will be used (the color used in the index panel).
 +
 +Sort
@@ -256,15 +257,15 @@ index 0000000..53f56c1
 +
 +    Sidebar Sort
 +
-+    | Sort       | Description                |
-+    |------------|----------------------------|
-+    | 'alpha'    | Alphabetically by path     |
-+    | 'count'    | Total number of messages   |
-+    | 'flagged'  | Number of flagged messages |
-+    | 'name'     | Alphabetically by path     |
-+    | 'new'      | Number of new messages     |
-+    | 'path'     | Alphabetically by path     |
-+    | 'unsorted' | Do not resort the paths    |
++    | Sort       | Description                      |
++    |------------|----------------------------------|
++    | 'alpha'    | Alphabetically by path           |
++    | 'count'    | Total number of messages         |
++    | 'flagged'  | Number of flagged messages       |
++    | 'name'     | Alphabetically by path           |
++    | 'new'      | Number of new messages           |
++    | 'path'     | Alphabetically by path           |
++    | 'unsorted' | Order of the 'mailboxes' command |
 +
 +See Also
 +--------
@@ -277,7 +278,7 @@ index 0000000..53f56c1
 +Known Bugs
 +----------
 +
-+    Unsorted isn't
++    None
 +
 +Credits
 +-------
@@ -1282,10 +1283,10 @@ index 8f1a349..ac6cd33 100644
 +# endif
  #endif
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index 571a452..f6e987e 100644
+index bbad120..df0d183 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
-@@ -405,6 +405,623 @@ <sect2 id="intro-browser">
+@@ -405,6 +405,602 @@ <sect2 id="intro-browser">
  
  </sect2>
  
@@ -1304,16 +1305,6 @@ index 571a452..f6e987e 100644
 +    <link linkend="sidebar-muttrc">Sidebar muttrc</link>.
 +  </para>
 +  <para>
-+    This version of Sidebar is based on Terry Chan's
-+    <ulink url="http://www.lunar-linux.org/mutt-sidebar/">2015-11-11 release</ulink>.
-+    It contains many
-+    <emphasis role="bold"><link linkend="intro-sidebar-features">new features</link></emphasis>,
-+    lots of
-+    <emphasis role="bold"><link linkend="intro-sidebar-bugfixes">bugfixes</link></emphasis>
-+    and a generous helping of
-+    <emphasis role="bold">new documentation</emphasis> which you are already reading.
-+  </para>
-+  <para>
 +    To check if Mutt supports <quote>Sidebar</quote>, look for the string
 +    <literal>+USE_SIDEBAR</literal> in the mutt version.
 +  </para>
@@ -1323,7 +1314,11 @@ index 571a452..f6e987e 100644
 +  <para>
 +    <emphasis role="bold">Let's turn on the Sidebar:</emphasis>
 +  </para>
-+  <screen>set sidebar_visible</screen>
++<screen>
++set sidebar_visible
++set sidebar_format = "%B%?F? [%F]?%* %?N?%N/?%S"
++set mail_check_stats
++</screen>
 +  <para>
 +    You will see something like this.
 +    A list of mailboxes on the left.
@@ -1402,11 +1397,13 @@ index 571a452..f6e987e 100644
 +                 |
 +</screen>
 +    <note>
-+      Functions <literal>&lt;sidebar-next&gt;</literal> and
-+      <literal>&lt;sidebar-prev&gt;</literal> move the Sidebar
-+      <emphasis role="bold">highlight</emphasis>.
-+      They <emphasis role="bold">do not</emphasis> change the open
-+      mailbox.
++      <para>
++        Functions <literal>&lt;sidebar-next&gt;</literal> and
++        <literal>&lt;sidebar-prev&gt;</literal> move the Sidebar
++        <emphasis role="bold">highlight</emphasis>.
++        They <emphasis role="bold">do not</emphasis> change the open
++        mailbox.
++      </para>
 +    </note>
 +    <para>
 +      Press <quote>Ctrl-Shift-O</quote>
@@ -1430,8 +1427,8 @@ index 571a452..f6e987e 100644
 +    <title>Features</title>
 +    <para>
 +      The Sidebar shows a list of mailboxes in a panel.
-+    <para>
 +    </para>
++    <para>
 +      Everything about the Sidebar can be configured.
 +    </para>
 +    <itemizedlist>
@@ -1447,7 +1444,6 @@ index 571a452..f6e987e 100644
 +    </itemizedlist>
 +    <itemizedlist>
 +    <title><link linkend="sidebar-sort">The order in which mailboxes are displayed</link></title>
-+    <title></title>
 +      <listitem><para>Unsorted (order of mailboxes commands)</para></listitem>
 +      <listitem><para>Sorted alphabetically</para></listitem>
 +      <listitem><para>Sorted by number of new mails</para></listitem>
@@ -1518,6 +1514,7 @@ index 571a452..f6e987e 100644
 +        including the section about <link linkend="formatstrings-conditionals">conditionals</link>.
 +      </para>
 +      <para>
++        The default value is <literal>%B%*  %n</literal>
 +        The default value is <literal>%B%?F? [%F]?%* %?N?%N/?%S</literal>
 +      </para>
 +      <itemizedlist>
@@ -1546,18 +1543,23 @@ index 571a452..f6e987e 100644
 +            </row>
 +            <row>
 +              <entry>%S</entry>
-+              <entry>*</entry>
++              <entry>* †</entry>
 +              <entry>Size of mailbox (total number of messages)</entry>
 +            </row>
 +            <row>
++              <entry>%F</entry>
++              <entry>* †</entry>
++              <entry>Number of Flagged messages in the mailbox</entry>
++            </row>
++            <row>
 +              <entry>%N</entry>
-+              <entry>*</entry>
++              <entry>* †</entry>
 +              <entry>Number of New messages in the mailbox</entry>
 +            </row>
 +            <row>
-+              <entry>%F</entry>
++              <entry>%n</entry>
 +              <entry>*</entry>
-+              <entry>Number of Flagged messages in the mailbox</entry>
++              <entry>If there's new mail, display <quote>N</quote>, otherwise nothing</entry>
 +            </row>
 +            <row>
 +              <entry>%!</entry>
@@ -1605,6 +1607,9 @@ index 571a452..f6e987e 100644
 +      </table>
 +      <para>
 +      * = Can be optionally printed if nonzero
++      </para>
++      <para>
++      † = To use this expandos, you must first: <screen>set mail_check_stats</screen>
 +      </para>
 +      <para>
 +      ‡ = Only applicable to the current folder
@@ -1824,27 +1829,6 @@ index 571a452..f6e987e 100644
 +      </tgroup>
 +    </table>
 +  </sect3>
-+  <sect3 id="intro-sidebar-bugfixes">
-+    <title>Bug-fixes</title>
-+    <para>
-+      If you haven't used Sidebar before, you can ignore this section.
-+    </para>
-+    <para>
-+      These bugs have been fixed since the previous Sidebar release: 2015-11-11.
-+    </para>
-+    <itemizedlist>
-+      <listitem><para>Fix bug when starting in compose mode</para></listitem>
-+      <listitem><para>Fix bug with empty sidebar_divider_char string</para></listitem>
-+      <listitem><para>Fix bug with header wrapping</para></listitem>
-+      <listitem><para>Correctly handle utf8 character sequences</para></listitem>
-+      <listitem><para>Fix a bug in mh_buffy_update</para></listitem>
-+      <listitem><para>Fix refresh -- time overflowed short</para></listitem>
-+      <listitem><para>Protect against empty format strings</para></listitem>
-+      <listitem><para>Limit Sidebar width to COLS</para></listitem>
-+      <listitem><para>Handle unmailboxes * safely</para></listitem>
-+      <listitem><para>Refresh Sidebar after timeout</para></listitem>
-+    </itemizedlist>
-+  </sect3>
 +  <sect3 id="intro-sidebar-config-changes">
 +    <title>Config Changes</title>
 +    <para>
@@ -1881,10 +1865,6 @@ index 571a452..f6e987e 100644
 +            <entry><literal>$sidebar_new_mail_only</literal></entry>
 +          </row>
 +          <row>
-+            <entry><literal>$sidebar_refresh</literal></entry>
-+            <entry><literal>$sidebar_refresh_time</literal></entry>
-+          </row>
-+          <row>
 +            <entry><literal>$sidebar_shortpath</literal></entry>
 +            <entry><literal>$sidebar_short_path</literal></entry>
 +          </row>
@@ -1909,7 +1889,7 @@ index 571a452..f6e987e 100644
  <sect2 id="intro-help">
  <title>Help</title>
  
-@@ -6113,6 +6730,14 @@ <sect2 id="new-mail-formats">
+@@ -6113,6 +6709,14 @@ <sect2 id="new-mail-formats">
  IDLE extension if advertised by the server.
  </para>
  
@@ -1924,7 +1904,7 @@ index 571a452..f6e987e 100644
  </sect2>
  
  <sect2 id="new-mail-polling">
-@@ -6161,6 +6786,26 @@ <sect2 id="new-mail-polling">
+@@ -6161,6 +6765,26 @@ <sect2 id="new-mail-polling">
  
  </sect2>
  
@@ -1951,26 +1931,8 @@ index 571a452..f6e987e 100644
  </sect1>
  
  <sect1 id="editing-threads">
-@@ -6835,6 +7480,17 @@ <sect3 id="optional-mailcap-fields">
- </screen>
- 
- <para>
-+Mutt will set the <literal>COLUMNS</literal> environment variable to
-+the width of the pager.  Some programs make use of this environment
-+variable automatically.  Others provide a command line argument that
-+can use this to set the output width:
-+</para>
-+
-+<screen>
-+text/html; lynx -dump -width ${COLUMNS:-80} %s; copiousoutput
-+</screen>
-+
-+<para>
- Note that when using the built-in pager, <emphasis>only</emphasis>
- entries with this flag will be considered a handler for a MIME type
- &mdash; all other entries will be ignored.
-@@ -9440,6 +10096,466 @@ <sect1 id="nested-if">
- 	</sect2>
+@@ -9446,6 +10070,464 @@ <sect1 id="nested-if">
+   </sect2>
  </sect1>
  
 +<sect1 id="sidebar">
@@ -1988,7 +1950,7 @@ index 571a452..f6e987e 100644
 +
 +    <itemizedlist>
 +      <title>Dependencies:</title>
-+      <listitem><para>mutt-1.6.1</para></listitem>
++      <listitem><para>mutt-1.6.2</para></listitem>
 +    </itemizedlist>
 +
 +    <para>This patch is part of the <ulink url="http://www.neomutt.org/">NeoMutt Project</ulink>.</para>
@@ -2010,15 +1972,6 @@ index 571a452..f6e987e 100644
 +      If you just want to get started, you could use the sample
 +      <link linkend="sidebar-muttrc">Sidebar muttrc</link>.
 +    </para>
-+
-+    <para>
-+      This version of Sidebar is based on Terry Chan's
-+      <ulink url="http://www.lunar-linux.org/mutt-sidebar/">2015-11-11 release</ulink>.
-+      It contains many
-+      <emphasis role="bold"><link linkend="intro-sidebar-features">new features</link></emphasis>,
-+      lots of
-+      <emphasis role="bold"><link linkend="intro-sidebar-bugfixes">bugfixes</link></emphasis>.
-+    </para>
 +  </sect2>
 +
 +  <sect2 id="sidebar-variables">
@@ -2027,77 +1980,82 @@ index 571a452..f6e987e 100644
 +    <table id="table-sidebar-variables">
 +      <title>Sidebar Variables</title>
 +      <tgroup cols="3">
-+	<thead>
-+	  <row>
-+	    <entry>Name</entry>
-+	    <entry>Type</entry>
-+	    <entry>Default</entry>
-+	  </row>
-+	</thead>
-+	<tbody>
-+	  <row>
-+	    <entry><literal>sidebar_delim_chars</literal></entry>
-+	    <entry>string</entry>
-+	    <entry><literal>/.</literal></entry>
-+	  </row>
-+	  <row>
-+	    <entry><literal>sidebar_divider_char</literal></entry>
-+	    <entry>string</entry>
-+	    <entry><literal>|</literal></entry>
-+	  </row>
-+	  <row>
-+	    <entry><literal>sidebar_folder_indent</literal></entry>
-+	    <entry>boolean</entry>
-+	    <entry><literal>no</literal></entry>
-+	  </row>
-+	  <row>
-+	    <entry><literal>sidebar_format</literal></entry>
-+	    <entry>string</entry>
-+	    <entry><literal>%B%*  %n</literal></entry>
-+	  </row>
-+	  <row>
-+	    <entry><literal>sidebar_indent_string</literal></entry>
-+	    <entry>string</entry>
-+	    <entry><literal>&nbsp;&nbsp;</literal> (two spaces)</entry>
-+	  </row>
-+	  <row>
-+	    <entry><literal>sidebar_new_mail_only</literal></entry>
-+	    <entry>boolean</entry>
-+	    <entry><literal>no</literal></entry>
-+	  </row>
-+	  <row>
-+	    <entry><literal>sidebar_next_new_wrap</literal></entry>
-+	    <entry>boolean</entry>
-+	    <entry><literal>no</literal></entry>
-+	  </row>
-+	  <row>
-+	    <entry><literal>sidebar_short_path</literal></entry>
-+	    <entry>boolean</entry>
-+	    <entry><literal>no</literal></entry>
-+	  </row>
-+	  <row>
-+	    <entry><literal>sidebar_sort_method</literal></entry>
-+	    <entry>enum</entry>
-+	    <entry><literal>unsorted</literal></entry>
-+	  </row>
-+	  <row>
-+	    <entry><literal>sidebar_visible</literal></entry>
-+	    <entry>boolean</entry>
-+	    <entry><literal>no</literal></entry>
-+	  </row>
-+	  <row>
-+	    <entry><literal>sidebar_whitelist</literal></entry>
-+	    <entry>list</entry>
-+	    <entry>(empty)</entry>
-+	  </row>
-+	  <row>
-+	    <entry><literal>sidebar_width</literal></entry>
-+	    <entry>number</entry>
-+	    <entry><literal>20</literal></entry>
-+	  </row>
-+	</tbody>
++        <thead>
++          <row>
++            <entry>Name</entry>
++            <entry>Type</entry>
++            <entry>Default</entry>
++          </row>
++        </thead>
++        <tbody>
++          <row>
++            <entry><literal>sidebar_delim_chars</literal></entry>
++            <entry>string</entry>
++            <entry><literal>/.</literal></entry>
++          </row>
++          <row>
++            <entry><literal>sidebar_divider_char</literal></entry>
++            <entry>string</entry>
++            <entry><literal>|</literal></entry>
++          </row>
++          <row>
++            <entry><literal>sidebar_folder_indent</literal></entry>
++            <entry>boolean</entry>
++            <entry><literal>no</literal></entry>
++          </row>
++          <row>
++            <entry><literal>sidebar_format</literal></entry>
++            <entry>string</entry>
++            <entry><literal>%B%*  %n</literal></entry>
++          </row>
++          <row>
++            <entry><literal>sidebar_indent_string</literal></entry>
++            <entry>string</entry>
++            <entry><literal>&nbsp;&nbsp;</literal> (two spaces)</entry>
++          </row>
++          <row>
++            <entry><literal>sidebar_new_mail_only</literal></entry>
++            <entry>boolean</entry>
++            <entry><literal>no</literal></entry>
++          </row>
++          <row>
++            <entry><literal>sidebar_next_new_wrap</literal></entry>
++            <entry>boolean</entry>
++            <entry><literal>no</literal></entry>
++          </row>
++          <row>
++            <entry><literal>sidebar_short_path</literal></entry>
++            <entry>boolean</entry>
++            <entry><literal>no</literal></entry>
++          </row>
++          <row>
++            <entry><literal>sidebar_sort_method</literal></entry>
++            <entry>enum</entry>
++            <entry><literal>unsorted</literal></entry>
++          </row>
++          <row>
++            <entry><literal>sidebar_visible</literal></entry>
++            <entry>boolean</entry>
++            <entry><literal>no</literal></entry>
++          </row>
++          <row>
++            <entry><literal>sidebar_whitelist</literal></entry>
++            <entry>list</entry>
++            <entry>(empty)</entry>
++          </row>
++          <row>
++            <entry><literal>sidebar_width</literal></entry>
++            <entry>number</entry>
++            <entry><literal>20</literal></entry>
++          </row>
++        </tbody>
 +      </tgroup>
 +    </table>
++  <para>
++    For more details, and examples, about the <literal>$sidebar_format</literal>,
++    see the <link linkend="intro-sidebar-format">Sidebar Intro</link>.
++  </para>
++
 +  </sect2>
 +
 +  <sect2 id="sidebar-functions">
@@ -2270,7 +2228,7 @@ index 571a452..f6e987e 100644
 +          </row>
 +          <row>
 +            <entry><literal>unsorted</literal></entry>
-+            <entry>Do not resort the paths</entry>
++            <entry>Order of the <literal>mailboxes</literal> command</entry>
 +          </row>
 +        </tbody>
 +      </tgroup>
@@ -2326,18 +2284,18 @@ index 571a452..f6e987e 100644
 +set sidebar_divider_char = '|'
 + 
 +<emphasis role="comment"># Display the Sidebar mailboxes using this format string.</emphasis>
-+set sidebar_format = '%B%?F? [%F]?%* %?N?%N/?%S'
++set sidebar_format = '%B%*  %n'
 + 
-+<emphasis role="comment"># Sidebar will not refresh its list of mailboxes any more frequently than
-+# this number of seconds.  This will help reduce disk/network traffic.</emphasis>
-+set sidebar_refresh_time = 60
++<emphasis role="comment"># If you want to display more information, this is a useful format:</emphasis>
++set mail_check_stats
++set sidebar_format = '%B%?F? [%F]?%* %?N?%N/?%S'
 + 
 +<emphasis role="comment"># Sort the mailboxes in the Sidebar using this method:
 +#       count    - total number of messages
 +#       flagged  - number of flagged messages
 +#       new      - number of new messages
 +#       path     - mailbox path
-+#       unsorted - do not sort the mailboxes</emphasis>
++#       unsorted - order of the mailboxes command</emphasis>
 +set sidebar_sort_method = 'unsorted'
 + 
 +<emphasis role="comment"># --------------------------------------------------------------------------
@@ -2412,7 +2370,9 @@ index 571a452..f6e987e 100644
 +
 +  <sect2 id="sidebar-known-bugs">
 +    <title>Known Bugs</title>
-+    Unsorted isn't
++    <para>
++      None
++    </para>
 +  </sect2>
 +
 +  <sect2 id="sidebar-credits">
@@ -2434,9 +2394,9 @@ index 571a452..f6e987e 100644
 +</sect1>
 +
  <sect1 id="trash-folder">
- 	<title>Trash Folder Patch</title>
- 	<subtitle>Automatically move "deleted" emails to a trash bin</subtitle>
-@@ -10813,6 +11929,17 @@ <sect1 id="commands">
+   <title>Trash Folder Patch</title>
+   <subtitle>Automatically move <quote>deleted</quote> emails to a trash bin</subtitle>
+@@ -10823,6 +11905,17 @@ <sect1 id="commands">
  
  <listitem>
  <cmdsynopsis>
@@ -2612,20 +2572,19 @@ index 0000000..f21db26
 +# vim: syntax=muttrc
 diff --git a/doc/vimrc.sidebar b/doc/vimrc.sidebar
 new file mode 100644
-index 0000000..c5be50d
+index 0000000..ac1efc4
 --- /dev/null
 +++ b/doc/vimrc.sidebar
-@@ -0,0 +1,35 @@
+@@ -0,0 +1,34 @@
 +" Vim syntax file for the mutt sidebar patch
 +
-+syntax keyword muttrcVarBool    skipwhite contained sidebar_folder_indent nextgroup=muttrcSetBoolAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
-+syntax keyword muttrcVarBool    skipwhite contained sidebar_new_mail_only nextgroup=muttrcSetBoolAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
-+syntax keyword muttrcVarBool    skipwhite contained sidebar_next_new_wrap nextgroup=muttrcSetBoolAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
-+syntax keyword muttrcVarBool    skipwhite contained sidebar_short_path    nextgroup=muttrcSetBoolAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
-+syntax keyword muttrcVarBool    skipwhite contained sidebar_visible       nextgroup=muttrcSetBoolAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
++syntax keyword muttrcVarBool    contained skipwhite sidebar_folder_indent nextgroup=muttrcSetBoolAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
++syntax keyword muttrcVarBool    contained skipwhite sidebar_new_mail_only nextgroup=muttrcSetBoolAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
++syntax keyword muttrcVarBool    contained skipwhite sidebar_next_new_wrap nextgroup=muttrcSetBoolAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
++syntax keyword muttrcVarBool    contained skipwhite sidebar_short_path    nextgroup=muttrcSetBoolAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
++syntax keyword muttrcVarBool    contained skipwhite sidebar_visible       nextgroup=muttrcSetBoolAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
 +
-+syntax keyword muttrcVarNum     skipwhite contained sidebar_refresh_time  nextgroup=muttrcSetNumAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
-+syntax keyword muttrcVarNum     skipwhite contained sidebar_width         nextgroup=muttrcSetNumAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
++syntax keyword muttrcVarNum     contained skipwhite sidebar_width         nextgroup=muttrcSetNumAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
 +
 +syntax keyword muttrcVarStr     contained skipwhite sidebar_divider_char  nextgroup=muttrcVarEqualsIdxFmt
 +syntax keyword muttrcVarStr     contained skipwhite sidebar_delim_chars   nextgroup=muttrcVarEqualsIdxFmt
@@ -3173,19 +3132,19 @@ index 2b2c9a1..8ffcbce 100644
  /* mx_open_new_message() */
  #define M_ADD_FROM	(1<<0)	/* add a From_ line */
 diff --git a/main.c b/main.c
-index e348ca1..5e6b597 100644
+index e348ca1..3c0f408 100644
 --- a/main.c
 +++ b/main.c
-@@ -32,6 +32,9 @@
+@@ -31,6 +31,9 @@
+ #include "url.h"
  #include "mutt_crypt.h"
  #include "mutt_idna.h"
- #include "version.h"
 +#ifdef USE_SIDEBAR
 +#include "sidebar.h"
 +#endif
+ #include "version.h"
  
  #ifdef USE_SASL
- #include "mutt_sasl.h"
 @@ -432,6 +435,9 @@ int main (int argc, char **argv)
      clear ();
      mutt_error = mutt_curses_error;
@@ -3227,7 +3186,7 @@ index 8048f39..abdd0b4 100644
  #ifdef NFS_ATTRIBUTE_HACK
    if (sb.st_mtime > sb.st_atime)
 diff --git a/menu.c b/menu.c
-index 828df9c..729200e 100644
+index 828df9c..b01a1b7 100644
 --- a/menu.c
 +++ b/menu.c
 @@ -24,6 +24,9 @@
@@ -3325,7 +3284,7 @@ index 828df9c..729200e 100644
      menu_pad_string (buf, sizeof (buf));
      SETCOLOR(MT_COLOR_INDICATOR);
 -    move(menu->current - menu->top + menu->offset, 0);
-+    move(menu->current - menu->top + menu->offset, SidebarWidth);
++    move (menu->current - menu->top + menu->offset, SidebarWidth);
      print_enriched_string (menu->color(menu->current), (unsigned char *) buf, 0);
    }
    menu->redraw &= REDRAW_STATUS;
@@ -4218,10 +4177,10 @@ index fe9c7f2..3f665af 100644
  
 diff --git a/sidebar.c b/sidebar.c
 new file mode 100644
-index 0000000..ea81e1e
+index 0000000..4cb2101
 --- /dev/null
 +++ b/sidebar.c
-@@ -0,0 +1,1077 @@
+@@ -0,0 +1,1078 @@
 +/* Copyright (C) 2004 Justin Hibbits <jrh29@po.cwru.edu>
 + * Copyright (C) 2004 Thomer M. Gil <mutt@thomer.com>
 + * Copyright (C) 2015-2016 Richard Russon <rich@flatcap.org>
@@ -4654,6 +4613,7 @@ index 0000000..ea81e1e
 +  return 1;
 +}
 +
++
 +/**
 + * visible - Should we display the sidebar?
 + *
@@ -4893,7 +4853,7 @@ index 0000000..ea81e1e
 +        if (option (OPTSIDEBARSHORTPATH))
 +          tmp_folder_name += lastsep;  /* basename */
 +        sidebar_folder_name = malloc (strlen (tmp_folder_name) + sidebar_folder_depth*strlen (NONULL(SidebarIndentString)) + 1);
-+                                 int sfn_len = strlen (tmp_folder_name) + sidebar_folder_depth*strlen (NONULL(SidebarIndentString)) + 1;
++        int sfn_len = strlen (tmp_folder_name) + sidebar_folder_depth*strlen (NONULL(SidebarIndentString)) + 1;
 +        sidebar_folder_name = safe_malloc (sfn_len);
 +        sidebar_folder_name[0]=0;
 +        for (i=0; i < sidebar_folder_depth; i++)
@@ -5301,7 +5261,7 @@ index 0000000..ea81e1e
 +}
 diff --git a/sidebar.h b/sidebar.h
 new file mode 100644
-index 0000000..f7875ea
+index 0000000..78ec436
 --- /dev/null
 +++ b/sidebar.h
 @@ -0,0 +1,34 @@
@@ -5336,7 +5296,7 @@ index 0000000..f7875ea
 +void         mutt_sb_init (void);
 +void         mutt_sb_notify_mailbox (BUFFY *b, int created);
 +void         mutt_sb_set_buffystats (const CONTEXT *ctx);
-+BUFFY *      mutt_sb_set_open_buffy (void);
++void         mutt_sb_set_open_buffy (void);
 +
 +#endif /* SIDEBAR_H */
 diff --git a/smime.c b/smime.c
@@ -5461,5 +5421,5 @@ index d586aad..a0cd472 100644
  	{ "USE_SMTP", 1 },
  #else
 -- 
-2.9.0
+2.7.4
 

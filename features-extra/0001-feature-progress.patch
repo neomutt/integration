@@ -1,0 +1,356 @@
+From b77b04fc0a6d0eabf83cf07b63bd5fb855b0e089 Mon Sep 17 00:00:00 2001
+From: Stefan Kuhn <wuodan@hispeed.ch>
+Date: Sat, 30 Jan 2016 16:13:53 +0000
+Subject: [PATCH 01/14] feature: progress
+
+Show a visual progress bar on slow operations
+---
+ PATCHES             |   1 +
+ README.progress     |  49 +++++++++++++++++++++
+ color.c             |   1 +
+ curs_lib.c          |  57 ++++++++++++++++++++++---
+ doc/manual.xml.head | 120 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ doc/muttrc.progress |  10 +++++
+ doc/vimrc.progress  |   5 +++
+ mutt_curses.h       |   1 +
+ 8 files changed, 239 insertions(+), 5 deletions(-)
+ create mode 100644 README.progress
+ create mode 100644 doc/muttrc.progress
+ create mode 100644 doc/vimrc.progress
+
+diff --git a/PATCHES b/PATCHES
+index 2260cee..58ef6c9 100644
+--- a/PATCHES
++++ b/PATCHES
+@@ -1,3 +1,4 @@
++patch-progress-neo-git
+ patch-sidebar-neo-git
+ patch-compress-neo-git
+ patch-cond-date-neo-git
+diff --git a/README.progress b/README.progress
+new file mode 100644
+index 0000000..ff12be2
+--- /dev/null
++++ b/README.progress
+@@ -0,0 +1,49 @@
++Progress Bar Patch
++==================
++
++    Show a visual progress bar on slow operations
++
++Patch
++-----
++
++    To check if Mutt supports "Progress Bar", look for "patch-progress" in the
++    mutt version.
++
++    Dependencies
++    * mutt-1.6.2
++
++Introduction
++------------
++
++    The "progress" patch shows a visual progress bar on slow tasks, such as
++    indexing a large folder over the net.
++
++Colors
++------
++
++    Progress Colors
++
++    | Name       | Default Color | Description         |
++    |------------|---------------|---------------------|
++    | 'progress' | default       | Visual progress bar |
++
++See Also
++--------
++
++    * NeoMutt project
++    * Color command
++
++Known Bugs
++----------
++
++    None
++
++Credits
++-------
++
++    * Rocco Rutte <pdmef@gmx.net>
++    * Vincent Lefevre <vincent@vinc17.org>
++    * Stefan Kuhn <wuodan@hispeed.ch>
++    * Karel Zak <kzak@redhat.com>
++    * Richard Russon <rich@flatcap.org>
++
+diff --git a/color.c b/color.c
+index b542ffd..e2ff989 100644
+--- a/color.c
++++ b/color.c
+@@ -93,6 +93,7 @@ static const struct mapping_t Fields[] =
+   { "bold",		MT_COLOR_BOLD },
+   { "underline",	MT_COLOR_UNDERLINE },
+   { "index",		MT_COLOR_INDEX },
++  { "progress",		MT_COLOR_PROGRESS },
+   { "prompt",		MT_COLOR_PROMPT },
+ #ifdef USE_SIDEBAR
+   { "sidebar_divider",	MT_COLOR_DIVIDER },
+diff --git a/curs_lib.c b/curs_lib.c
+index 3178f22..1ab6d2d 100644
+--- a/curs_lib.c
++++ b/curs_lib.c
+@@ -411,6 +411,53 @@ void mutt_progress_init (progress_t* progress, const char *msg,
+   mutt_progress_update (progress, 0, 0);
+ }
+ 
++/**
++ * message_bar - XXX
++ */
++static void
++message_bar (int percent, const char *fmt, ...)
++{
++	va_list ap;
++	char buf[STRING], buf2[STRING];
++	int w = percent * COLS / 100;
++	size_t l;
++
++	va_start (ap, fmt);
++	vsnprintf (buf, sizeof (buf), fmt, ap);
++	l = mutt_strwidth (buf);
++	va_end (ap);
++
++	mutt_format_string (buf2, sizeof (buf2), 0, COLS-2, FMT_LEFT, 0, buf, sizeof (buf), 0);
++
++	move (LINES - 1, 0);
++
++	if (l < w) {
++		SETCOLOR(MT_COLOR_PROGRESS);
++		addstr (buf2);
++		w -= l;
++		while (w--) {
++			addch (' ');
++		}
++		SETCOLOR(MT_COLOR_NORMAL);
++		clrtoeol();
++		mutt_refresh();
++	} else {
++		size_t bw;
++		char ch;
++		int off = mutt_wstr_trunc (buf2, sizeof (buf2), w, &bw);
++
++		ch = buf2[off];
++		buf2[off] = 0;
++		SETCOLOR(MT_COLOR_PROGRESS);
++		addstr (buf2);
++		buf2[off] = ch;
++		SETCOLOR(MT_COLOR_NORMAL);
++		addstr (&buf2[off]);
++		clrtoeol();
++		mutt_refresh();
++	}
++}
++
+ void mutt_progress_update (progress_t* progress, long pos, int percent)
+ {
+   char posstr[SHORT_STRING];
+@@ -461,16 +508,16 @@ void mutt_progress_update (progress_t* progress, long pos, int percent)
+ 
+     if (progress->size > 0)
+     {
+-      mutt_message ("%s %s/%s (%d%%)", progress->msg, posstr, progress->sizestr,
+-		    percent > 0 ? percent :
+-		   	(int) (100.0 * (double) progress->pos / progress->size));
++      message_bar ((percent > 0) ? percent : (int) (100.0 * (double) progress->pos / progress->size),
++        "%s %s/%s (%d%%)", progress->msg, posstr, progress->sizestr,
++        (percent > 0) ? percent : (int) (100.0 * (double) progress->pos / progress->size));
+     }
+     else
+     {
+       if (percent > 0)
+-	mutt_message ("%s %s (%d%%)", progress->msg, posstr, percent);
++        message_bar (percent, "%s %s (%d%%)", progress->msg, posstr, percent);
+       else
+-	mutt_message ("%s %s", progress->msg, posstr);
++        mutt_message ("%s %s", progress->msg, posstr);
+     }
+   }
+ 
+diff --git a/doc/manual.xml.head b/doc/manual.xml.head
+index df0d183..0bde796 100644
+--- a/doc/manual.xml.head
++++ b/doc/manual.xml.head
+@@ -3302,6 +3302,7 @@ <sect1 id="color">
+ <listitem><para>markers (the <quote>+</quote> markers at the beginning of wrapped lines in the pager)</para></listitem>
+ <listitem><para>message (informational messages)</para></listitem>
+ <listitem><para>normal</para></listitem>
++<listitem><para><link linkend="progress">progress</link> (visual progress bar)</para></listitem>
+ <listitem><para>prompt</para></listitem>
+ <listitem><para>quoted (text matching <link linkend="quote-regexp">$quote_regexp</link> in the body of a message)</para></listitem>
+ <listitem><para>quoted1, quoted2, ..., quoted<emphasis>N</emphasis> (higher levels of quoting)</para></listitem>
+@@ -10070,6 +10071,125 @@ <sect1 id="nested-if">
+   </sect2>
+ </sect1>
+ 
++<sect1 id="progress">
++  <title>Progress Bar Patch</title>
++  <subtitle>Show a visual progress bar on slow operations</subtitle>
++
++  <sect2 id="progress-patch">
++    <title>Patch</title>
++
++    <para>
++      To check if Mutt supports <quote>Progress Bar</quote>, look for
++      <quote>patch-progress</quote> in the mutt version.
++      See: <xref linkend="mutt-patches"/>.
++    </para>
++
++    <itemizedlist>
++      <title>Dependencies:</title>
++      <listitem><para>mutt-1.6.2</para></listitem>
++    </itemizedlist>
++
++    <para>This patch is part of the <ulink url="http://www.neomutt.org/">NeoMutt Project</ulink>.</para>
++  </sect2>
++
++  <sect2 id="progress-intro">
++    <title>Introduction</title>
++
++        <para>
++    The <quote>progress</quote> patch shows a visual progress bar on slow
++    tasks, such as indexing a large folder over the net.
++        </para>
++  </sect2>
++
++<!--
++  <sect2 id="progress-variables">
++    <title>Variables</title>
++    <para>None</para>
++  </sect2>
++
++  <sect2 id="progress-functions">
++    <title>Functions</title>
++    <para>None</para>
++  </sect2>
++
++  <sect2 id="progress-commands">
++    <title>Commands</title>
++    <para>None</para>
++  </sect2>
++-->
++
++  <sect2 id="progress-colors">
++    <title>Colors</title>
++    <table id="table-progress-colors">
++      <title>Progress Colors</title>
++      <tgroup cols="3">
++        <thead>
++          <row>
++            <entry>Name</entry>
++            <entry>Default Color</entry>
++            <entry>Description</entry>
++          </row>
++        </thead>
++        <tbody>
++          <row>
++            <entry><literal>progress</literal></entry>
++            <entry>default</entry>
++            <entry>Visual progress bar</entry>
++          </row>
++        </tbody>
++      </tgroup>
++    </table>
++  </sect2>
++
++<!--
++  <sect2 id="progress-sort">
++    <title>Sort</title>
++    <para>None</para>
++  </sect2>
++-->
++
++  <sect2 id="progress-muttrc">
++    <title>Muttrc</title>
++<screen>
++<emphasis role="comment"># Example Mutt config file for the 'progress' patch.
++ 
++# The 'progress' patch provides clear visual feedback for
++# slow tasks, such as indexing a large folder over the net.
++ 
++# Set the color of the progress bar
++# White text on a red background</emphasis>
++color progress white red
++ 
++<emphasis role="comment"># vim: syntax=muttrc</emphasis>
++</screen>
++  </sect2>
++
++  <sect2 id="progress-see-also">
++    <title>See Also</title>
++
++    <itemizedlist>
++      <listitem><para><ulink url="http://www.neomutt.org/">NeoMutt Project</ulink></para></listitem>
++      <listitem><para><link linkend="color">Color command</link></para></listitem>
++    </itemizedlist>
++  </sect2>
++
++  <sect2 id="progress-known-bugs">
++    <title>Known Bugs</title>
++    <para>None</para>
++  </sect2>
++
++  <sect2 id="progress-credits">
++    <title>Credits</title>
++    <itemizedlist>
++    <listitem><para>Rocco Rutte <email>pdmef@gmx.net</email></para></listitem>
++    <listitem><para>Vincent Lefevre <email>vincent@vinc17.org</email></para></listitem>
++    <listitem><para>Stefan Kuhn <email>wuodan@hispeed.ch</email></para></listitem>
++    <listitem><para>Karel Zak <email>kzak@redhat.com</email></para></listitem>
++    <listitem><para>Richard Russon <email>rich@flatcap.org</email></para></listitem>
++    </itemizedlist>
++  </sect2>
++</sect1>
++
+ <sect1 id="sidebar">
+   <title>Sidebar Patch</title>
+   <subtitle>Overview of mailboxes</subtitle>
+diff --git a/doc/muttrc.progress b/doc/muttrc.progress
+new file mode 100644
+index 0000000..7efe45c
+--- /dev/null
++++ b/doc/muttrc.progress
+@@ -0,0 +1,10 @@
++# Example Mutt config file for the 'progress' patch.
++
++# The 'progress' patch provides clear visual feedback for
++# slow tasks, such as indexing a large folder over the net.
++
++# Set the color of the progress bar
++# White text on a red background
++color progress white red
++
++# vim: syntax=muttrc
+diff --git a/doc/vimrc.progress b/doc/vimrc.progress
+new file mode 100644
+index 0000000..a632dc0
+--- /dev/null
++++ b/doc/vimrc.progress
+@@ -0,0 +1,5 @@
++" Vim syntax file for the mutt progress patch
++
++syntax keyword muttrcColorField contained progress
++
++" vim: syntax=vim
+diff --git a/mutt_curses.h b/mutt_curses.h
+index 2bfa1ae..6f730a9 100644
+--- a/mutt_curses.h
++++ b/mutt_curses.h
+@@ -127,6 +127,7 @@ enum
+   MT_COLOR_UNDERLINE,
+   MT_COLOR_INDEX,
+   MT_COLOR_PROMPT,
++  MT_COLOR_PROGRESS,
+ #ifdef USE_SIDEBAR
+   MT_COLOR_DIVIDER,
+   MT_COLOR_FLAGGED,
+-- 
+2.7.4
+

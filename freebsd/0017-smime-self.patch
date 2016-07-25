@@ -1,4 +1,4 @@
-From e98030d47da0dec72ddd66a4e6d1676beb4d2707 Mon Sep 17 00:00:00 2001
+From 761a643e5cb0215e5ccd069f922d82a531af7b4c Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 15:23:10 +0100
 Subject: [PATCH 17/21] smime-self
@@ -82,5 +82,5 @@ index b252564..1e67ac7 100644
    OPT_MIMEFWD,
    OPT_MIMEFWDREST,
 -- 
-2.9.0
+2.7.4
 

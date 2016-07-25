@@ -1,0 +1,276 @@
+From 0f94a135e438964585330e544556a139e81c22f8 Mon Sep 17 00:00:00 2001
+From: Tim Stoakes <tim@stoakes.net>
+Date: Sun, 16 Sep 2012 09:31:54 +0200
+Subject: [PATCH 06/12] Add browser sort by description, message count and new
+ message count
+
+Now the browser can sort by mail folder description, (all) message count, and
+new message count.
+---
+ browser.c | 98 ++++++++++++++++++++++++++++++++++++++++++++++++++-------------
+ browser.h |  2 ++
+ init.h    |  6 ++++
+ 3 files changed, 86 insertions(+), 20 deletions(-)
+
+diff --git a/browser.c b/browser.c
+index 90765f0..875101b 100644
+--- a/browser.c
++++ b/browser.c
+@@ -106,6 +106,16 @@ static int browser_compare_subject (const void *a, const void *b)
+   return ((BrowserSort & SORT_REVERSE) ? -r : r);
+ }
+ 
++static int browser_compare_desc (const void *a, const void *b)
++{
++  struct folder_file *pa = (struct folder_file *) a;
++  struct folder_file *pb = (struct folder_file *) b;
++
++  int r = mutt_strcoll (pa->desc, pb->desc);
++
++  return ((BrowserSort & SORT_REVERSE) ? -r : r);
++}
++
+ static int browser_compare_date (const void *a, const void *b)
+ {
+   struct folder_file *pa = (struct folder_file *) a;
+@@ -126,6 +136,26 @@ static int browser_compare_size (const void *a, const void *b)
+   return ((BrowserSort & SORT_REVERSE) ? -r : r);
+ }
+ 
++static int browser_compare_count (const void *a, const void *b)
++{
++  struct folder_file *pa = (struct folder_file *) a;
++  struct folder_file *pb = (struct folder_file *) b;
++
++  int r = pa->all - pb->all;
++
++  return ((BrowserSort & SORT_REVERSE) ? -r : r);
++}
++
++static int browser_compare_count_new (const void *a, const void *b)
++{
++  struct folder_file *pa = (struct folder_file *) a;
++  struct folder_file *pb = (struct folder_file *) b;
++
++  int r = pa->new - pb->new;
++
++  return ((BrowserSort & SORT_REVERSE) ? -r : r);
++}
++
+ static void browser_sort (struct browser_state *state)
+ {
+   int (*f) (const void *, const void *);
+@@ -148,6 +178,15 @@ static void browser_sort (struct browser_state *state)
+ #endif
+       f = browser_compare_size;
+       break;
++    case SORT_DESC:
++      f = browser_compare_desc;
++      break;
++    case SORT_COUNT:
++      f = browser_compare_count;
++      break;
++    case SORT_COUNT_NEW:
++      f = browser_compare_count_new;
++      break;
+     case SORT_SUBJECT:
+     default:
+       f = browser_compare_subject;
+@@ -294,7 +333,16 @@ folder_format_str (char *dest, size_t destlen, size_t col, int cols, char op, co
+       else
+ 	mutt_format_s (dest, destlen, fmt, "");
+       break;
+-      
++
++    case 'n':
++      if (!optional) {
++	snprintf (tmp, sizeof (tmp), "%%%sd", fmt);
++	snprintf (dest, destlen, tmp, folder->ff->all);
++      } else if (!folder->ff->all) {
++	optional = 0;
++      }
++      break;
++
+     case 'N':
+ #ifdef USE_IMAP
+       if (mx_is_imap (folder->ff->desc))
+@@ -474,8 +522,8 @@ newsgroup_format_str (char *dest, size_t destlen, size_t col, int cols, char op,
+ #endif /* USE_NNTP */
+ 
+ static void add_folder (MUTTMENU *m, struct browser_state *state,
+-			const char *name, const struct stat *s,
+-			void *data, unsigned int new)
++		const char *name, const char *desc, const struct stat *s,
++		unsigned int new, unsigned int all, void *data)
+ {
+   if (state->entrylen == state->entrymax)
+   {
+@@ -499,8 +547,9 @@ static void add_folder (MUTTMENU *m, struct browser_state *state,
+   }
+ 
+   (state->entry)[state->entrylen].new = new;
++  (state->entry)[state->entrylen].all = all;
+   (state->entry)[state->entrylen].name = safe_strdup (name);
+-  (state->entry)[state->entrylen].desc = safe_strdup (name);
++  (state->entry)[state->entrylen].desc = safe_strdup(desc ? desc : name);
+ #ifdef USE_IMAP
+   (state->entry)[state->entrylen].imap = 0;
+ #endif
+@@ -546,8 +595,7 @@ static int examine_directory (MUTTMENU *menu, struct browser_state *state,
+ 	continue;
+       if (!((regexec (Mask.rx, nntp_data->group, 0, NULL, 0) == 0) ^ Mask.not))
+ 	continue;
+-      add_folder (menu, state, nntp_data->group, NULL,
+-		  nntp_data, nntp_data->new);
++      add_folder (menu, state, nntp_data->group, NULL, NULL, nntp_data->new, nntp_data->newsrc_len, nntp_data);
+     }
+   }
+   else
+@@ -613,7 +661,7 @@ static int examine_directory (MUTTMENU *menu, struct browser_state *state,
+     tmp = Incoming;
+     while (tmp && mutt_strcmp (buffer, tmp->path))
+       tmp = tmp->next;
+-    add_folder (menu, state, de->d_name, &s, NULL, (tmp) ? tmp->new : 0);
++    add_folder (menu, state, de->d_name, NULL, &s, (tmp) ? tmp->new : 0, (tmp) ? tmp->msg_count : 0, NULL);
+   }
+   closedir (dp);  
+   }
+@@ -637,7 +685,7 @@ static int examine_vfolders (MUTTMENU *menu, struct browser_state *state)
+     if (mx_is_notmuch (tmp->path))
+     {
+       nm_nonctx_get_count(tmp->path, &tmp->msg_count, &tmp->msg_unread);
+-      add_folder (menu, state, tmp->path, NULL, NULL, tmp->msg_unread);
++      add_folder (menu, state, tmp->path, tmp->desc, NULL, tmp->msg_unread, tmp->msg_count, NULL);
+       continue;
+     }
+   }
+@@ -667,8 +715,7 @@ static int examine_mailboxes (MUTTMENU *menu, struct browser_state *state)
+       NNTP_DATA *nntp_data = nserv->groups_list[i];
+       if (nntp_data && (nntp_data->new || (nntp_data->subscribed &&
+ 	 (nntp_data->unread || !option (OPTSHOWONLYUNREAD)))))
+-	add_folder (menu, state, nntp_data->group, NULL,
+-		    nntp_data, nntp_data->new);
++	add_folder (menu, state, nntp_data->group, NULL, NULL, nntp_data->new, nntp_data->newsrc_len, nntp_data);
+     }
+   }
+   else
+@@ -691,21 +738,21 @@ static int examine_mailboxes (MUTTMENU *menu, struct browser_state *state)
+     if (mx_is_imap (tmp->path))
+     {
+       imap_mailbox_state (tmp->path, &mbox);
+-      add_folder (menu, state, tmp->path, NULL, NULL, mbox.new);
++      add_folder (menu, state, tmp->path, NULL, NULL, mbox.new, mbox.messages, NULL);
+       continue;
+     }
+ #endif
+ #ifdef USE_POP
+     if (mx_is_pop (tmp->path))
+     {
+-      add_folder (menu, state, tmp->path, NULL, NULL, tmp->new);
++      add_folder (menu, state, tmp->path, NULL, NULL, tmp->new, tmp->msg_count, NULL);
+       continue;
+     }
+ #endif
+ #ifdef USE_NNTP
+     if (mx_is_nntp (tmp->path))
+     {
+-      add_folder (menu, state, tmp->path, NULL, NULL, tmp->new);
++      add_folder (menu, state, tmp->path, NULL, NULL, tmp->new, tmp->msg_count, NULL);
+       continue;
+     }
+ #endif
+@@ -734,7 +781,7 @@ static int examine_mailboxes (MUTTMENU *menu, struct browser_state *state)
+     strfcpy (buffer, NONULL(tmp->path), sizeof (buffer));
+     mutt_pretty_mailbox (buffer, sizeof (buffer));
+ 
+-    add_folder (menu, state, buffer, &s, NULL, tmp->new);
++    add_folder (menu, state, buffer, NULL, &s, tmp->new, tmp->msg_count, NULL);
+   }
+   while ((tmp = tmp->next));
+   }
+@@ -1467,9 +1514,9 @@ void _mutt_select_file (char *f, size_t flen, int flags, char ***files, int *num
+ 	  int reverse = (i == OP_SORT_REVERSE);
+ 	  
+ 	  switch (mutt_multi_choice ((reverse) ?
+-	      _("Reverse sort by (d)ate, (a)lpha, si(z)e or do(n)'t sort? ") :
+-	      _("Sort by (d)ate, (a)lpha, si(z)e or do(n)'t sort? "),
+-	      _("dazn")))
++	      _("Reverse sort by (d)ate, (a)lpha, si(z)e, d(e)scription, (c)ount, ne(w) count, or do(n)'t sort? ") :
++	      _("Sort by (d)ate, (a)lpha, si(z)e, d(e)scription, (c)ount, ne(w) count, or do(n)'t sort? "),
++	      _("dazecwn")))
+ 	  {
+ 	    case -1: /* abort */
+ 	      resort = 0;
+@@ -1487,7 +1534,19 @@ void _mutt_select_file (char *f, size_t flen, int flags, char ***files, int *num
+ 	      BrowserSort = SORT_SIZE;
+ 	      break;
+ 
+-            case 4: /* do(n)'t sort */
++            case 4: /* d(e)scription */
++	      BrowserSort = SORT_DESC;
++	      break;
++
++            case 5: /* (c)ount */
++	      BrowserSort = SORT_COUNT;
++	      break;
++
++            case 6: /* ne(w) count */
++	      BrowserSort = SORT_COUNT_NEW;
++	      break;
++
++            case 7: /* do(n)'t sort */
+ 	      BrowserSort = SORT_ORDER;
+ 	      resort = 0;
+ 	      break;
+@@ -1762,8 +1821,7 @@ void _mutt_select_file (char *f, size_t flen, int flags, char ***files, int *num
+ 		if (regexec (rx, nntp_data->group, 0, NULL, 0) == 0)
+ 		{
+ 		  mutt_newsgroup_subscribe (nserv, nntp_data->group);
+-		  add_folder (menu, &state, nntp_data->group, NULL,
+-			      nntp_data, nntp_data->new);
++		  add_folder (menu, &state, nntp_data->group, NULL, NULL, nntp_data->new, nntp_data->newsrc_len, nntp_data);
+ 		}
+ 	      }
+ 	    }
+diff --git a/browser.h b/browser.h
+index ad89ab2..a41e0d5 100644
+--- a/browser.h
++++ b/browser.h
+@@ -34,6 +34,8 @@ struct folder_file
+   char *desc;
+ 
+   unsigned int new;
++  unsigned int all;
++
+ #ifdef USE_IMAP
+   char delim;
+   
+diff --git a/init.h b/init.h
+index 3983fbd..bc5134d 100644
+--- a/init.h
++++ b/init.h
+@@ -3516,7 +3516,10 @@ struct option_t MuttVars[] = {
+   ** entries are sorted alphabetically.  Valid values:
+   ** .il
+   ** .dd alpha (alphabetically)
++  ** .dd count (all message count)
+   ** .dd date
++  ** .dd desc (description)
++  ** .dd new (new message count)
+   ** .dd size
+   ** .dd unsorted
+   ** .ie
+@@ -4161,7 +4164,10 @@ const struct mapping_t SortAuxMethods[] = {
+ 
+ const struct mapping_t SortBrowserMethods[] = {
+   { "alpha",	SORT_SUBJECT },
++  { "count",	SORT_COUNT },
+   { "date",	SORT_DATE },
++  { "desc",	SORT_DESC },
++  { "new",	SORT_COUNT_NEW },
+   { "size",	SORT_SIZE },
+   { "unsorted",	SORT_ORDER },
+   { NULL,       0 }
+-- 
+2.7.4
+

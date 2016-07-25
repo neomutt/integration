@@ -1,4 +1,4 @@
-From db3dc34cb45011da820ddc7b397bf8bbde1783cb Mon Sep 17 00:00:00 2001
+From feb3d9800e5ddb2618a91e7b7a3cadb6b38f491b Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 15:18:48 +0100
 Subject: [PATCH 07/21] browser
@@ -51,5 +51,5 @@ index 11980e5..6b23562 100644
  
    return ((BrowserSort & SORT_REVERSE) ? -r : r);
 -- 
-2.9.0
+2.7.4
 

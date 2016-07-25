@@ -1,4 +1,4 @@
-From e0ec0c73b32f18392327d7b3f3c29c47b1e06c0f Mon Sep 17 00:00:00 2001
+From cc565f3b7b4a581f4b836a0f1570c563ea040e20 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 15:18:21 +0100
 Subject: [PATCH 06/21] smime-outlook
@@ -21,5 +21,5 @@ index 570cc36..83bbe96 100644
  #else
        /* Not sure if this is the correct thing to do, but 
 -- 
-2.9.0
+2.7.4
 

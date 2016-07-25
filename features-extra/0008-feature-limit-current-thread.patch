@@ -1,8 +1,18 @@
-From 8340925058d9caf8ea231f285f60c52b977c2a8c Mon Sep 17 00:00:00 2001
-From: Richard Russon <rich@flatcap.org>
-Date: Tue, 24 May 2016 17:29:47 +0100
+From e53ae5424fa56e348e99b8e7b0ff53ac777f3aeb Mon Sep 17 00:00:00 2001
+From: David Sterba <dsterba@suse.cz>
+Date: Thu, 24 May 2012 15:34:53 +0200
 Subject: [PATCH 08/14] feature: limit-current-thread
 
+Add command to limit view on the thread from any of its message.
+Predefined on command <ESC>L, though the lowercase 'l' would be better
+(less keystrokes), but it's already occupied by a not-so-useful command
+"show limit".
+
+Tested on large folders, no performance problems observed.
+
+Search in current thread is not implemented.
+
+Signed-off-by: David Sterba <dsterba@suse.cz>
 ---
  OPS                             |   1 +
  PATCHES                         |   1 +
@@ -30,17 +40,17 @@ index 8ccc188..f14ff39 100644
  OP_MAIN_COLLAPSE_THREAD "collapse/uncollapse current thread"
  OP_MAIN_COLLAPSE_ALL "collapse/uncollapse all threads"
 diff --git a/PATCHES b/PATCHES
-index 69d1802..51a610b 100644
+index f6f0b68..d1fb532 100644
 --- a/PATCHES
 +++ b/PATCHES
-@@ -12,3 +12,4 @@ patch-index-color-neo-git
- patch-tls-sni-neo-git
- patch-quasi-delete-neo-git
- patch-fmemopen-neo-git
+@@ -1,3 +1,4 @@
 +patch-limit-current-thread-neo-git
+ patch-fmemopen-neo-git
+ patch-quasi-delete-neo-git
+ patch-tls-sni-neo-git
 diff --git a/README.limit-current-thread b/README.limit-current-thread
 new file mode 100644
-index 0000000..072413e
+index 0000000..6085ba9
 --- /dev/null
 +++ b/README.limit-current-thread
 @@ -0,0 +1,45 @@
@@ -56,15 +66,15 @@ index 0000000..072413e
 +    "patch-limit-current-thread" in the mutt version.
 +
 +    Dependencies
-+    * mutt-1.6.1
++    * mutt-1.6.2
 +
 +Introduction
 +------------
 +
 +    This patch adds a new way of using the Limit Command. The
 +    '<limit-current-thread>' function restricts the view to just the current
-+    thread.
-+    Setting the limit (the 'l' key) to "all" will restore the full email list.
++    thread. Setting the limit (the 'l' key) to "all" will restore the full
++    email list.
 +
 +Functions
 +---------
@@ -110,99 +120,99 @@ index a51d508..81807c6 100644
  	  if (menu->oldcurrent >= 0)
  	  {
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index cddbfa7..9647e9a 100644
+index 198ee6f..4c3cced 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
-@@ -10236,6 +10236,125 @@ <sect1 id="initials">
- 	</sect2>
+@@ -10206,6 +10206,125 @@ <sect1 id="initials">
+   </sect2>
  </sect1>
  
 +<sect1 id="limit-current-thread">
-+	<title>Limit-Current-Thread Patch</title>
-+	<subtitle>Focus on one Email Thread</subtitle>
++  <title>Limit-Current-Thread Patch</title>
++  <subtitle>Focus on one Email Thread</subtitle>
 +
-+	<sect2 id="limit-current-thread-patch">
-+		<title>Patch</title>
++  <sect2 id="limit-current-thread-patch">
++    <title>Patch</title>
 +
-+		<para>
-+			To check if Mutt supports <quote>limit-current-thread</quote>, look for
-+			<quote>patch-limit-current-thread</quote> in the mutt version.
-+			See: <xref linkend="mutt-patches"/>.
-+		</para>
++    <para>
++      To check if Mutt supports <quote>limit-current-thread</quote>, look for
++      <quote>patch-limit-current-thread</quote> in the mutt version.
++      See: <xref linkend="mutt-patches"/>.
++    </para>
 +
-+		<itemizedlist>
-+			<title>Dependencies:</title>
-+			<listitem><para>mutt-1.6.1</para></listitem>
-+		</itemizedlist>
++    <itemizedlist>
++      <title>Dependencies:</title>
++      <listitem><para>mutt-1.6.2</para></listitem>
++    </itemizedlist>
 +
-+		<para>This patch is part of the <ulink url="http://www.neomutt.org/">NeoMutt Project</ulink>.</para>
-+	</sect2>
++    <para>This patch is part of the <ulink url="http://www.neomutt.org/">NeoMutt Project</ulink>.</para>
++  </sect2>
 +
-+	<sect2 id="limit-current-thread-intro">
-+		<title>Introduction</title>
++  <sect2 id="limit-current-thread-intro">
++    <title>Introduction</title>
 +
-+		<para>
-+			This patch adds a new way of using the
-+			<link linkend="tuning-search">Limit Command</link>.
++    <para>
++      This patch adds a new way of using the
++      <link linkend="tuning-search">Limit Command</link>.
 +                        The <literal>&lt;limit-current-thread&gt;</literal>
 +                        function restricts the view to just the current thread.
 +                        Setting the limit (the <literal>l</literal> key) to
 +                        <quote>all</quote> will restore the full email list.
-+		</para>
++    </para>
 +
-+	</sect2>
++  </sect2>
 +
 +<!--
-+	<sect2 id="limit-current-thread-variables">
-+		<title>Variables</title>
-+		<para>None</para>
-+	</sect2>
++  <sect2 id="limit-current-thread-variables">
++    <title>Variables</title>
++    <para>None</para>
++  </sect2>
 +-->
-+	<sect2 id="limit-current-thread-functions">
-+		<title>Functions</title>
++  <sect2 id="limit-current-thread-functions">
++    <title>Functions</title>
 +
-+		<table id="table-limit-current-thread-functions">
-+			<title>Limit-Current-Thread Functions</title>
-+			<tgroup cols="4">
-+				<thead>
-+					<row>
-+						<entry>Menus</entry>
-+						<entry>Default Key</entry>
-+						<entry>Function</entry>
-+						<entry>Description</entry>
-+					</row>
-+				</thead>
-+				<tbody>
-+					<row>
-+						<entry>index</entry>
-+                                                <entry><literal>&lt;Esc&gt; L</literal></entry>
-+						<entry><literal>&lt;limit-current-thread&gt;</literal></entry>
-+						<entry>Limit view to current thread</entry>
-+					</row>
-+				</tbody>
-+			</tgroup>
-+		</table>
++    <table id="table-limit-current-thread-functions">
++      <title>Limit-Current-Thread Functions</title>
++      <tgroup cols="4">
++        <thead>
++          <row>
++            <entry>Menus</entry>
++            <entry>Default Key</entry>
++            <entry>Function</entry>
++            <entry>Description</entry>
++          </row>
++        </thead>
++        <tbody>
++          <row>
++            <entry>index</entry>
++            <entry><literal>&lt;Esc&gt;L</literal></entry>
++            <entry><literal>&lt;limit-current-thread&gt;</literal></entry>
++            <entry>Limit view to current thread</entry>
++          </row>
++        </tbody>
++      </tgroup>
++    </table>
 +
-+	</sect2>
++  </sect2>
 +<!--
-+	<sect2 id="limit-current-thread-commands">
-+		<title>Commands</title>
-+		<para>None</para>
-+	</sect2>
++  <sect2 id="limit-current-thread-commands">
++    <title>Commands</title>
++    <para>None</para>
++  </sect2>
 +
-+	<sect2 id="limit-current-thread-colors">
-+		<title>Colors</title>
-+		<para>None</para>
-+	</sect2>
++  <sect2 id="limit-current-thread-colors">
++    <title>Colors</title>
++    <para>None</para>
++  </sect2>
 +
-+	<sect2 id="limit-current-thread-sort">
-+		<title>Sort</title>
-+		<para>None</para>
-+	</sect2>
++  <sect2 id="limit-current-thread-sort">
++    <title>Sort</title>
++    <para>None</para>
++  </sect2>
 +-->
 +
-+	<sect2 id="limit-current-thread-muttrc">
-+		<title>Muttrc</title>
++  <sect2 id="limit-current-thread-muttrc">
++    <title>Muttrc</title>
 +
 +<screen>
 +<emphasis role="comment"># Example Mutt config file for the 'limit-current-thread' patch.
@@ -212,33 +222,33 @@ index cddbfa7..9647e9a 100644
 + 
 +<emphasis role="comment"># vim: syntax=muttrc</emphasis>
 +</screen>
-+	</sect2>
++  </sect2>
 +
-+	<sect2 id="limit-current-thread-see-also">
-+		<title>See Also</title>
++  <sect2 id="limit-current-thread-see-also">
++    <title>See Also</title>
 +
-+		<itemizedlist>
-+			<listitem><para><ulink url="http://www.neomutt.org/">NeoMutt Project</ulink></para></listitem>
-+		</itemizedlist>
-+	</sect2>
++    <itemizedlist>
++      <listitem><para><ulink url="http://www.neomutt.org/">NeoMutt Project</ulink></para></listitem>
++    </itemizedlist>
++  </sect2>
 +
-+	<sect2 id="limit-current-thread-known-bugs">
-+		<title>Known Bugs</title>
-+		<para>None</para>
-+	</sect2>
++  <sect2 id="limit-current-thread-known-bugs">
++    <title>Known Bugs</title>
++    <para>None</para>
++  </sect2>
 +
-+	<sect2 id="limit-current-thread-credits">
-+		<title>Credits</title>
-+		<itemizedlist>
-+		<listitem><para>David Sterba <email>dsterba@suse.cz</email></para></listitem>
-+		<listitem><para>Richard Russon <email>rich@flatcap.org</email></para></listitem>
-+		</itemizedlist>
-+	</sect2>
++  <sect2 id="limit-current-thread-credits">
++    <title>Credits</title>
++    <itemizedlist>
++    <listitem><para>David Sterba <email>dsterba@suse.cz</email></para></listitem>
++    <listitem><para>Richard Russon <email>rich@flatcap.org</email></para></listitem>
++    </itemizedlist>
++  </sect2>
 +</sect1>
 +
  <sect1 id="nested-if">
- 	<title>Nested If Patch</title>
- 	<subtitle>Allow complex nested conditions in format strings</subtitle>
+   <title>Nested If Patch</title>
+   <subtitle>Allow complex nested conditions in format strings</subtitle>
 diff --git a/doc/muttrc.limit-current-thread b/doc/muttrc.limit-current-thread
 new file mode 100644
 index 0000000..5d32cf5
@@ -354,5 +364,5 @@ index b3f517d..57be53e 100644
  {
    pattern_t *pat;
 -- 
-2.9.0
+2.7.4
 

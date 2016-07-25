@@ -1,34 +1,35 @@
-From 08b90057c360a2638ca1db9a6efc8ab964f8087c Mon Sep 17 00:00:00 2001
-From: Richard Russon <rich@flatcap.org>
-Date: Tue, 24 May 2016 17:22:39 +0100
+From cbf80b738fa8ba7db2ce0f5a3b26e85997f69a6d Mon Sep 17 00:00:00 2001
+From: David Sterba <dsterba@suse.cz>
+Date: Sat, 30 Jan 2016 16:53:57 +0000
 Subject: [PATCH 03/14] feature: status-color
 
+Custom rules for theming the status bar
 ---
  PATCHES                 |   1 +
  README.status-color     |  67 ++++++++++++++++
- color.c                 |  41 ++++++++--
+ color.c                 |  39 ++++++++--
  curs_main.c             | 107 ++++++++++++++++++++++++-
  doc/manual.xml.head     | 203 ++++++++++++++++++++++++++++++++++++++++++++++++
  doc/muttrc.status-color |  49 ++++++++++++
  mutt_curses.h           |   2 +
  pager.c                 |   4 +-
  protos.h                |   1 +
- 9 files changed, 464 insertions(+), 11 deletions(-)
+ 9 files changed, 464 insertions(+), 9 deletions(-)
  create mode 100644 README.status-color
  create mode 100644 doc/muttrc.status-color
 
 diff --git a/PATCHES b/PATCHES
-index 75a4f03..2aad783 100644
+index b8b631e..c0c3401 100644
 --- a/PATCHES
 +++ b/PATCHES
-@@ -7,3 +7,4 @@ patch-compress-neo-git
- patch-sidebar-neo-git
- patch-progress-neo-git
- patch-skip-quoted-neo-git
+@@ -1,3 +1,4 @@
 +patch-status-color-neo-git
+ patch-skip-quoted-neo-git
+ patch-progress-neo-git
+ patch-sidebar-neo-git
 diff --git a/README.status-color b/README.status-color
 new file mode 100644
-index 0000000..cbaa0fb
+index 0000000..03a7fb4
 --- /dev/null
 +++ b/README.status-color
 @@ -0,0 +1,67 @@
@@ -44,7 +45,7 @@ index 0000000..cbaa0fb
 +    the mutt version.
 +
 +    Dependencies
-+    * mutt-1.6.1
++    * mutt-1.6.2
 +
 +Introduction
 +------------
@@ -100,7 +101,7 @@ index 0000000..cbaa0fb
 +    * Richard Russon <rich@flatcap.org>
 +
 diff --git a/color.c b/color.c
-index e2ff989..0efc743 100644
+index e2ff989..46c927c 100644
 --- a/color.c
 +++ b/color.c
 @@ -34,6 +34,7 @@ int ColorQuoteUsed;
@@ -137,16 +138,7 @@ index e2ff989..0efc743 100644
  
    if(parse_object(buf, s, &object, &q_level, err) == -1)
      return -1;
-@@ -728,8 +730,6 @@ _mutt_parse_color (BUFFER *buf, BUFFER *s, BUFFER *err,
-   if(callback(buf, s, &fg, &bg, &attr, err) == -1)
-     return -1;
- 
--  /* extract a regular expression if needed */
--  
-   if (object == MT_COLOR_HEADER || object == MT_COLOR_BODY || object == MT_COLOR_INDEX)
-   {
-     if (!MoreArgs (s))
-@@ -741,7 +741,7 @@ _mutt_parse_color (BUFFER *buf, BUFFER *s, BUFFER *err,
+@@ -741,7 +743,7 @@ _mutt_parse_color (BUFFER *buf, BUFFER *s, BUFFER *err,
      mutt_extract_token (buf, s, 0);
    }
     
@@ -155,7 +147,7 @@ index e2ff989..0efc743 100644
    {
      strfcpy (err->data, _("too many arguments"), err->dsize);
      return (-1);
-@@ -766,12 +766,37 @@ _mutt_parse_color (BUFFER *buf, BUFFER *s, BUFFER *err,
+@@ -766,12 +768,37 @@ _mutt_parse_color (BUFFER *buf, BUFFER *s, BUFFER *err,
  #endif
    
    if (object == MT_COLOR_HEADER)
@@ -322,134 +314,134 @@ index 3f40e4d..9114aeb 100644
  	menu->redraw &= ~REDRAW_STATUS;
  	if (option(OPTTSENABLED) && TSSupported)
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index 761dacf..1d68abc 100644
+index f13d3c1..ddad314 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
-@@ -10797,6 +10797,209 @@ <sect1 id="skip-quoted-patch">
- 	</sect2>
+@@ -10769,6 +10769,209 @@ <sect1 id="skip-quoted-patch">
+   </sect2>
  </sect1>
  
 +<sect1 id="status-color">
-+	<title>Status Color Patch</title>
-+	<subtitle>Custom rules for theming the status bar</subtitle>
++  <title>Status Color Patch</title>
++  <subtitle>Custom rules for theming the status bar</subtitle>
 +
-+	<sect2 id="status-color-patch">
-+		<title>Patch</title>
++  <sect2 id="status-color-patch">
++    <title>Patch</title>
 +
-+		<para>
-+			To check if Mutt supports <quote>Status Color</quote>, look for
-+			<quote>patch-status-color</quote> in the mutt version.
-+			See: <xref linkend="mutt-patches"/>.
-+		</para>
++    <para>
++      To check if Mutt supports <quote>Status Color</quote>, look for
++      <quote>patch-status-color</quote> in the mutt version.
++      See: <xref linkend="mutt-patches"/>.
++    </para>
 +
-+		<itemizedlist>
-+			<title>Dependencies:</title>
-+			<listitem><para>mutt-1.6.1</para></listitem>
-+		</itemizedlist>
++    <itemizedlist>
++      <title>Dependencies:</title>
++      <listitem><para>mutt-1.6.2</para></listitem>
++    </itemizedlist>
 +
-+		<para>This patch is part of the <ulink url="http://www.neomutt.org/">NeoMutt Project</ulink>.</para>
-+	</sect2>
++    <para>This patch is part of the <ulink url="http://www.neomutt.org/">NeoMutt Project</ulink>.</para>
++  </sect2>
 +
-+	<sect2 id="status-color-intro">
-+		<title>Introduction</title>
++  <sect2 id="status-color-intro">
++    <title>Introduction</title>
 +
 +        <para>
-+		The <quote>status-color</quote> patch allows you to theme different
-+		parts of the status bar (also when it's used by the index).
++    The <quote>status-color</quote> patch allows you to theme different
++    parts of the status bar (also when it's used by the index).
 +        </para>
 +
 +        <para>
-+		Unlike normal color commands, <literal>color status</literal> can now
-+		take up to 2 extra parameters (regex, num).
++    Unlike normal color commands, <literal>color status</literal> can now
++    take up to 2 extra parameters (regex, num).
 +        </para>
-+	</sect2>
++  </sect2>
 +
 +<!--
-+	<sect2 id="status-color-variables">
-+		<title>Variables</title>
-+		<para>None</para>
-+	</sect2>
++  <sect2 id="status-color-variables">
++    <title>Variables</title>
++    <para>None</para>
++  </sect2>
 +
-+	<sect2 id="status-color-functions">
-+		<title>Functions</title>
-+		<para>None</para>
-+	</sect2>
++  <sect2 id="status-color-functions">
++    <title>Functions</title>
++    <para>None</para>
++  </sect2>
 +-->
 +
-+	<sect2 id="status-color-commands">
-+		<title>Commands</title>
-+		<cmdsynopsis>
-+			<command>color</command>
-+			<arg choice="plain">
-+				<option>status</option>
-+			</arg>
-+			<arg choice="plain">
-+				<replaceable class="parameter">foreground</replaceable>
-+			</arg>
-+			<arg choice="plain">
-+				<replaceable class="parameter">background</replaceable>
-+			</arg>
-+			<group choice="opt">
-+				<arg choice="plain">
-+					<replaceable class="parameter">regex</replaceable>
-+				</arg>
-+				<group choice="opt">
-+					<arg choice="plain">
-+						<replaceable class="parameter">num</replaceable>
-+					</arg>
-+				</group>
-+			</group>
-+		</cmdsynopsis>
++  <sect2 id="status-color-commands">
++    <title>Commands</title>
++    <cmdsynopsis>
++      <command>color</command>
++      <arg choice="plain">
++        <option>status</option>
++      </arg>
++      <arg choice="plain">
++        <replaceable class="parameter">foreground</replaceable>
++      </arg>
++      <arg choice="plain">
++        <replaceable class="parameter">background</replaceable>
++      </arg>
++      <group choice="opt">
++        <arg choice="plain">
++          <replaceable class="parameter">regex</replaceable>
++        </arg>
++        <group choice="opt">
++          <arg choice="plain">
++            <replaceable class="parameter">num</replaceable>
++          </arg>
++        </group>
++      </group>
++    </cmdsynopsis>
 +
-+		<para>
-+			With zero parameters, Mutt will set the default color for the entire
-+			status bar.
-+		</para>
++    <para>
++      With zero parameters, Mutt will set the default color for the entire
++      status bar.
++    </para>
 +
-+		<para>
-+			With one parameter, Mutt will only color the parts matching the
-+			regex.
-+		</para>
++    <para>
++      With one parameter, Mutt will only color the parts matching the
++      regex.
++    </para>
 +
-+		<para>
-+			With two parameters, Mutt will only color the num'th sub-match of
-+			the regex.
-+		</para>
-+	</sect2>
++    <para>
++      With two parameters, Mutt will only color the num'th sub-match of
++      the regex.
++    </para>
++  </sect2>
 +
-+	<sect2 id="status-color-colors">
-+		<title>Colors</title>
++  <sect2 id="status-color-colors">
++    <title>Colors</title>
 +
-+		<table id="table-status-color-colors">
-+			<title>Status Colors</title>
-+			<tgroup cols="3">
-+				<thead>
-+					<row>
-+						<entry>Name</entry>
-+						<entry>Default Color</entry>
-+						<entry>Description</entry>
-+					</row>
-+				</thead>
-+				<tbody>
-+					<row>
-+						<entry>status</entry>
-+						<entry><literal>reverse</literal></entry>
-+						<entry>Status bar</entry>
-+					</row>
-+				</tbody>
-+			</tgroup>
-+		</table>
-+	</sect2>
++    <table id="table-status-color-colors">
++      <title>Status Colors</title>
++      <tgroup cols="3">
++        <thead>
++          <row>
++            <entry>Name</entry>
++            <entry>Default Color</entry>
++            <entry>Description</entry>
++          </row>
++        </thead>
++        <tbody>
++          <row>
++            <entry>status</entry>
++            <entry><literal>reverse</literal></entry>
++            <entry>Status bar</entry>
++          </row>
++        </tbody>
++      </tgroup>
++    </table>
++  </sect2>
 +
 +<!--
-+	<sect2 id="status-color-sort">
-+		<title>Sort</title>
-+		<para>None</para>
-+	</sect2>
++  <sect2 id="status-color-sort">
++    <title>Sort</title>
++    <para>None</para>
++  </sect2>
 +-->
 +
-+	<sect2 id="status-color-muttrc">
-+		<title>Muttrc</title>
++  <sect2 id="status-color-muttrc">
++    <title>Muttrc</title>
 +<screen>
 +<emphasis role="comment"># Example Mutt config file for the 'status-color' patch.
 + 
@@ -501,40 +493,40 @@ index 761dacf..1d68abc 100644
 + 
 +# vim: syntax=muttrc</emphasis>
 +</screen>
-+	</sect2>
++  </sect2>
 +
-+	<sect2 id="status-color-see-also">
-+		<title>See Also</title>
++  <sect2 id="status-color-see-also">
++    <title>See Also</title>
 +
-+		<itemizedlist>
-+			<listitem><para><ulink url="http://www.neomutt.org/">NeoMutt Project</ulink></para></listitem>
-+			<listitem><para><link linkend="compile-time-features">Compile-Time Features</link></para></listitem>
-+			<listitem><para><link linkend="regexp">Regular Expressions</link></para></listitem>
-+			<listitem><para><link linkend="patterns">Patterns</link></para></listitem>
-+			<listitem><para><link linkend="index-color">index-color patch</link></para></listitem>
-+			<listitem><para><link linkend="color">Color command</link></para></listitem>
-+		</itemizedlist>
-+	</sect2>
++    <itemizedlist>
++      <listitem><para><ulink url="http://www.neomutt.org/">NeoMutt Project</ulink></para></listitem>
++      <listitem><para><link linkend="compile-time-features">Compile-Time Features</link></para></listitem>
++      <listitem><para><link linkend="regexp">Regular Expressions</link></para></listitem>
++      <listitem><para><link linkend="patterns">Patterns</link></para></listitem>
++      <listitem><para><link linkend="index-color">index-color patch</link></para></listitem>
++      <listitem><para><link linkend="color">Color command</link></para></listitem>
++    </itemizedlist>
++  </sect2>
 +
-+	<sect2 id="status-color-known-bugs">
-+		<title>Known Bugs</title>
-+		<para>None</para>
-+	</sect2>
++  <sect2 id="status-color-known-bugs">
++    <title>Known Bugs</title>
++    <para>None</para>
++  </sect2>
 +
-+	<sect2 id="status-color-credits">
-+		<title>Credits</title>
-+		<itemizedlist>
-+		<listitem><para>David Sterba <email>dsterba@suse.cz</email></para></listitem>
-+		<listitem><para>Thomas Glanzmann <email>thomas@glanzmann.de</email></para></listitem>
-+		<listitem><para>Kirill A. Shutemov <email>kirill@shutemov.name</email></para></listitem>
-+		<listitem><para>Richard Russon <email>rich@flatcap.org</email></para></listitem>
-+		</itemizedlist>
-+	</sect2>
++  <sect2 id="status-color-credits">
++    <title>Credits</title>
++    <itemizedlist>
++    <listitem><para>David Sterba <email>dsterba@suse.cz</email></para></listitem>
++    <listitem><para>Thomas Glanzmann <email>thomas@glanzmann.de</email></para></listitem>
++    <listitem><para>Kirill A. Shutemov <email>kirill@shutemov.name</email></para></listitem>
++    <listitem><para>Richard Russon <email>rich@flatcap.org</email></para></listitem>
++    </itemizedlist>
++  </sect2>
 +</sect1>
 +
  <sect1 id="trash-folder">
- 	<title>Trash Folder Patch</title>
- 	<subtitle>Automatically move "deleted" emails to a trash bin</subtitle>
+   <title>Trash Folder Patch</title>
+   <subtitle>Automatically move <quote>deleted</quote> emails to a trash bin</subtitle>
 diff --git a/doc/muttrc.status-color b/doc/muttrc.status-color
 new file mode 100644
 index 0000000..385396f
@@ -591,7 +583,7 @@ index 0000000..385396f
 +
 +# vim: syntax=muttrc
 diff --git a/mutt_curses.h b/mutt_curses.h
-index 75ea85a..69d06c5 100644
+index 6f730a9..aa3a50b 100644
 --- a/mutt_curses.h
 +++ b/mutt_curses.h
 @@ -142,6 +142,7 @@ enum
@@ -643,5 +635,5 @@ index 686c5d1..d06c003 100644
  void mutt_edit_file (const char *, const char *);
  void mutt_edit_headers (const char *, const char *, HEADER *, char *, size_t);
 -- 
-2.9.0
+2.7.4
 

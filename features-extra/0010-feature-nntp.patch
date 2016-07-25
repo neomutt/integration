@@ -1,14 +1,15 @@
-From 385d07827fa0473bd1b8009e28441899292e8c16 Mon Sep 17 00:00:00 2001
-From: Richard Russon <rich@flatcap.org>
-Date: Tue, 24 May 2016 17:50:57 +0100
+From 538fedfd4230a819def34a2cca9d91f772cbfe35 Mon Sep 17 00:00:00 2001
+From: Vsevolod Volkov <vvv@mutt.org.ua>
+Date: Thu, 7 Apr 2016 23:02:56 +0100
 Subject: [PATCH 10/14] feature: nntp
 
+Talk to a Usenet news server
 ---
  ChangeLog.nntp      |  416 +++++++++
  Makefile.am         |    2 +
  OPS                 |   23 +-
  PATCHES             |    1 +
- README.nntp         |  122 +++
+ README.nntp         |  111 +++
  account.c           |   27 +
  account.h           |    3 +-
  attach.h            |    2 +-
@@ -19,32 +20,32 @@ Subject: [PATCH 10/14] feature: nntp
  compose.c           |  177 +++-
  configure.ac        |   11 +-
  curs_main.c         |  309 ++++++-
- doc/manual.xml.head |  392 +++++++++
+ doc/manual.xml.head |  513 +++++++++++
  doc/mutt.man        |    8 +-
- doc/muttrc.nntp     |    0
- doc/vimrc-nntp      |   50 ++
+ doc/muttrc.nntp     |  115 +++
+ doc/vimrc.nntp      |   50 ++
  functions.h         |   59 +-
  globals.h           |   18 +-
  hash.c              |   27 +
  hash.h              |    3 +-
  hcache.c            |   12 +
- hdrline.c           |   28 +
+ hdrline.c           |   25 +
  headers.c           |    3 +
  init.c              |   22 +
  init.h              |  223 +++++
  keymap.c            |    1 -
  mailbox.h           |    3 +
  main.c              |   48 +
- mutt.h              |   41 +-
+ mutt.h              |   40 +-
  mutt_sasl.c         |    5 +
- muttlib.c           |   18 +-
+ muttlib.c           |   17 +-
  mx.c                |   79 ++
  mx.h                |    3 +
  newsrc.c            | 1262 ++++++++++++++++++++++++++
  nntp.c              | 2434 +++++++++++++++++++++++++++++++++++++++++++++++++++
  nntp.h              |  168 ++++
  pager.c             |   81 +-
- parse.c             |   49 +-
+ parse.c             |   48 +-
  pattern.c           |    8 +
  po/POTFILES.in      |    2 +
  postpone.c          |   11 +
@@ -57,11 +58,11 @@ Subject: [PATCH 10/14] feature: nntp
  url.c               |    4 +-
  url.h               |    2 +
  version.c           |    5 +
- 53 files changed, 6986 insertions(+), 83 deletions(-)
+ 53 files changed, 7205 insertions(+), 83 deletions(-)
  create mode 100644 ChangeLog.nntp
  create mode 100644 README.nntp
  create mode 100644 doc/muttrc.nntp
- create mode 100644 doc/vimrc-nntp
+ create mode 100644 doc/vimrc.nntp
  create mode 100644 newsrc.c
  create mode 100644 nntp.c
  create mode 100644 nntp.h
@@ -611,20 +612,20 @@ index 61f602f..76d2672 100644
  OP_VIEW_ATTACH "view attachment using mailcap entry if necessary"
  OP_VIEW_ATTACHMENTS "show MIME attachments"
 diff --git a/PATCHES b/PATCHES
-index 98c8499..2dba3f1 100644
+index d3e6913..9ad5523 100644
 --- a/PATCHES
 +++ b/PATCHES
-@@ -14,3 +14,4 @@ patch-quasi-delete-neo-git
- patch-fmemopen-neo-git
- patch-limit-current-thread-neo-git
- patch-keywords-neo-git
+@@ -1,3 +1,4 @@
 +patch-nntp-neo-git
+ patch-keywords-neo-git
+ patch-limit-current-thread-neo-git
+ patch-fmemopen-neo-git
 diff --git a/README.nntp b/README.nntp
 new file mode 100644
-index 0000000..f8e5020
+index 0000000..7664b84
 --- /dev/null
 +++ b/README.nntp
-@@ -0,0 +1,122 @@
+@@ -0,0 +1,111 @@
 +NNTP Patch
 +==========
 +
@@ -636,7 +637,7 @@ index 0000000..f8e5020
 +    To check if Mutt supports "NNTP", look for "+USE_NNTP" in the mutt version.
 +
 +    Dependencies
-+    * mutt-1.5.24
++    * mutt-1.6.2
 +
 +Introduction
 +------------
@@ -718,19 +719,6 @@ index 0000000..f8e5020
 +    | pager                  | Alt-X       | '<vfolder-from-query>'        | generate virtual folder from query             |
 +    | index                  | Ctrl-G      | '<get-message>'               | get message with Message-Id                    |
 +
-+Commands
-+--------
-+
-+Colors
-+------
-+
-+    None
-+
-+Sort
-+----
-+
-+    None
-+
 +See Also
 +--------
 +
@@ -739,6 +727,8 @@ index 0000000..f8e5020
 +
 +Known Bugs
 +----------
++
++    None
 +
 +Credits
 +-------
@@ -2388,408 +2378,529 @@ index 55f37c8..e123c1e 100644
  
  	CHECK_ATTACH;
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index 4429994..4aa1a85 100644
+index 66393fc..6b66c32 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
-@@ -10879,6 +10879,398 @@ <sect1 id="nested-if">
- 	</sect2>
+@@ -10884,6 +10884,519 @@ <sect1 id="nested-if">
+   </sect2>
  </sect1>
  
 +<sect1 id="nntp">
-+	<title>NNTP Patch</title>
-+	<subtitle>Talk to a Usenet news server</subtitle>
++  <title>NNTP Patch</title>
++  <subtitle>Talk to a Usenet news server</subtitle>
 +
-+	<sect2 id="nntp-patch">
-+		<title>Patch</title>
++  <sect2 id="nntp-patch">
++    <title>Patch</title>
 +
-+		<para>
-+			To check if Mutt supports <quote>NNTP</quote>, look for
-+			<quote>+USE_NNTP</quote> in the mutt version.
-+			See: <xref linkend="compile-time-features"/>.
-+		</para>
++    <para>
++      To check if Mutt supports <quote>NNTP</quote>, look for
++      <quote>+USE_NNTP</quote> in the mutt version.
++      See: <xref linkend="compile-time-features"/>.
++    </para>
 +
-+		<itemizedlist>
-+			<title>Dependencies:</title>
-+			<listitem><para>mutt-1.6.1</para></listitem>
-+		</itemizedlist>
++    <itemizedlist>
++      <title>Dependencies:</title>
++      <listitem><para>mutt-1.6.2</para></listitem>
++    </itemizedlist>
 +
-+		<para>This patch is part of the <ulink url="http://www.neomutt.org/">NeoMutt Project</ulink>.</para>
-+	</sect2>
++    <para>This patch is part of the <ulink url="http://www.neomutt.org/">NeoMutt Project</ulink>.</para>
++  </sect2>
 +
-+	<sect2 id="nntp-intro">
-+		<title>Introduction</title>
++  <sect2 id="nntp-intro">
++    <title>Introduction</title>
 +
-+		<para>Reading news via NNTP</para>
-+		<para>
-+		If compiled with <emphasis>--enable-nntp</emphasis> option, Mutt can
-+		read news from news server via NNTP.  You can open a newsgroup with
-+		function ``change-newsgroup'' (default: ``i'').  Default news server
-+		can be obtained from <literal>$NNTPSERVER</literal> environment
-+		variable or from <literal>/etc/nntpserver</literal> file.  Like other
-+		news readers, info about subscribed newsgroups is saved in file by
-+		<link linkend="newsrc">$newsrc</link> variable.  The variable <link
-+		linkend="news-cache-dir">$news_cache_dir</link> can be used to point
-+		to a directory.  Mutt will create a hierarchy of subdirectories named
-+		like the account and newsgroup the cache is for.  Also the hierarchy
-+		is used to store header cache if Mutt was compiled with <link
-+		linkend="header-caching">header cache</link> support.
-+		</para>
-+	</sect2>
++    <para>Reading news via NNTP</para>
++    <para>
++    If compiled with <emphasis>--enable-nntp</emphasis> option, Mutt can
++    read news from news server via NNTP.  You can open a newsgroup with
++    function ``change-newsgroup'' (default: ``i'').  Default news server
++    can be obtained from <literal>$NNTPSERVER</literal> environment
++    variable or from <literal>/etc/nntpserver</literal> file.  Like other
++    news readers, info about subscribed newsgroups is saved in file by
++    <link linkend="newsrc">$newsrc</link> variable.  The variable <link
++    linkend="news-cache-dir">$news_cache_dir</link> can be used to point
++    to a directory.  Mutt will create a hierarchy of subdirectories named
++    like the account and newsgroup the cache is for.  Also the hierarchy
++    is used to store header cache if Mutt was compiled with <link
++    linkend="header-caching">header cache</link> support.
++    </para>
++  </sect2>
 +
-+	<sect2 id="nntp-variables">
-+		<title>Variables</title>
++  <sect2 id="nntp-variables">
++    <title>Variables</title>
 +
-+		<table id="table-nntp-variables">
-+			<title>NNTP Variables</title>
-+			<tgroup cols="3">
-+				<thead>
-+					<row>
-+						<entry>Name</entry>
-+						<entry>Type</entry>
-+						<entry>Default</entry>
-+					</row>
-+				</thead>
-+				<tbody>
-+					<row>
-+						<entry><literal>ask_follow_up</literal></entry>
-+						<entry>boolean</entry>
-+						<entry><literal>no</literal></entry>
-+					</row>
-+					<row>
-+						<entry><literal>ask_x_comment_to</literal></entry>
-+						<entry>boolean</entry>
-+						<entry><literal>no</literal></entry>
-+					</row>
-+					<row>
-+						<entry><literal>catchup_newsgroup</literal></entry>
-+						<entry>quad</entry>
-+						<entry><literal>ask-yes</literal></entry>
-+					</row>
-+					<row>
-+						<entry><literal>followup_to_poster</literal></entry>
-+						<entry>quad</entry>
-+						<entry><literal>ask-yes</literal></entry>
-+					</row>
-+					<row>
-+						<entry><literal>group_index_format</literal></entry>
-+						<entry>string</entry>
-+						<entry><literal>%4C %M%N %5s  %-45.45f %d</literal></entry>
-+					</row>
-+					<row>
-+						<entry><literal>inews</literal></entry>
-+						<entry>string</entry>
-+						<entry>(empty)</entry>
-+					</row>
-+					<row>
-+						<entry><literal>mime_subject</literal></entry>
-+						<entry>boolean</entry>
-+						<entry><literal>yes</literal></entry>
-+					</row>
-+					<row>
-+						<entry><literal>newsgroups_charset</literal></entry>
-+						<entry>string</entry>
-+						<entry><literal>utf-8</literal></entry>
-+					</row>
-+					<row>
-+						<entry><literal>newsrc</literal></entry>
-+						<entry>string</entry>
-+						<entry><literal>~/.newsrc</literal></entry>
-+					</row>
-+					<row>
-+						<entry><literal>news_cache_dir</literal></entry>
-+						<entry>string</entry>
-+						<entry><literal>~/.mutt</literal></entry>
-+					</row>
-+					<row>
-+						<entry><literal>news_server</literal></entry>
-+						<entry>string</entry>
-+						<entry>(empty)</entry>
-+					</row>
-+					<row>
-+						<entry><literal>nntp_authenticators</literal></entry>
-+						<entry>string</entry>
-+						<entry>(empty)</entry>
-+					</row>
-+					<row>
-+						<entry><literal>nntp_context</literal></entry>
-+						<entry>number</entry>
-+						<entry><literal>1000</literal></entry>
-+					</row>
-+					<row>
-+						<entry><literal>nntp_listgroup</literal></entry>
-+						<entry>boolean</entry>
-+						<entry><literal>yes</literal></entry>
-+					</row>
-+					<row>
-+						<entry><literal>nntp_load_description</literal></entry>
-+						<entry>boolean</entry>
-+						<entry><literal>yes</literal></entry>
-+					</row>
-+					<row>
-+						<entry><literal>nntp_pass</literal></entry>
-+						<entry>string</entry>
-+						<entry>(empty)</entry>
-+					</row>
-+					<row>
-+						<entry><literal>nntp_poll</literal></entry>
-+						<entry>number</entry>
-+						<entry><literal>60</literal></entry>
-+					</row>
-+					<row>
-+						<entry><literal>nntp_user</literal></entry>
-+						<entry>string</entry>
-+						<entry>(empty)</entry>
-+					</row>
-+					<row>
-+						<entry><literal>post_moderated</literal></entry>
-+						<entry>quad</entry>
-+						<entry><literal>ask-yes</literal></entry>
-+					</row>
-+					<row>
-+						<entry><literal>save_unsubscribed</literal></entry>
-+						<entry>boolean</entry>
-+						<entry><literal>no</literal></entry>
-+					</row>
-+					<row>
-+						<entry><literal>show_new_news</literal></entry>
-+						<entry>boolean</entry>
-+						<entry><literal>yes</literal></entry>
-+					</row>
-+					<row>
-+						<entry><literal>show_only_unread</literal></entry>
-+						<entry>boolean</entry>
-+						<entry><literal>no</literal></entry>
-+					</row>
-+					<row>
-+						<entry><literal>x_comment_to</literal></entry>
-+						<entry>boolean</entry>
-+						<entry><literal>no</literal></entry>
-+					</row>
-+				</tbody>
-+			</tgroup>
-+		</table>
-+	</sect2>
++    <table id="table-nntp-variables">
++      <title>NNTP Variables</title>
++      <tgroup cols="3">
++        <thead>
++          <row>
++            <entry>Name</entry>
++            <entry>Type</entry>
++            <entry>Default</entry>
++          </row>
++        </thead>
++        <tbody>
++          <row>
++            <entry><literal>ask_follow_up</literal></entry>
++            <entry>boolean</entry>
++            <entry><literal>no</literal></entry>
++          </row>
++          <row>
++            <entry><literal>ask_x_comment_to</literal></entry>
++            <entry>boolean</entry>
++            <entry><literal>no</literal></entry>
++          </row>
++          <row>
++            <entry><literal>catchup_newsgroup</literal></entry>
++            <entry>quad</entry>
++            <entry><literal>ask-yes</literal></entry>
++          </row>
++          <row>
++            <entry><literal>followup_to_poster</literal></entry>
++            <entry>quad</entry>
++            <entry><literal>ask-yes</literal></entry>
++          </row>
++          <row>
++            <entry><literal>group_index_format</literal></entry>
++            <entry>string</entry>
++            <entry><literal>%4C %M%N %5s  %-45.45f %d</literal></entry>
++          </row>
++          <row>
++            <entry><literal>inews</literal></entry>
++            <entry>string</entry>
++            <entry>(empty)</entry>
++          </row>
++          <row>
++            <entry><literal>mime_subject</literal></entry>
++            <entry>boolean</entry>
++            <entry><literal>yes</literal></entry>
++          </row>
++          <row>
++            <entry><literal>newsgroups_charset</literal></entry>
++            <entry>string</entry>
++            <entry><literal>utf-8</literal></entry>
++          </row>
++          <row>
++            <entry><literal>newsrc</literal></entry>
++            <entry>string</entry>
++            <entry><literal>~/.newsrc</literal></entry>
++          </row>
++          <row>
++            <entry><literal>news_cache_dir</literal></entry>
++            <entry>string</entry>
++            <entry><literal>~/.mutt</literal></entry>
++          </row>
++          <row>
++            <entry><literal>news_server</literal></entry>
++            <entry>string</entry>
++            <entry>(empty)</entry>
++          </row>
++          <row>
++            <entry><literal>nntp_authenticators</literal></entry>
++            <entry>string</entry>
++            <entry>(empty)</entry>
++          </row>
++          <row>
++            <entry><literal>nntp_context</literal></entry>
++            <entry>number</entry>
++            <entry><literal>1000</literal></entry>
++          </row>
++          <row>
++            <entry><literal>nntp_listgroup</literal></entry>
++            <entry>boolean</entry>
++            <entry><literal>yes</literal></entry>
++          </row>
++          <row>
++            <entry><literal>nntp_load_description</literal></entry>
++            <entry>boolean</entry>
++            <entry><literal>yes</literal></entry>
++          </row>
++          <row>
++            <entry><literal>nntp_pass</literal></entry>
++            <entry>string</entry>
++            <entry>(empty)</entry>
++          </row>
++          <row>
++            <entry><literal>nntp_poll</literal></entry>
++            <entry>number</entry>
++            <entry><literal>60</literal></entry>
++          </row>
++          <row>
++            <entry><literal>nntp_user</literal></entry>
++            <entry>string</entry>
++            <entry>(empty)</entry>
++          </row>
++          <row>
++            <entry><literal>post_moderated</literal></entry>
++            <entry>quad</entry>
++            <entry><literal>ask-yes</literal></entry>
++          </row>
++          <row>
++            <entry><literal>save_unsubscribed</literal></entry>
++            <entry>boolean</entry>
++            <entry><literal>no</literal></entry>
++          </row>
++          <row>
++            <entry><literal>show_new_news</literal></entry>
++            <entry>boolean</entry>
++            <entry><literal>yes</literal></entry>
++          </row>
++          <row>
++            <entry><literal>show_only_unread</literal></entry>
++            <entry>boolean</entry>
++            <entry><literal>no</literal></entry>
++          </row>
++          <row>
++            <entry><literal>x_comment_to</literal></entry>
++            <entry>boolean</entry>
++            <entry><literal>no</literal></entry>
++          </row>
++        </tbody>
++      </tgroup>
++    </table>
++  </sect2>
 +
-+	<sect2 id="nntp-functions">
-+		<title>Functions</title>
++  <sect2 id="nntp-functions">
++    <title>Functions</title>
 +
-+		<table id="table-nntp-functions">
-+			<title>NNTP Functions</title>
-+			<tgroup cols="4">
-+				<thead>
-+					<row>
-+						<entry>Menus</entry>
-+						<entry>Default Key</entry>
-+						<entry>Function</entry>
-+						<entry>Description</entry>
-+					</row>
-+				</thead>
-+				<tbody>
-+					<row>
-+						<entry>browser,index</entry>
-+						<entry>y</entry>
-+						<entry><literal>&lt;catchup&gt;</literal></entry>
-+						<entry>mark all articles in newsgroup as read</entry>
-+					</row>
-+					<row>
-+						<entry>index,pager</entry>
-+						<entry>i</entry>
-+						<entry><literal>&lt;change-newsgroup&gt;</literal></entry>
-+						<entry>open a different newsgroup</entry>
-+					</row>
-+					<row>
-+						<entry>pager</entry>
-+						<entry>X</entry>
-+						<entry><literal>&lt;change-vfolder&gt;</literal></entry>
-+						<entry>open a different virtual folder</entry>
-+					</row>
-+					<row>
-+						<entry>compose</entry>
-+						<entry>o</entry>
-+						<entry><literal>&lt;edit-followup-to&gt;</literal></entry>
-+						<entry>edit the Followup-To field</entry>
-+					</row>
-+					<row>
-+						<entry>compose</entry>
-+						<entry>N</entry>
-+						<entry><literal>&lt;edit-newsgroups&gt;</literal></entry>
-+						<entry>edit the newsgroups list</entry>
-+					</row>
-+					<row>
-+						<entry>compose</entry>
-+						<entry>x</entry>
-+						<entry><literal>&lt;edit-x-comment-to&gt;</literal></entry>
-+						<entry>edit the X-Comment-To field</entry>
-+					</row>
-+					<row>
-+						<entry>pager</entry>
-+						<entry>+</entry>
-+						<entry><literal>&lt;entire-thread&gt;</literal></entry>
-+						<entry>read entire thread of the current message</entry>
-+					</row>
-+					<row>
-+						<entry>attachment,index,pager</entry>
-+						<entry>F</entry>
-+						<entry><literal>&lt;followup-message&gt;</literal></entry>
-+						<entry>followup to newsgroup</entry>
-+					</row>
-+					<row>
-+						<entry>pager</entry>
-+						<entry>`</entry>
-+						<entry><literal>&lt;modify-labels&gt;</literal></entry>
-+						<entry>modify (notmuch) tags</entry>
-+					</row>
-+					<row>
-+						<entry>index,pager</entry>
-+						<entry>P</entry>
-+						<entry><literal>&lt;post-message&gt;</literal></entry>
-+						<entry>post message to newsgroup</entry>
-+					</row>
-+					<row>
-+						<entry>browser</entry>
-+						<entry>g</entry>
-+						<entry><literal>&lt;reload-active&gt;</literal></entry>
-+						<entry>load list of all newsgroups from NNTP server</entry>
-+					</row>
-+					<row>
-+						<entry>browser</entry>
-+						<entry>s</entry>
-+						<entry><literal>&lt;subscribe&gt;</literal></entry>
-+						<entry>subscribe to current mbox (IMAP/NNTP only)</entry>
-+					</row>
-+					<row>
-+						<entry>browser</entry>
-+						<entry>S</entry>
-+						<entry><literal>&lt;subscribe-pattern&gt;</literal></entry>
-+						<entry>subscribe to newsgroups matching a pattern</entry>
-+					</row>
-+					<row>
-+						<entry>browser</entry>
-+						<entry>Y</entry>
-+						<entry><literal>&lt;uncatchup&gt;</literal></entry>
-+						<entry>mark all articles in newsgroup as unread</entry>
-+					</row>
-+					<row>
-+						<entry>browser</entry>
-+						<entry>u</entry>
-+						<entry><literal>&lt;unsubscribe&gt;</literal></entry>
-+						<entry>unsubscribe from current mbox (IMAP/NNTP only)</entry>
-+					</row>
-+					<row>
-+						<entry>browser</entry>
-+						<entry>U</entry>
-+						<entry><literal>&lt;unsubscribe-pattern&gt;</literal></entry>
-+						<entry>unsubscribe from newsgroups matching a pattern</entry>
-+					</row>
-+					<row>
-+						<entry>index,pager</entry>
-+						<entry>Alt-i</entry>
-+						<entry><literal>&lt;change-newsgroup-readonly&gt;</literal></entry>
-+						<entry>open a different newsgroup in read only mode</entry>
-+					</row>
-+					<row>
-+						<entry>attachment,index,pager</entry>
-+						<entry>Alt-F</entry>
-+						<entry><literal>&lt;forward-to-group&gt;</literal></entry>
-+						<entry>forward to newsgroup</entry>
-+					</row>
-+					<row>
-+						<entry>index</entry>
-+						<entry>(none)</entry>
-+						<entry><literal>&lt;get-children&gt;</literal></entry>
-+						<entry>get all children of the current message</entry>
-+					</row>
-+					<row>
-+						<entry>index</entry>
-+						<entry>Alt-G</entry>
-+						<entry><literal>&lt;get-parent&gt;</literal></entry>
-+						<entry>get parent of the current message</entry>
-+					</row>
-+					<row>
-+						<entry>index,pager</entry>
-+						<entry>(none)</entry>
-+						<entry><literal>&lt;imap-fetch-mail&gt;</literal></entry>
-+						<entry>force retrieval of mail from IMAP server</entry>
-+					</row>
-+					<row>
-+						<entry>index,pager</entry>
-+						<entry>(none)</entry>
-+						<entry><literal>&lt;imap-logout-all&gt;</literal></entry>
-+						<entry>logout from all IMAP servers</entry>
-+					</row>
-+					<row>
-+						<entry>pager</entry>
-+						<entry>(none)</entry>
-+						<entry><literal>&lt;modify-labels-then-hide&gt;</literal></entry>
-+						<entry>modify labeld and then hide message</entry>
-+					</row>
-+					<row>
-+						<entry>index</entry>
-+						<entry>(none)</entry>
-+						<entry><literal>&lt;reconstruct-thread&gt;</literal></entry>
-+						<entry>reconstruct thread containing current message</entry>
-+					</row>
-+					<row>
-+						<entry>pager</entry>
-+						<entry>Alt-X</entry>
-+						<entry><literal>&lt;vfolder-from-query&gt;</literal></entry>
-+						<entry>generate virtual folder from query</entry>
-+					</row>
-+					<row>
-+						<entry>index</entry>
-+						<entry>Ctrl-G</entry>
-+						<entry><literal>&lt;get-message&gt;</literal></entry>
-+						<entry>get message with Message-Id</entry>
-+					</row>
-+				</tbody>
-+			</tgroup>
-+		</table>
-+	</sect2>
++    <table id="table-nntp-functions">
++      <title>NNTP Functions</title>
++      <tgroup cols="4">
++        <thead>
++          <row>
++            <entry>Menus</entry>
++            <entry>Default Key</entry>
++            <entry>Function</entry>
++            <entry>Description</entry>
++          </row>
++        </thead>
++        <tbody>
++          <row>
++            <entry>browser,index</entry>
++            <entry>y</entry>
++            <entry><literal>&lt;catchup&gt;</literal></entry>
++            <entry>mark all articles in newsgroup as read</entry>
++          </row>
++          <row>
++            <entry>index,pager</entry>
++            <entry>i</entry>
++            <entry><literal>&lt;change-newsgroup&gt;</literal></entry>
++            <entry>open a different newsgroup</entry>
++          </row>
++          <row>
++            <entry>pager</entry>
++            <entry>X</entry>
++            <entry><literal>&lt;change-vfolder&gt;</literal></entry>
++            <entry>open a different virtual folder</entry>
++          </row>
++          <row>
++            <entry>compose</entry>
++            <entry>o</entry>
++            <entry><literal>&lt;edit-followup-to&gt;</literal></entry>
++            <entry>edit the Followup-To field</entry>
++          </row>
++          <row>
++            <entry>compose</entry>
++            <entry>N</entry>
++            <entry><literal>&lt;edit-newsgroups&gt;</literal></entry>
++            <entry>edit the newsgroups list</entry>
++          </row>
++          <row>
++            <entry>compose</entry>
++            <entry>x</entry>
++            <entry><literal>&lt;edit-x-comment-to&gt;</literal></entry>
++            <entry>edit the X-Comment-To field</entry>
++          </row>
++          <row>
++            <entry>pager</entry>
++            <entry>+</entry>
++            <entry><literal>&lt;entire-thread&gt;</literal></entry>
++            <entry>read entire thread of the current message</entry>
++          </row>
++          <row>
++            <entry>attachment,index,pager</entry>
++            <entry>F</entry>
++            <entry><literal>&lt;followup-message&gt;</literal></entry>
++            <entry>followup to newsgroup</entry>
++          </row>
++          <row>
++            <entry>pager</entry>
++            <entry>`</entry>
++            <entry><literal>&lt;modify-labels&gt;</literal></entry>
++            <entry>modify (notmuch) tags</entry>
++          </row>
++          <row>
++            <entry>index,pager</entry>
++            <entry>P</entry>
++            <entry><literal>&lt;post-message&gt;</literal></entry>
++            <entry>post message to newsgroup</entry>
++          </row>
++          <row>
++            <entry>browser</entry>
++            <entry>g</entry>
++            <entry><literal>&lt;reload-active&gt;</literal></entry>
++            <entry>load list of all newsgroups from NNTP server</entry>
++          </row>
++          <row>
++            <entry>browser</entry>
++            <entry>s</entry>
++            <entry><literal>&lt;subscribe&gt;</literal></entry>
++            <entry>subscribe to current mbox (IMAP/NNTP only)</entry>
++          </row>
++          <row>
++            <entry>browser</entry>
++            <entry>S</entry>
++            <entry><literal>&lt;subscribe-pattern&gt;</literal></entry>
++            <entry>subscribe to newsgroups matching a pattern</entry>
++          </row>
++          <row>
++            <entry>browser</entry>
++            <entry>Y</entry>
++            <entry><literal>&lt;uncatchup&gt;</literal></entry>
++            <entry>mark all articles in newsgroup as unread</entry>
++          </row>
++          <row>
++            <entry>browser</entry>
++            <entry>u</entry>
++            <entry><literal>&lt;unsubscribe&gt;</literal></entry>
++            <entry>unsubscribe from current mbox (IMAP/NNTP only)</entry>
++          </row>
++          <row>
++            <entry>browser</entry>
++            <entry>U</entry>
++            <entry><literal>&lt;unsubscribe-pattern&gt;</literal></entry>
++            <entry>unsubscribe from newsgroups matching a pattern</entry>
++          </row>
++          <row>
++            <entry>index,pager</entry>
++            <entry>Alt-i</entry>
++            <entry><literal>&lt;change-newsgroup-readonly&gt;</literal></entry>
++            <entry>open a different newsgroup in read only mode</entry>
++          </row>
++          <row>
++            <entry>attachment,index,pager</entry>
++            <entry>Alt-F</entry>
++            <entry><literal>&lt;forward-to-group&gt;</literal></entry>
++            <entry>forward to newsgroup</entry>
++          </row>
++          <row>
++            <entry>index</entry>
++            <entry>(none)</entry>
++            <entry><literal>&lt;get-children&gt;</literal></entry>
++            <entry>get all children of the current message</entry>
++          </row>
++          <row>
++            <entry>index</entry>
++            <entry>Alt-G</entry>
++            <entry><literal>&lt;get-parent&gt;</literal></entry>
++            <entry>get parent of the current message</entry>
++          </row>
++          <row>
++            <entry>index,pager</entry>
++            <entry>(none)</entry>
++            <entry><literal>&lt;imap-fetch-mail&gt;</literal></entry>
++            <entry>force retrieval of mail from IMAP server</entry>
++          </row>
++          <row>
++            <entry>index,pager</entry>
++            <entry>(none)</entry>
++            <entry><literal>&lt;imap-logout-all&gt;</literal></entry>
++            <entry>logout from all IMAP servers</entry>
++          </row>
++          <row>
++            <entry>pager</entry>
++            <entry>(none)</entry>
++            <entry><literal>&lt;modify-labels-then-hide&gt;</literal></entry>
++            <entry>modify labeld and then hide message</entry>
++          </row>
++          <row>
++            <entry>index</entry>
++            <entry>(none)</entry>
++            <entry><literal>&lt;reconstruct-thread&gt;</literal></entry>
++            <entry>reconstruct thread containing current message</entry>
++          </row>
++          <row>
++            <entry>pager</entry>
++            <entry>Alt-X</entry>
++            <entry><literal>&lt;vfolder-from-query&gt;</literal></entry>
++            <entry>generate virtual folder from query</entry>
++          </row>
++          <row>
++            <entry>index</entry>
++            <entry>Ctrl-G</entry>
++            <entry><literal>&lt;get-message&gt;</literal></entry>
++            <entry>get message with Message-Id</entry>
++          </row>
++        </tbody>
++      </tgroup>
++    </table>
++  </sect2>
 +
-+	<sect2 id="nntp-commands">
-+		<title>Commands</title>
-+	</sect2>
++<!--
++  <sect2 id="nntp-commands">
++    <title>Commands</title>
++  </sect2>
 +
-+	<sect2 id="nntp-colors">
-+		<title>Colors</title>
-+		<para>None</para>
-+	</sect2>
++  <sect2 id="nntp-colors">
++    <title>Colors</title>
++  </sect2>
 +
-+	<sect2 id="nntp-sort">
-+		<title>Sort</title>
-+		<para>None</para>
-+	</sect2>
++  <sect2 id="nntp-sort">
++    <title>Sort</title>
++  </sect2>
++-->
 +
-+	<sect2 id="nntp-muttrc">
-+		<title>Muttrc</title>
-+	</sect2>
++  <sect2 id="nntp-muttrc">
++    <title>Muttrc</title>
 +
-+	<sect2 id="nntp-see-also">
-+		<title>See Also</title>
++<screen>
++<emphasis role="comment"># This is a complete list of nntp configuration.
 +
-+		<itemizedlist>
-+			<listitem><para><ulink url="https://github.com/neomutt/neomutt/wiki">NeoMutt Project</ulink></para></listitem>
-+			<listitem><para><link linkend="compile-time-features">Compile-Time Features</link></para></listitem>
-+		</itemizedlist>
-+	</sect2>
++# --------------------------------------------------------------------------
++# VARIABLES - shown with their default values
++# --------------------------------------------------------------------------</emphasis>
 +
-+	<sect2 id="nntp-known-bugs">
-+		<title>Known Bugs</title>
-+	</sect2>
++set ask_follow_up = no
++set ask_x_comment_to = no
++set catchup_newsgroup = ask-yes
++set followup_to_poster = ask-yes
++set group_index_format = '%4C %M%N %5s  %-45.45f %d'
++set inews = ''
++set mime_subject = yes
++set newsgroups_charset = utf-8
++set newsrc = '~/.newsrc'
++set news_cache_dir = '~/.mutt'
++set news_server = ''
++set nntp_authenticators = ''
++set nntp_context = 1000
++set nntp_listgroup = yes
++set nntp_load_description = yes
++set nntp_pass = ''
++set nntp_poll = 60
++set nntp_user = ''
++set post_moderated = ask-yes
++set save_unsubscribed = no
++set show_new_news = yes
++set show_only_unread = no
++set x_comment_to = no
 +
-+	<sect2 id="nntp-credits">
-+		<title>Credits</title>
-+		<itemizedlist>
-+		<listitem><para>Vsevolod Volkov <email>vvv@mutt.org.ua</email></para></listitem>
-+		<listitem><para>Felix von Leitner <email>leitner@fefe.de</email></para></listitem>
-+		<listitem><para>Richard Russon <email>rich@flatcap.org</email></para></listitem>
-+		</itemizedlist>
-+	</sect2>
++<emphasis role="comment"># --------------------------------------------------------------------------
++# FUNCTIONS - shown with an example mapping
++# --------------------------------------------------------------------------
++
++# mark all articles in newsgroup as read</emphasis>
++bind browser,index y catchup 
++
++<emphasis role="comment"># open a different newsgroup</emphasis>
++bind index,pager i change-newsgroup 
++
++<emphasis role="comment"># open a different virtual folder</emphasis>
++bind pager X change-vfolder 
++
++<emphasis role="comment"># edit the Followup-To field</emphasis>
++bind compose o edit-followup-to 
++
++<emphasis role="comment"># edit the newsgroups list</emphasis>
++bind compose N edit-newsgroups 
++
++<emphasis role="comment"># edit the X-Comment-To field</emphasis>
++bind compose x edit-x-comment-to 
++
++<emphasis role="comment"># read entire thread of the current message</emphasis>
++bind pager + entire-thread 
++
++<emphasis role="comment"># followup to newsgroup</emphasis>
++bind attachment,index,pager F followup-message 
++
++<emphasis role="comment"># modify (notmuch) tags</emphasis>
++bind pager ` modify-labels 
++
++<emphasis role="comment"># post message to newsgroup</emphasis>
++bind index,pager P post-message 
++
++<emphasis role="comment"># load list of all newsgroups from NNTP server</emphasis>
++bind browser g reload-active 
++
++<emphasis role="comment"># subscribe to current mbox (IMAP/NNTP only)</emphasis>
++bind browser s subscribe 
++
++<emphasis role="comment"># subscribe to newsgroups matching a pattern</emphasis>
++bind browser S subscribe-pattern 
++
++<emphasis role="comment"># mark all articles in newsgroup as unread</emphasis>
++bind browser Y uncatchup 
++
++<emphasis role="comment"># unsubscribe from current mbox (IMAP/NNTP only)</emphasis>
++bind browser u unsubscribe 
++
++<emphasis role="comment"># unsubscribe from newsgroups matching a pattern</emphasis>
++bind browser U unsubscribe-pattern 
++
++<emphasis role="comment"># open a different newsgroup in read only mode</emphasis>
++bind index,pager \ei change-newsgroup-readonly 
++
++<emphasis role="comment"># forward to newsgroup</emphasis>
++bind attachment,index,pager \eF forward-to-group 
++
++<emphasis role="comment"># get all children of the current message</emphasis>
++# bind index ??? get-children 
++
++<emphasis role="comment"># get parent of the current message</emphasis>
++bind index \eG get-parent 
++
++<emphasis role="comment"># force retrieval of mail from IMAP server
++# bind index,pager ??? imap-fetch-mail 
++
++# logout from all IMAP servers
++# bind index,pager ??? imap-logout-all 
++
++# modify labeld and then hide message
++# bind pager ??? modify-labels-then-hide 
++
++# reconstruct thread containing current message
++# bind index ??? reconstruct-thread 
++
++# generate virtual folder from query</emphasis>
++bind pager \eX vfolder-from-query 
++
++<emphasis role="comment"># get message with Message-Id</emphasis>
++bind index \CG get-message 
++
++<emphasis role="comment"># --------------------------------------------------------------------------
++
++# vim: syntax=muttrc</emphasis>
++</screen>
++  </sect2>
++
++  <sect2 id="nntp-see-also">
++    <title>See Also</title>
++
++    <itemizedlist>
++      <listitem><para><ulink url="http://www.neomutt.org/">NeoMutt Project</ulink></para></listitem>
++      <listitem><para><link linkend="compile-time-features">Compile-Time Features</link></para></listitem>
++    </itemizedlist>
++  </sect2>
++
++  <sect2 id="nntp-known-bugs">
++    <title>Known Bugs</title>
++    <para>
++      None
++    </para>
++  </sect2>
++
++  <sect2 id="nntp-credits">
++    <title>Credits</title>
++    <itemizedlist>
++    <listitem><para>Vsevolod Volkov <email>vvv@mutt.org.ua</email></para></listitem>
++    <listitem><para>Felix von Leitner <email>leitner@fefe.de</email></para></listitem>
++    <listitem><para>Richard Russon <email>rich@flatcap.org</email></para></listitem>
++    </itemizedlist>
++  </sect2>
 +</sect1>
 +
  <sect1 id="progress">
- 	<title>Progress Bar Patch</title>
- 	<subtitle>Show a visual progress bar on slow operations</subtitle>
+   <title>Progress Bar Patch</title>
+   <subtitle>Show a visual progress bar on slow operations</subtitle>
 diff --git a/doc/mutt.man b/doc/mutt.man
 index d29294f..b5b7337 100644
 --- a/doc/mutt.man
@@ -2818,31 +2929,149 @@ index d29294f..b5b7337 100644
  .IP "-H \fIdraft\fP"
 diff --git a/doc/muttrc.nntp b/doc/muttrc.nntp
 new file mode 100644
-index 0000000..e69de29
-diff --git a/doc/vimrc-nntp b/doc/vimrc-nntp
-new file mode 100644
-index 0000000..8b93f1a
+index 0000000..73b5629
 --- /dev/null
-+++ b/doc/vimrc-nntp
++++ b/doc/muttrc.nntp
+@@ -0,0 +1,115 @@
++# This is a complete list of nntp configuration.
++
++# --------------------------------------------------------------------------
++# VARIABLES - shown with their default values
++# --------------------------------------------------------------------------
++
++set ask_follow_up = no
++set ask_x_comment_to = no
++set catchup_newsgroup = ask-yes
++set followup_to_poster = ask-yes
++set group_index_format = '%4C %M%N %5s  %-45.45f %d'
++set inews = ''
++set mime_subject = yes
++set newsgroups_charset = utf-8
++set newsrc = '~/.newsrc'
++set news_cache_dir = '~/.mutt'
++set news_server = ''
++set nntp_authenticators = ''
++set nntp_context = 1000
++set nntp_listgroup = yes
++set nntp_load_description = yes
++set nntp_pass = ''
++set nntp_poll = 60
++set nntp_user = ''
++set post_moderated = ask-yes
++set save_unsubscribed = no
++set show_new_news = yes
++set show_only_unread = no
++set x_comment_to = no
++
++# --------------------------------------------------------------------------
++# FUNCTIONS - shown with an example mapping
++# --------------------------------------------------------------------------
++
++# mark all articles in newsgroup as read
++bind browser,index y catchup 
++
++# open a different newsgroup
++bind index,pager i change-newsgroup 
++
++# open a different virtual folder
++bind pager X change-vfolder 
++
++# edit the Followup-To field
++bind compose o edit-followup-to 
++
++# edit the newsgroups list
++bind compose N edit-newsgroups 
++
++# edit the X-Comment-To field
++bind compose x edit-x-comment-to 
++
++# read entire thread of the current message
++bind pager + entire-thread 
++
++# followup to newsgroup
++bind attachment,index,pager F followup-message 
++
++# modify (notmuch) tags
++bind pager ` modify-labels 
++
++# post message to newsgroup
++bind index,pager P post-message 
++
++# load list of all newsgroups from NNTP server
++bind browser g reload-active 
++
++# subscribe to current mbox (IMAP/NNTP only)
++bind browser s subscribe 
++
++# subscribe to newsgroups matching a pattern
++bind browser S subscribe-pattern 
++
++# mark all articles in newsgroup as unread
++bind browser Y uncatchup 
++
++# unsubscribe from current mbox (IMAP/NNTP only)
++bind browser u unsubscribe 
++
++# unsubscribe from newsgroups matching a pattern
++bind browser U unsubscribe-pattern 
++
++# open a different newsgroup in read only mode
++bind index,pager \ei change-newsgroup-readonly 
++
++# forward to newsgroup
++bind attachment,index,pager \eF forward-to-group 
++
++# get all children of the current message
++# bind index ??? get-children 
++
++# get parent of the current message
++bind index \eG get-parent 
++
++# force retrieval of mail from IMAP server
++# bind index,pager ??? imap-fetch-mail 
++
++# logout from all IMAP servers
++# bind index,pager ??? imap-logout-all 
++
++# modify labeld and then hide message
++# bind pager ??? modify-labels-then-hide 
++
++# reconstruct thread containing current message
++# bind index ??? reconstruct-thread 
++
++# generate virtual folder from query
++bind pager \eX vfolder-from-query 
++
++# get message with Message-Id
++bind index \CG get-message 
++
++# --------------------------------------------------------------------------
++
++# vim: syntax=muttrc
+diff --git a/doc/vimrc.nntp b/doc/vimrc.nntp
+new file mode 100644
+index 0000000..58a5d38
+--- /dev/null
++++ b/doc/vimrc.nntp
 @@ -0,0 +1,50 @@
 +" Vim syntax file for the mutt nntp patch
 +
-+syntax keyword muttrcVarBool    skipwhite contained ask_follow_up         nextgroup=muttrcSetBoolAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
-+syntax keyword muttrcVarBool    skipwhite contained ask_x_comment_to      nextgroup=muttrcSetBoolAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
-+syntax keyword muttrcVarBool    skipwhite contained mime_subject          nextgroup=muttrcSetBoolAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
-+syntax keyword muttrcVarBool    skipwhite contained nntp_listgroup        nextgroup=muttrcSetBoolAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
-+syntax keyword muttrcVarBool    skipwhite contained nntp_load_description nextgroup=muttrcSetBoolAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
-+syntax keyword muttrcVarBool    skipwhite contained save_unsubscribed     nextgroup=muttrcSetBoolAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
-+syntax keyword muttrcVarBool    skipwhite contained show_new_news         nextgroup=muttrcSetBoolAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
-+syntax keyword muttrcVarBool    skipwhite contained show_only_unread      nextgroup=muttrcSetBoolAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
-+syntax keyword muttrcVarBool    skipwhite contained x_comment_to          nextgroup=muttrcSetBoolAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
++syntax keyword muttrcVarBool    contained skipwhite ask_follow_up         nextgroup=muttrcSetBoolAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
++syntax keyword muttrcVarBool    contained skipwhite ask_x_comment_to      nextgroup=muttrcSetBoolAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
++syntax keyword muttrcVarBool    contained skipwhite mime_subject          nextgroup=muttrcSetBoolAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
++syntax keyword muttrcVarBool    contained skipwhite nntp_listgroup        nextgroup=muttrcSetBoolAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
++syntax keyword muttrcVarBool    contained skipwhite nntp_load_description nextgroup=muttrcSetBoolAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
++syntax keyword muttrcVarBool    contained skipwhite save_unsubscribed     nextgroup=muttrcSetBoolAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
++syntax keyword muttrcVarBool    contained skipwhite show_new_news         nextgroup=muttrcSetBoolAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
++syntax keyword muttrcVarBool    contained skipwhite show_only_unread      nextgroup=muttrcSetBoolAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
++syntax keyword muttrcVarBool    contained skipwhite x_comment_to          nextgroup=muttrcSetBoolAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
 +
-+syntax keyword muttrcVarNum     skipwhite contained nntp_context          nextgroup=muttrcSetNumAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
-+syntax keyword muttrcVarNum     skipwhite contained nntp_poll             nextgroup=muttrcSetNumAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
++syntax keyword muttrcVarNum     contained skipwhite nntp_context          nextgroup=muttrcSetNumAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
++syntax keyword muttrcVarNum     contained skipwhite nntp_poll             nextgroup=muttrcSetNumAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
 +
-+syn keyword muttrcVarQuad	skipwhite contained catchup_newsgroup     nextgroup=muttrcSetQuadAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
-+syn keyword muttrcVarQuad	skipwhite contained followup_to_poster    nextgroup=muttrcSetQuadAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
-+syn keyword muttrcVarQuad	skipwhite contained post_moderated        nextgroup=muttrcSetQuadAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
++syn keyword muttrcVarQuad	contained skipwhite catchup_newsgroup     nextgroup=muttrcSetQuadAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
++syn keyword muttrcVarQuad	contained skipwhite followup_to_poster    nextgroup=muttrcSetQuadAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
++syn keyword muttrcVarQuad	contained skipwhite post_moderated        nextgroup=muttrcSetQuadAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
 +
 +syntax keyword muttrcVarStr     contained skipwhite group_index_format    nextgroup=muttrcVarEqualsIdxFmt
 +syntax keyword muttrcVarStr     contained skipwhite inews                 nextgroup=muttrcVarEqualsIdxFmt
@@ -3199,7 +3428,7 @@ index d91b9c6..2f4b71d 100644
  
  static int
 diff --git a/hdrline.c b/hdrline.c
-index b0d61cd..5b8dd01 100644
+index 03822ad..c29107b 100644
 --- a/hdrline.c
 +++ b/hdrline.c
 @@ -243,6 +243,7 @@ int mutt_user_is_recipient (HEADER *h)
@@ -3219,23 +3448,20 @@ index b0d61cd..5b8dd01 100644
   * %X = number of MIME attachments
   * %y = `x-label:' field (if present)
   * %Y = `x-label:' field (if present, tree unfolded, and != parent's x-label)
-@@ -587,6 +590,15 @@ hdr_format_str (char *dest,
-         optional = 0;
+@@ -599,6 +602,12 @@ hdr_format_str (char *dest,
+ 
        break;
  
 +#ifdef USE_NNTP
-+    case 'g':
-+      if (hdr->env->newsgroups)
-+      {
-+	mutt_format_s (dest, destlen, prefix, hdr->env->newsgroups);
-+      }
++    case 'q':
++      mutt_format_s (dest, destlen, prefix, hdr->env->newsgroups ? hdr->env->newsgroups : "");
 +      break;
 +#endif
 +
-     case 'H':
-       /* (Hormel) spam score */
-       if (optional)
-@@ -836,6 +848,22 @@ hdr_format_str (char *dest,
+     case 'i':
+       mutt_format_s (dest, destlen, prefix, hdr->env->message_id ? hdr->env->message_id : "<no.id>");
+       break;
+@@ -836,6 +845,22 @@ hdr_format_str (char *dest,
        mutt_format_s (dest, destlen, prefix, buf2);
        break;
  
@@ -3643,7 +3869,7 @@ index 8ffcbce..99ea706 100644
  int mx_access (const char*, int);
  int mx_check_empty (const char *);
 diff --git a/main.c b/main.c
-index a6b4a1e..2255585 100644
+index 3e01213..bc042ed 100644
 --- a/main.c
 +++ b/main.c
 @@ -66,6 +66,10 @@
@@ -3745,7 +3971,7 @@ index a6b4a1e..2255585 100644
  
      mutt_str_replace (&CurrentFolder, folder);
 diff --git a/mutt.h b/mutt.h
-index 28744a0..8060859 100644
+index 28744a0..825cc41 100644
 --- a/mutt.h
 +++ b/mutt.h
 @@ -234,6 +234,9 @@ enum
@@ -3835,11 +4061,10 @@ index 28744a0..8060859 100644
    OPTMAX
  };
  
-@@ -625,6 +656,14 @@ typedef struct envelope
+@@ -625,6 +656,13 @@ typedef struct envelope
    char *message_id;
    char *supersedes;
    char *date;
-+  char *x_label;
 +  char *organization;
 +#ifdef USE_NNTP
 +  char *newsgroups;
@@ -3850,7 +4075,7 @@ index 28744a0..8060859 100644
    BUFFER *spam;
    LIST *references;		/* message references (in reverse order) */
    LIST *in_reply_to;		/* in-reply-to header content */
-@@ -815,7 +854,7 @@ typedef struct header
+@@ -815,7 +853,7 @@ typedef struct header
    int refno;			/* message number on server */
  #endif
  
@@ -3876,7 +4101,7 @@ index 0a00c81..1da5ea5 100644
        mutt_error (_("Unknown SASL profile"));
        return -1;
 diff --git a/muttlib.c b/muttlib.c
-index b0aa8bf..1403fa6 100644
+index b0aa8bf..37e8adf 100644
 --- a/muttlib.c
 +++ b/muttlib.c
 @@ -329,7 +329,7 @@ void mutt_free_header (HEADER **h)
@@ -3888,11 +4113,10 @@ index b0aa8bf..1403fa6 100644
    FREE (&(*h)->data);
  #endif
    FREE (h);		/* __FREE_CHECKED__ */
-@@ -713,6 +713,14 @@ void mutt_free_envelope (ENVELOPE **p)
+@@ -713,6 +713,13 @@ void mutt_free_envelope (ENVELOPE **p)
    FREE (&(*p)->message_id);
    FREE (&(*p)->supersedes);
    FREE (&(*p)->date);
-+  FREE (&(*p)->x_label);
 +  FREE (&(*p)->organization);
 +#ifdef USE_NNTP
 +  FREE (&(*p)->newsgroups);
@@ -3903,7 +4127,7 @@ index b0aa8bf..1403fa6 100644
  
    mutt_buffer_free (&(*p)->spam);
  
-@@ -1588,6 +1596,14 @@ int mutt_save_confirm (const char *s, struct stat *st)
+@@ -1588,6 +1595,14 @@ int mutt_save_confirm (const char *s, struct stat *st)
      }
    }
  
@@ -8095,7 +8319,7 @@ index 48c7bb6..1bd1620 100644
  	  ci_send_message (SENDFORWARD, NULL, NULL, extra->ctx, extra->hdr);
  	redraw = REDRAW_FULL;
 diff --git a/parse.c b/parse.c
-index b02a044..1850da2 100644
+index b02a044..afee665 100644
 --- a/parse.c
 +++ b/parse.c
 @@ -94,7 +94,7 @@ char *mutt_read_rfc822_line (FILE *f, char *line, size_t *linelen)
@@ -8153,10 +8377,10 @@ index b02a044..1850da2 100644
      case 'r':
      if (!ascii_strcasecmp (line + 1, "eferences"))
      {
-@@ -1286,6 +1318,21 @@ int mutt_parse_rfc822_line (ENVELOPE *e, HEADER *hdr, char *line, char *p, short
+@@ -1285,6 +1317,20 @@ int mutt_parse_rfc822_line (ENVELOPE *e, HEADER *hdr, char *line, char *p, short
+     {
        kwtype = M_X_MOZILLA_KEYS;
      }
- 
 +#ifdef USE_NNTP
 +    else if (!mutt_strcasecmp (line + 1, "-comment-to"))
 +    {
@@ -8171,10 +8395,9 @@ index b02a044..1850da2 100644
 +      matched = 1;
 +    }
 +#endif
-+    
+ 
      default:
      break;
-   }
 diff --git a/pattern.c b/pattern.c
 index 8c296ce..066e2a0 100644
 --- a/pattern.c
@@ -8989,5 +9212,5 @@ index a0cd472..ac3c8ed 100644
  	{ "USE_POP", 1 },
  #else
 -- 
-2.9.0
+2.7.4
 

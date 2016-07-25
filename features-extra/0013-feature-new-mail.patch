@@ -1,34 +1,114 @@
-From 94d25f31fb4b7fb18e2350f82da0c3209dfd7fad Mon Sep 17 00:00:00 2001
+From 9f4e95fd144b0b05f47482f2000c66ac33a4a651 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Yoshiki=20V=C3=A1zquez=20Baeza?= <yoshiki89@gmail.com>
 Date: Sat, 23 Apr 2016 13:33:50 -0700
 Subject: [PATCH 13/14] feature: new-mail
 
 This setting executes a command when new mail is received.
 ---
- curs_main.c         |  12 ++++
- doc/manual.xml.head | 185 +++++++++++++++++++++++++++++++++++++++++++++++++++-
- doc/muttrc.new-mail |  35 ++++++++++
- doc/vimrc.new-mail  |  15 +++++
+ PATCHES             |   1 +
+ README.new-mail     |  62 ++++++++++++++++++++++
+ curs_main.c         |  12 +++++
+ doc/manual.xml.head | 147 +++++++++++++++++++++++++++++++++++++++++++++++++++-
+ doc/muttrc.new-mail |  18 +++++++
+ doc/vimrc.new-mail  |   5 ++
  globals.h           |   1 +
- init.h              |   7 ++
- 6 files changed, 254 insertions(+), 1 deletion(-)
+ init.h              |   7 +++
+ 8 files changed, 252 insertions(+), 1 deletion(-)
+ create mode 100644 README.new-mail
  create mode 100644 doc/muttrc.new-mail
  create mode 100644 doc/vimrc.new-mail
 
+diff --git a/PATCHES b/PATCHES
+index 23e0bb1..df9707e 100644
+--- a/PATCHES
++++ b/PATCHES
+@@ -1,3 +1,4 @@
++patch-new-mail-neo-git
+ patch-lmdb-neo-git
+ patch-nntp-neo-git
+ patch-keywords-neo-git
+diff --git a/README.new-mail b/README.new-mail
+new file mode 100644
+index 0000000..07dc80e
+--- /dev/null
++++ b/README.new-mail
+@@ -0,0 +1,62 @@
++new-mail Patch
++==============
++
++    Execute a command upon the receipt of new mail.
++
++Patch
++-----
++
++    To check if Mutt supports "new-mail", look for "patch-new-mail" in the mutt
++    version.
++
++    Dependencies
++    * mutt-1.6.2
++
++Introduction
++------------
++
++    This patch enables the new_mail_command setting, which can be used to
++    execute a custom script (e.g., a notification handler) upon receiving a new
++    mail.
++
++    The command string can contain expandos, such as '%f' for the folder name.
++    For a complete list, see: $status_format.
++
++    For example in Linux you can use (most distributions already provide
++    notify-send):
++
++        set new_mail_command="notify-send --icon='/home/santiago/Pictures/mutt.png' 'New Email in %f' '%n new messages, %u unread.' &"
++
++    And in OS X you will need to install a command line interface for
++    Notification Center, for example: terminal-notifier https://github.com/julienXX/terminal-notifier
++
++        set new_mail_command="terminal-notifier -title '%v' -subtitle 'New Mail in %f' -message '%n new messages, %u unread.' -activate 'com.apple.Terminal'"
++
++Variables
++---------
++
++    | Name               | Type   | Default |
++    |--------------------|--------|---------|
++    | 'new_mail_command' | string | (empty) |
++
++See Also
++--------
++
++    * NeoMutt project
++    * folder-hook
++
++Known Bugs
++----------
++
++    * Notifies about spurious new email when an email is saved, see Issue #20
++          https://github.com/neomutt/neomutt/issues/20
++    * Will not notify about new e-mail if the pager is open, see Issue #19
++          https://github.com/neomutt/neomutt/issues/19
++
++Credits
++-------
++
++    * Yoshiki Vazquez-Baeza <yoshiki@ucsd.edu>
++    * Santiago Torres-Arias <santiago@nyu.edu>
++    * Richard Russon <rich@flatcap.org>
++
 diff --git a/curs_main.c b/curs_main.c
-index 27e1448..795fc1f 100644
+index 5631e8a..a8e1935 100644
 --- a/curs_main.c
 +++ b/curs_main.c
 @@ -793,6 +793,12 @@ int mutt_index_menu (void)
  	  mutt_message _("New mail in this mailbox.");
  	  if (option (OPTBEEPNEW))
  	    beep ();
-+    if (NewMailCmd)
-+    {
-+      char cmd[LONG_STRING];
-+      menu_status_line(cmd, sizeof(cmd), menu, NONULL(NewMailCmd));
-+      mutt_system(cmd);
-+    }
++	  if (NewMailCmd)
++	  {
++	    char cmd[LONG_STRING];
++	    menu_status_line(cmd, sizeof(cmd), menu, NONULL(NewMailCmd));
++	    mutt_system(cmd);
++	  }
  	} else if (check == M_FLAGS)
  	  mutt_message _("Mailbox was externally modified.");
  
@@ -46,268 +126,203 @@ index 27e1448..795fc1f 100644
       }
       else
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index f4f59b6..94dc96e 100644
+index d3c447d..b2ded65 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
-@@ -6845,7 +6845,10 @@ <sect2 id="new-mail-formats">
+@@ -6824,7 +6824,10 @@ <sect2 id="new-mail-formats">
  <link linkend="maildir-trash">$maildir_trash</link>). For MH folders, a
  mailbox is considered having new mail if there's at least one message in
  the <quote>unseen</quote> sequence as specified by <link
 -linkend="mh-seq-unseen">$mh_seq_unseen</link>.
 +linkend="mh-seq-unseen">$mh_seq_unseen</link>. Optionally, <link
-+linkend="new_mail_command">$new_mail_command</link> can be configured to
++linkend="new-mail-command">$new_mail_command</link> can be configured to
 +execute an external program every time new mail is detected in the current
 +inbox.
  </para>
  
  <para>
-@@ -8332,6 +8335,186 @@ <sect1 id="lmdb">
- 	</sect2>
+@@ -10937,6 +10940,148 @@ <sect1 id="nested-if">
+   </sect2>
  </sect1>
  
-+<sect1 id="FEATURE-NAME">
-+	<title>FEATURE-NAME Patch</title>
-+	<subtitle>DESCRIPTION</subtitle>
++<sect1 id="new-mail-hook">
++  <title>new-mail Patch</title>
++  <subtitle>Execute a command upon the receipt of new mail.</subtitle>
 +
-+	<sect2 id="FEATURE-NAME-patch">
-+		<title>Patch</title>
++  <sect2 id="new-mail-patch">
++    <title>Patch</title>
 +
-+		<para>
-+			To check if Mutt supports <quote>FEATURE-NAME</quote>, look for
-+			<quote>patch-FEATURE-NAME</quote> in the mutt version.
-+			See: <xref linkend="mutt-patches"/>.
-+		</para>
++    <para>
++      To check if Mutt supports <quote>new-mail</quote>, look for
++      <quote>patch-new-mail</quote> in the mutt version.
++      See: <xref linkend="mutt-patches"/>.
++    </para>
 +
-+		<itemizedlist>
-+			<title>Dependencies:</title>
-+			<listitem><para>mutt-1.6.0</para></listitem>
-+		</itemizedlist>
++    <itemizedlist>
++      <title>Dependencies:</title>
++      <listitem><para>mutt-1.6.2</para></listitem>
++    </itemizedlist>
 +
-+		<para>This patch is part of the <ulink url="http://www.neomutt.org/">NeoMutt Project</ulink>.</para>
-+	</sect2>
++    <para>This patch is part of the <ulink url="http://www.neomutt.org/">NeoMutt Project</ulink>.</para>
++  </sect2>
 +
-+	<sect2 id="FEATURE-NAME-intro">
-+		<title>Introduction</title>
++  <sect2 id="new-mail-intro">
++    <title>Introduction</title>
 +
-+		<para>
-+			SIMPLE DESCRIPTION OF FEATURE
-+		</para>
-+	</sect2>
++    <para>
++      This patch enables the new_mail_command setting, which can be used to
++      execute a custom script (e.g., a notification handler) upon receiving a
++      new mail.
++    </para>
 +
-+	<sect2 id="FEATURE-NAME-variables">
-+		<title>Variables</title>
++    <para>
++      The command string can contain expandos, such as <literal>%f</literal>
++      for the folder name.  For a complete list, see:
++      <link linkend="status-format">$status_format</link>.
++    </para>
 +
-+		<table id="table-FEATURE-NAME-variables">
-+			<title>FEATURE-NAME Variables</title>
-+			<tgroup cols="3">
-+				<thead>
-+					<row>
-+						<entry>Name</entry>
-+						<entry>Type</entry>
-+						<entry>Default</entry>
-+					</row>
-+				</thead>
-+				<tbody>
-+					<row>
-+						<entry><literal>VARIABLE-NAME</literal></entry>
-+						<entry>TYPE</entry>
-+						<entry><literal>DEFAULT-VALUE</literal></entry>
-+					</row>
-+				</tbody>
-+			</tgroup>
-+		</table>
-+	</sect2>
++    <para>
++      For example in Linux you can use (most distributions already provide notify-send):
++    </para>
 +
-+	<sect2 id="FEATURE-NAME-functions">
-+		<title>Functions</title>
-+
-+		<para>
-+			FEATURE-NAME adds the following functions to Mutt.
-+			By default, none of them are bound to keys.
-+		</para>
-+
-+		<table id="table-FEATURE-NAME-functions">
-+			<title>FEATURE-NAME Functions</title>
-+			<tgroup cols="3">
-+				<thead>
-+					<row>
-+						<entry>Menus</entry>
-+						<entry>Function</entry>
-+						<entry>Description</entry>
-+					</row>
-+				</thead>
-+				<tbody>
-+					<row>
-+						<entry>index,pager</entry>
-+						<entry><literal>&lt;FUNCTION-NAME&gt;</literal></entry>
-+						<entry>DESCRIPTION</entry>
-+					</row>
-+				</tbody>
-+			</tgroup>
-+		</table>
-+	</sect2>
-+
-+	<sect2 id="FEATURE-NAME-commands">
-+		<title>Commands</title>
-+		<cmdsynopsis>
-+			<command>COMMAND-NAME</command>
-+			<arg choice="plain">
-+				<replaceable class="parameter">PARAM1</replaceable>
-+			</arg>
-+			<arg choice="opt" rep="repeat">
-+				<replaceable class="parameter">PARAM2</replaceable>
-+			</arg>
-+		</cmdsynopsis>
-+	</sect2>
-+
-+	<sect2 id="FEATURE-NAME-colors">
-+		<title>Colors</title>
-+
-+		<table id="table-FEATURE-NAME-colors">
-+			<title>FEATURE-NAME Colors</title>
-+			<tgroup cols="3">
-+				<thead>
-+					<row>
-+						<entry>Name</entry>
-+						<entry>Default Color</entry>
-+						<entry>Description</entry>
-+					</row>
-+				</thead>
-+				<tbody>
-+					<row>
-+						<entry><literal>COLOR-NAME</literal></entry>
-+						<entry>default</entry>
-+						<entry>DESCRIPTION</entry>
-+					</row>
-+				</tbody>
-+			</tgroup>
-+		</table>
-+	</sect2>
-+
-+	<sect2 id="FEATURE-NAME-sort">
-+		<title>Sort</title>
-+
-+		<table id="table-FEATURE-NAME-sort">
-+			<title>FEATURE-NAME Sort</title>
-+			<tgroup cols="2">
-+				<thead>
-+					<row>
-+						<entry>Sort</entry>
-+						<entry>Description</entry>
-+					</row>
-+				</thead>
-+				<tbody>
-+					<row>
-+						<entry><literal>SORT-NAME</literal></entry>
-+						<entry>DESCRIPTION</entry>
-+					</row>
-+				</tbody>
-+			</tgroup>
-+		</table>
-+	</sect2>
-+
-+	<sect2 id="FEATURE-NAME-muttrc">
-+		<title>Muttrc</title>
 +<screen>
-+<emphasis role="comment"># This is a complete list of FEATURE-NAME-related configuration.
++set new_mail_command="notify-send --icon='/home/santiago/Pictures/mutt.png' 'New Email in %f' '%n new messages, %u unread.' &amp;"
++</screen>
++
++    <para>
++      And in OS X you will need to install a command line interface for
++      Notification Center, for example
++      <ulink url="https://github.com/julienXX/terminal-notifier">terminal-notifier</ulink>:
++    </para>
++
++<screen>
++set new_mail_command="terminal-notifier -title '%v' -subtitle 'New Mail in %f' -message '%n new messages, %u unread.' -activate 'com.apple.Terminal'"
++</screen>
++
++  </sect2>
++
++  <sect2 id="new-mail-variables">
++    <title>Variables</title>
++
++    <table id="table-new-mail-variables">
++      <title>New Mail Command Variables</title>
++      <tgroup cols="3">
++        <thead>
++          <row>
++            <entry>Name</entry>
++            <entry>Type</entry>
++            <entry>Default</entry>
++          </row>
++        </thead>
++        <tbody>
++          <row>
++            <entry><literal>new_mail_command</literal></entry>
++            <entry>string</entry>
++            <entry>(empty)</entry>
++          </row>
++        </tbody>
++      </tgroup>
++    </table>
++  </sect2>
++
++  <sect2 id="new-mail-muttrc">
++    <title>Muttrc</title>
++<screen>
++<emphasis role="comment"># Example Mutt config file for the 'new-mail-command' patch.
 + 
 +# --------------------------------------------------------------------------
 +# VARIABLES - shown with their default values
 +# --------------------------------------------------------------------------
 + 
-+# DESCRIPTION</emphasis>
-+set VARIABLE_NAME = "DEFAULT-VALUE"
-+
-+INSERT YOUR MUTTRC HERE
++# Set the command you want mutt to execute upon the receipt of a new email</emphasis>
++set new_mail_command = ""
 + 
-+<emphasis role="comment"># vim: syntax=muttrc</emphasis>
++<emphasis role="comment"># Linux example:
++# set new_command="notify-send --icon='/home/santiago/Pictures/mutt.png' 'New Email in %f' '%n new messages, %u unread.' &amp;"
++ 
++# OS X example:
++# set new_mail_command="terminal-notifier -title '%v' -subtitle 'New Mail in %f' -message '%n new messages, %u unread.' -activate 'com.apple.Terminal'"
++
++# --------------------------------------------------------------------------
++
++# vim: syntax=muttrc</emphasis>
 +</screen>
-+	</sect2>
++  </sect2>
 +
-+	<sect2 id="FEATURE-NAME-see-also">
-+		<title>See Also</title>
++  <sect2 id="new-mail-see-also">
++    <title>See Also</title>
 +
-+		<itemizedlist>
-+			<listitem><para><link linkend="regexp">LINK-DESCRIPTION</link></para></listitem>
-+		</itemizedlist>
-+	</sect2>
++    <itemizedlist>
++      <listitem><para><ulink url="http://www.neomutt.org/">NeoMutt Project</ulink></para></listitem>
++      <listitem><para><link linkend="folder-hook">folder-hook</link></para></listitem>
++    </itemizedlist>
++  </sect2>
 +
-+	<sect2 id="FEATURE-NAME-known-bugs">
-+		<title>Known Bugs</title>
-+		<para>None</para>
-+	</sect2>
++  <sect2 id="new-mail-known-bugs">
++    <title>Known Bugs</title>
++    <itemizedlist>
++      <listitem>
++        <para>
++          Notifies about spurious <emphasis role="bold">new email</emphasis>
++          when an email is saved, see
++          <ulink url="https://github.com/neomutt/neomutt/issues/20">Issue #20</ulink>
++        </para>
++    </listitem>
++    <listitem>
++      <para>
++        Will not notify about new e-mail if the pager is open, see
++        <ulink url="https://github.com/neomutt/neomutt/issues/19">Issue #19</ulink>
++      </para>
++    </listitem>
++    </itemizedlist>
++  </sect2>
 +
-+	<sect2 id="FEATURE-NAME-credits">
-+		<title>Credits</title>
-+		<itemizedlist>
-+		<listitem><para>FIRST LAST <email>EMAIL_ADDRESS</email></para></listitem>
-+		</itemizedlist>
-+	</sect2>
++  <sect2 id="new-mail-credits">
++    <title>Credits</title>
++    <itemizedlist>
++    <listitem><para>Yoshiki Vazquez-Baeza <email>yoshiki@ucsd.edu</email></para></listitem>
++    <listitem><para>Santiago Torres-Arias <email>santiago@nyu.edu</email></para></listitem>
++    <listitem><para>Richard Russon <email>rich@flatcap.org</email></para></listitem>
++    </itemizedlist>
++  </sect2>
 +</sect1>
 +
- </chapter>
- 
- <chapter id="optionalfeatures">
+ <sect1 id="nntp">
+   <title>NNTP Patch</title>
+   <subtitle>Talk to a Usenet news server</subtitle>
 diff --git a/doc/muttrc.new-mail b/doc/muttrc.new-mail
 new file mode 100644
-index 0000000..412c544
+index 0000000..3c3ce1f
 --- /dev/null
 +++ b/doc/muttrc.new-mail
-@@ -0,0 +1,35 @@
-+# This is a complete list of FEATURE-NAME configuration.
+@@ -0,0 +1,18 @@
++# Example Mutt config file for the 'new-mail-command' patch.
 +
 +# --------------------------------------------------------------------------
 +# VARIABLES - shown with their default values
 +# --------------------------------------------------------------------------
 +
-+# DESCRIPTION
-+set VARIABLE = "DEFAULT_VALUE"
++# Set the command you want mutt to execute upon the receipt of a new email
++set new_mail_command = ""
 +
-+# --------------------------------------------------------------------------
-+# COMMANDS - shown with an example arguments
-+# --------------------------------------------------------------------------
++# Linux example:
++# set new_command="notify-send --icon='/home/santiago/Pictures/mutt.png' 'New Email in %f' '%n new messages, %u unread.' &"
 +
-+# DESCRIPTION
-+COMMAND_NAME 'ARGUMENTS'
-+
-+# --------------------------------------------------------------------------
-+# FUNCTIONS - shown with an example mapping
-+# --------------------------------------------------------------------------
-+
-+# DESCRIPTON
-+bind index,pager KEY FUNCTION-NAME
-+
-+# --------------------------------------------------------------------------
-+# COLORS - some unpleasant examples are given
-+# --------------------------------------------------------------------------
-+# Note: All color operations are of the form:
-+#       color OBJECT FOREGROUND BACKGROUND
-+
-+# DESCRIPTON
-+color COLOR_NAME cyan black
++# OS X example:
++# set new_mail_command="terminal-notifier -title '%v' -subtitle 'New Mail in %f' -message '%n new messages, %u unread.' -activate 'com.apple.Terminal'"
 +
 +# --------------------------------------------------------------------------
 +
 +# vim: syntax=muttrc
 diff --git a/doc/vimrc.new-mail b/doc/vimrc.new-mail
 new file mode 100644
-index 0000000..1d96d30
+index 0000000..0d58075
 --- /dev/null
 +++ b/doc/vimrc.new-mail
-@@ -0,0 +1,15 @@
-+" Vim syntax file for the mutt FEATURE-NAME patch
+@@ -0,0 +1,5 @@
++" Vim syntax file for the mutt new-mail patch
 +
-+syntax keyword muttrcVarBool    skipwhite contained VARIABLE_NAME         nextgroup=muttrcSetBoolAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
-+
-+syntax keyword muttrcVarNum     skipwhite contained VARIABLE_NAME         nextgroup=muttrcSetNumAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
-+
-+syntax keyword muttrcVarStr     contained skipwhite VARIABLE_NAME         nextgroup=muttrcVarEqualsIdxFmt
-+
-+syntax keyword muttrcCommand    COMMAND_NAME
-+
-+syntax match muttrcFunction     contained "\<FUNCTION-NAME\>"
-+
-+syntax keyword muttrcColorField contained COLOR_NAME
++syntax keyword muttrcVarStr     contained skipwhite new_mail_command         nextgroup=muttrcVarEqualsIdxFmt
 +
 +" vim: syntax=vim
 diff --git a/globals.h b/globals.h
@@ -323,7 +338,7 @@ index 07e77ed..3e3e4da 100644
  WHERE char *QueryFormat;
  WHERE char *Realname;
 diff --git a/init.h b/init.h
-index 806ee72..e5cc842 100644
+index 93a1fac..1dbd9c4 100644
 --- a/init.h
 +++ b/init.h
 @@ -307,6 +307,13 @@ struct option_t MuttVars[] = {
@@ -341,5 +356,5 @@ index 806ee72..e5cc842 100644
    */
    { "beep_new",		DT_BOOL, R_NONE, OPTBEEPNEW, 0 },
 -- 
-2.9.0
+2.7.4
 

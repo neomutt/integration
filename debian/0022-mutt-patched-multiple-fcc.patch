@@ -1,4 +1,4 @@
-From 976ab23c1b9fbe75bb3583e48a01ee042bdde2ad Mon Sep 17 00:00:00 2001
+From 03d80da7fe63cdfc3d66ab88c565e7d05e85b2f8 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 6 May 2016 00:36:57 +0100
 Subject: [PATCH 22/22] mutt-patched/multiple-fcc
@@ -78,5 +78,5 @@ index 5869755..ddd8037 100644
  		    int post, char *fcc, char **finalpath)
  {
 -- 
-2.9.0
+2.7.4
 

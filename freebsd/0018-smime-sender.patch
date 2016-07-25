@@ -1,4 +1,4 @@
-From feb414ed0a2f800c32cfe95e06f8d000c9498416 Mon Sep 17 00:00:00 2001
+From c77dc98258e573000df26021ca19898dacb70d5c Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 15:23:22 +0100
 Subject: [PATCH 18/21] smime-sender
@@ -72,5 +72,5 @@ index 1e67ac7..86a2b27 100644
    OPTPGPIGNORESUB,
    OPTPGPCHECKEXIT,
 -- 
-2.9.0
+2.7.4
 

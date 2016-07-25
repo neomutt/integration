@@ -1,4 +1,4 @@
-From 5c7ac8a62f57a35d6c089aedecf88dfc8cac50af Mon Sep 17 00:00:00 2001
+From 1258553b122045c7dc963aa5f44a29cbad6c68df Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Sun, 29 May 2016 13:34:47 +0100
 Subject: [PATCH 4/5] mutt-1.5.23-system_certs
@@ -21,5 +21,5 @@ index 5a12ec0..abbb493 100644
    ** .pp
    ** This variable specifies a file containing trusted CA certificates.
 -- 
-2.9.0
+2.7.4
 

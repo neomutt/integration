@@ -1,0 +1,39 @@
+From a24a6aa370a01555d90050ffbcf1fce0c79e2e69 Mon Sep 17 00:00:00 2001
+From: Richard Russon <rich@flatcap.org>
+Date: Wed, 13 Apr 2016 21:42:34 +0100
+Subject: [PATCH 09/12] compose mode: make messages respect the TITLE_FMT
+
+Some messages on the compose screen didn't use the TITLE_FMT.
+Should it ever change, it would lead to formatting problems.
+---
+ compose.c | 10 ++--------
+ 1 file changed, 2 insertions(+), 8 deletions(-)
+
+diff --git a/compose.c b/compose.c
+index d555d92..13c9dff 100644
+--- a/compose.c
++++ b/compose.c
+@@ -188,18 +188,12 @@ static void redraw_crypt_lines (HEADER *msg)
+   if ((WithCrypto & APPLICATION_PGP)
+       && (msg->security & APPLICATION_PGP) && (msg->security & SIGN))
+   {
+-    char *s = _(" sign as: ");
+-    int offset = HDR_XOFFSET + SidebarWidth - mbstowcs (NULL, s, 0);
+-    mvprintw (HDR_CRYPTINFO, offset < 0 ? 0 : offset, "%s%s", s,
+-	      PgpSignAs ? PgpSignAs : _("<default>"));
++    printw (TITLE_FMT "%s", _("sign as: "), PgpSignAs ? PgpSignAs : _("<default>"));
+   }
+ 
+   if ((WithCrypto & APPLICATION_SMIME)
+       && (msg->security & APPLICATION_SMIME) && (msg->security & SIGN)) {
+-    char *s = _(" sign as: ");
+-    int offset = HDR_XOFFSET + SidebarWidth - mbstowcs (NULL, s, 0);
+-    mvprintw (HDR_CRYPTINFO, offset < 0 ? 0 : offset, "%s%s", s,
+-	      SmimeDefaultKey ? SmimeDefaultKey : _("<default>"));
++     printw (TITLE_FMT "%s", _("sign as: "), SmimeDefaultKey ? SmimeDefaultKey : _("<default>"));
+   }
+ 
+   if ((WithCrypto & APPLICATION_SMIME)
+-- 
+2.7.4
+

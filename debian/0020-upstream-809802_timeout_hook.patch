@@ -1,4 +1,4 @@
-From 96e48530c035c5114d48f4d0dcb8e1c99e7dbb15 Mon Sep 17 00:00:00 2001
+From 09c9a9c8ea0dcce81fc720716c58f5392922a210 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 6 May 2016 00:24:10 +0100
 Subject: [PATCH 20/22] upstream/809802_timeout_hook
@@ -12,7 +12,7 @@ Subject: [PATCH 20/22] upstream/809802_timeout_hook
  5 files changed, 37 insertions(+), 5 deletions(-)
 
 diff --git a/curs_main.c b/curs_main.c
-index f08d765..bdf5786 100644
+index e37b043..5a00e6c 100644
 --- a/curs_main.c
 +++ b/curs_main.c
 @@ -933,8 +933,10 @@ int mutt_index_menu (void)
@@ -75,10 +75,10 @@ index 98c2f26..329fb47 100644
  void mutt_account_hook (const char* url)
  {
 diff --git a/init.h b/init.h
-index 673e161..1aef4bc 100644
+index 5b85e81..9dfdcba 100644
 --- a/init.h
 +++ b/init.h
-@@ -4339,6 +4339,7 @@ const struct command_t Commands[] = {
+@@ -4340,6 +4340,7 @@ const struct command_t Commands[] = {
    { "spam",		parse_spam_list,	M_SPAM },
    { "nospam",		parse_spam_list,	M_NOSPAM },
    { "subscribe",	parse_subscribe,	0 },
@@ -87,7 +87,7 @@ index 673e161..1aef4bc 100644
    { "unalias",		parse_unalias,		0 },
    { "unalternative_order",parse_unlist,		UL &AlternativeOrderList },
 diff --git a/mutt.h b/mutt.h
-index ea059ba..1856119 100644
+index d4e7404..5fc2042 100644
 --- a/mutt.h
 +++ b/mutt.h
 @@ -159,10 +159,11 @@ typedef enum
@@ -118,5 +118,5 @@ index a295b23..2bc40b7 100644
  const char *mutt_make_version (void);
  
 -- 
-2.9.0
+2.7.4
 

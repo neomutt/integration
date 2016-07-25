@@ -1,4 +1,4 @@
-From bca2f4a2fa5187eb0d486ea8eb9e276206daac00 Mon Sep 17 00:00:00 2001
+From a441389d008b23200aa57c63f997c75ebe84ab16 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 03:07:24 +0100
 Subject: [PATCH 07/12] aw.listreply
@@ -11,16 +11,16 @@ Subject: [PATCH 07/12] aw.listreply
  4 files changed, 27 insertions(+)
 
 diff --git a/PATCHES b/PATCHES
-index 2dba3f1..dc063aa 100644
+index b9eeea4..9ea7e99 100644
 --- a/PATCHES
 +++ b/PATCHES
-@@ -15,3 +15,4 @@ patch-fmemopen-neo-git
- patch-limit-current-thread-neo-git
- patch-keywords-neo-git
- patch-nntp-neo-git
+@@ -18,3 +18,4 @@ patch-trash-neo-git
+ patch-initials-neo-git
+ patch-ifdef-neo-git
+ patch-smime-encrypt-to-self-neo-git
 +patch-1.5.9.aw.listreply.1
 diff --git a/init.h b/init.h
-index 97085b1..a31d256 100644
+index 2328846..71988ed 100644
 --- a/init.h
 +++ b/init.h
 @@ -1501,6 +1501,13 @@ struct option_t MuttVars[] = {
@@ -38,7 +38,7 @@ index 97085b1..a31d256 100644
    /*
    ** .pp
 diff --git a/mutt.h b/mutt.h
-index 20fb7b3..e82d608 100644
+index 9f54db5..5032fdb 100644
 --- a/mutt.h
 +++ b/mutt.h
 @@ -314,6 +314,7 @@ enum
@@ -86,5 +86,5 @@ index a86f2d1..a377883 100644
    {
      /* mail is from the user, assume replying to recipients */
 -- 
-2.9.0
+2.7.4
 

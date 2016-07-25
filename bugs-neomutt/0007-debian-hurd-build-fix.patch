@@ -1,0 +1,29 @@
+From 68339f271223c9bd139c50cbd95b094584db232f Mon Sep 17 00:00:00 2001
+From: Richard Russon <rich@flatcap.org>
+Date: Sat, 19 Mar 2016 15:12:21 +0000
+Subject: [PATCH 07/12] debian: hurd build fix
+
+Hurd is missing a definition for PATH_MAX.
+---
+ mutt.h | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/mutt.h b/mutt.h
+index 8f90a08..d4e7404 100644
+--- a/mutt.h
++++ b/mutt.h
+@@ -52,6 +52,11 @@
+ #include <limits.h>
+ #endif
+ 
++/* PATH_MAX is undefined on the hurd */
++#ifndef PATH_MAX
++#define PATH_MAX _POSIX_PATH_MAX
++#endif
++
+ #include <pwd.h>
+ #include <grp.h>
+ 
+-- 
+2.7.4
+

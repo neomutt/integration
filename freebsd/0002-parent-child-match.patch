@@ -1,4 +1,4 @@
-From 44bf8b4dbcd2c9db82275a65cadfe44963e3a6c4 Mon Sep 17 00:00:00 2001
+From 9c4113c7f58b4c7790053eabf08b0fa5782b2125 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 15:16:00 +0100
 Subject: [PATCH 02/21] parent-child-match
@@ -10,10 +10,10 @@ Subject: [PATCH 02/21] parent-child-match
  3 files changed, 83 insertions(+)
 
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index f6e987e..aaa3e6a 100644
+index df0d183..68cd800 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
-@@ -3498,6 +3498,22 @@ <sect2 id="hdr-folding">
+@@ -3477,6 +3477,22 @@ <sect2 id="hdr-folding">
  tries to implement standards compliant folding.)
  </para>
  
@@ -183,5 +183,5 @@ index ea0230e..470f1a3 100644
    {
      case M_AND:
 -- 
-2.9.0
+2.7.4
 

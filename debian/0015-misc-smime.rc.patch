@@ -1,4 +1,4 @@
-From 4a78e0d2595d43f425241338ae503dd5e23fb29d Mon Sep 17 00:00:00 2001
+From e297c19d0ab0865ce7e547fc0937ec45ed8bb15e Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 6 May 2016 00:24:02 +0100
 Subject: [PATCH 15/22] misc/smime.rc
@@ -56,5 +56,5 @@ index 532ac9e..9b5460e 100644
  # Path to where all known certificates go. (must exist!)
  set smime_certificates="~/.smime/certificates"
 -- 
-2.9.0
+2.7.4
 
