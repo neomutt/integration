@@ -1,4 +1,4 @@
-From a749e68816fa6828aada5ef627edb23158a8b5e2 Mon Sep 17 00:00:00 2001
+From bf9b8500cde9e55e727eeb307cde8f13ef146c13 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 18 Mar 2016 22:38:18 +0000
 Subject: [PATCH 08/12] quieten two compiler warnings

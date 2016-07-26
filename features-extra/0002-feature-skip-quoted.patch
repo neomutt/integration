@@ -1,4 +1,4 @@
-From 29be404887ce01a40d88786e643b7b9516b396bb Mon Sep 17 00:00:00 2001
+From 1880dd1142875d123b4832d543d5de2578e1f1ec Mon Sep 17 00:00:00 2001
 From: David Sterba <dsterba@suse.cz>
 Date: Fri, 15 Nov 2013 14:21:02 +0100
 Subject: [PATCH 02/14] feature: skip-quoted

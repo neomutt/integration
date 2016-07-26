@@ -1,4 +1,4 @@
-From d9aacead366206175afc7ac6decc259cf458e88f Mon Sep 17 00:00:00 2001
+From 31f711d3bca7caea14e6db19e369e9436e1de7d0 Mon Sep 17 00:00:00 2001
 From: Olaf Hering <olaf@aepfle.de>
 Date: Fri, 17 Jun 2016 10:33:57 -0700
 Subject: [PATCH 2/6] Add real prototype for re_match_2_internal in regex.c

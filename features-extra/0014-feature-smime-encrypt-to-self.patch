@@ -1,4 +1,4 @@
-From d55b4a3e5b8c9d54d8f71d2cb52589dc4d6eff1b Mon Sep 17 00:00:00 2001
+From 9ea7c9aaadb50ca621a46fcf4ef3f6de5ec904ff Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 17 Jun 2016 00:31:48 +0100
 Subject: [PATCH 14/14] feature: smime-encrypt-to-self

@@ -1,4 +1,4 @@
-From b50cbe358783088eff9e7bc8be91c325f59e23a1 Mon Sep 17 00:00:00 2001
+From 39ae3b1423490b671c7f3ceadfb248a0307dc8f1 Mon Sep 17 00:00:00 2001
 From: Sami Farin <hvtaifwkbgefbaei@gmail.com>
 Date: Wed, 16 Oct 2013 11:34:57 -0700
 Subject: [PATCH 02/12] More careful file writing for aliases and attachments

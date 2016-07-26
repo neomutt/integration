@@ -1,4 +1,4 @@
-From 8a11ff01c7034d8499c7c8dd7e93f5acff45567b Mon Sep 17 00:00:00 2001
+From 0b72d7815a4f4bafd1a9b06ec9ef90481def7819 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 03:04:29 +0100
 Subject: [PATCH 05/12] mutt-1.6.1-opennfs

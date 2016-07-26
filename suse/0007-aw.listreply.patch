@@ -1,4 +1,4 @@
-From a441389d008b23200aa57c63f997c75ebe84ab16 Mon Sep 17 00:00:00 2001
+From 34849a9d9d5e2bc9454b4c0d0d4758e42b57b1bb Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 03:07:24 +0100
 Subject: [PATCH 07/12] aw.listreply
@@ -20,7 +20,7 @@ index b9eeea4..9ea7e99 100644
  patch-smime-encrypt-to-self-neo-git
 +patch-1.5.9.aw.listreply.1
 diff --git a/init.h b/init.h
-index 2328846..71988ed 100644
+index 8de51f1..6068749 100644
 --- a/init.h
 +++ b/init.h
 @@ -1501,6 +1501,13 @@ struct option_t MuttVars[] = {

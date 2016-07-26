@@ -1,4 +1,4 @@
-From e0ea031913cf48095adffb9fc07a647faa105515 Mon Sep 17 00:00:00 2001
+From 1cc1a5a7efb0bd5d593921264fda4b1bd0482c3a Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 6 May 2016 00:24:01 +0100
 Subject: [PATCH 13/22] misc/define-pgp_getkeys_command

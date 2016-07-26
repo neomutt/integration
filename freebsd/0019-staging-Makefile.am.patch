@@ -1,4 +1,4 @@
-From 603a25ef10f2da808abdd94a57746d3f2b0fce37 Mon Sep 17 00:00:00 2001
+From 9e588607c5127bcd8bd8dfacaa4e3c685b5fa9f1 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 15:24:02 +0100
 Subject: [PATCH 19/21] staging-Makefile.am

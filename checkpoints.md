@@ -823,4 +823,6 @@ Base: mutt-1.6.2
 - c08f4e1 change ident to -git
 + df5eea3 fix version.sh regression
 + c874276 docs: fix broken link
++ 4f8f526 Revert "Temporary compatibility workaround"
++ 8e167d9 document new changes
 

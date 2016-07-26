@@ -1,4 +1,4 @@
-From 44b13bc13d3bb06604686c83b9df1b4d543a3aab Mon Sep 17 00:00:00 2001
+From 32f4e2f3f9592f1f1b359b9ecf036f7053646ae7 Mon Sep 17 00:00:00 2001
 From: Sami Farin <hvtaifwkbgefbaei@gmail.com>
 Date: Wed, 16 Oct 2013 11:34:57 -0700
 Subject: [PATCH 03/12] Bye srandom() and random()

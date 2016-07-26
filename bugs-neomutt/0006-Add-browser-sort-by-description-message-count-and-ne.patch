@@ -1,4 +1,4 @@
-From 0f94a135e438964585330e544556a139e81c22f8 Mon Sep 17 00:00:00 2001
+From 3cc643ca15c0f8c0d9cbf2fc566f5f7e6bc23cd6 Mon Sep 17 00:00:00 2001
 From: Tim Stoakes <tim@stoakes.net>
 Date: Sun, 16 Sep 2012 09:31:54 +0200
 Subject: [PATCH 06/12] Add browser sort by description, message count and new

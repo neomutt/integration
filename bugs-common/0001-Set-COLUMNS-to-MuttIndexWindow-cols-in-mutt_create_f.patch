@@ -1,4 +1,4 @@
-From b7ddbaa05cfd7b9b83ceed24e44daac044f338bc Mon Sep 17 00:00:00 2001
+From 605ac40a8f018ea1c0ef1210a865daf5de38c968 Mon Sep 17 00:00:00 2001
 From: Kevin McCarthy <kevin@8t8.us>
 Date: Tue, 10 May 2016 09:42:27 -0700
 Subject: [PATCH 1/6] Set COLUMNS to MuttIndexWindow->cols in

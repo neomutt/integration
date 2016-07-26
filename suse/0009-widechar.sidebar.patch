@@ -1,4 +1,4 @@
-From e048290dc70c76eeb946df5bce14c2295ce84b9c Mon Sep 17 00:00:00 2001
+From 5b191e47bd93ddf433f979255cbbf338fd6940f2 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 03:08:25 +0100
 Subject: [PATCH 09/12] widechar.sidebar

@@ -1,4 +1,4 @@
-From bed3b493119d841543dac5daa07d811e82680f0b Mon Sep 17 00:00:00 2001
+From 3c8bf2e04e7ac36de638bd81edbabbc0545a472c Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Wed, 1 Jun 2016 21:38:43 +0100
 Subject: [PATCH 4/5] mutt-1.5.23-system_certs
@@ -8,10 +8,10 @@ Subject: [PATCH 4/5] mutt-1.5.23-system_certs
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/init.h b/init.h
-index f962cbd..ef9f10d 100644
+index 9ad2cdb..c35629e 100644
 --- a/init.h
 +++ b/init.h
-@@ -3564,7 +3564,7 @@ struct option_t MuttVars[] = {
+@@ -3559,7 +3559,7 @@ struct option_t MuttVars[] = {
    */
  #if defined(USE_SSL)
  #ifdef USE_SSL_GNUTLS

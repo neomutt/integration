@@ -1,4 +1,4 @@
-From f3a132f85aa5ddd0664fce60c0d15ce8482c8a43 Mon Sep 17 00:00:00 2001
+From ba95d5cd371d51a398ec17aacce79e6a26f29a5f Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 6 May 2016 00:24:02 +0100
 Subject: [PATCH 16/22] upstream/528233-readonly-open

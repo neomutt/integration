@@ -1,25 +1,23 @@
-From 3fafccf6cefbe21066e4e81da193ea6eaf02cbd8 Mon Sep 17 00:00:00 2001
+From 8d7fbf227c1848e5918af456b1258a45d67da02f Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 25 Mar 2016 18:30:01 +0000
 Subject: [PATCH 12/12] neomutt customisations
 
 ---
- ChangeLog.neomutt |  97 +++++++++++++++++++++++++++
+ ChangeLog.neomutt | 135 +++++++++++++++++++++++++++++++++++++
  GPL               | 194 ++++++++++++++++++++++++++----------------------------
  Makefile.am       |  22 +++----
  README            |  28 --------
  README.mutt       |  28 ++++++++
- README.neomutt    |  79 ++++++++++++++++++++++
+ README.neomutt    |  83 +++++++++++++++++++++++
  VERSION.neo       |   1 +
  configure.ac      |   7 ++
  doc/Makefile.am   |   4 +-
- globals.h         |   1 +
- init.h            |   9 ++-
  mkchangelog.sh    |   5 --
  patchlist.sh      |  18 +----
  version.c         |  12 ++--
  version.sh        |  61 +----------------
- 15 files changed, 335 insertions(+), 231 deletions(-)
+ 13 files changed, 369 insertions(+), 229 deletions(-)
  create mode 100644 ChangeLog.neomutt
  delete mode 100644 README
  create mode 100644 README.mutt
@@ -30,10 +28,48 @@ Subject: [PATCH 12/12] neomutt customisations
 
 diff --git a/ChangeLog.neomutt b/ChangeLog.neomutt
 new file mode 100644
-index 0000000..41c2f40
+index 0000000..d648ab8
 --- /dev/null
 +++ b/ChangeLog.neomutt
-@@ -0,0 +1,97 @@
+@@ -0,0 +1,135 @@
++2016-07-23  Richard Russon  <rich@flatcap.org>
++* New Motto: "Teaching an Old Dog New Tricks"
++  - Thanks to Alok Singh
++* New Features
++  - New Mail Command - Execute a command on receipt of new mail
++  - vim-keybindings - Mutt config for vim users
++  - LMDB: In-memory header caching database
++  - SMIME Encrypt to Self - Secure storage of sensitive email
++* Bug Fixes
++  - rework mutt_draw_statusline()
++  - fix cursor position after sidebar redraw
++  - Add sidebar_format flag '%n' to display 'N' on new mail.
++  - fix index_format truncation problem
++  - Fix compiler warnings due to always true condition
++  - Change sidebar next/prev-new to look at buffy->new too.
++  - Change the default for sidebar_format to use %n.
++  - sidebar "unsorted" order to match Buffy list order.
++  - Include ncurses tinfo library if found.
++  - Sidebar width problem
++  - sidebar crash for non-existent mailbox
++  - Temporary compatibility workaround
++  - Reset buffy->new for the current mailbox in IMAP.
++  - version.sh regression
++  - crash when notmuch tries to read a message
++  - status line wrapping
++* Docs
++  - Mass tidy up of the docs
++  - Fix xml validation
++  - Add missing docs for new features
++* Travis
++  - New build system:
++    https://github.com/neomutt/travis-build
++    Now we have central control over what gets built
++
++2016-07-09  Richard Russon  <rich@flatcap.org>
++* Bug-fixes
++  - This release was a temporary measure
++
 +2016-06-11  Richard Russon  <rich@flatcap.org>
 +* Change in behaviour
 +  - Temporarily disable $sidebar_refresh_time
@@ -639,10 +675,10 @@ index 0000000..70ef0c2
 +<http://www.mutt.org/download.html>.
 diff --git a/README.neomutt b/README.neomutt
 new file mode 100644
-index 0000000..eeae2cf
+index 0000000..a8d6b3b
 --- /dev/null
 +++ b/README.neomutt
-@@ -0,0 +1,79 @@
+@@ -0,0 +1,83 @@
 +# This is the NeoMutt Project
 +
 +## What is NeoMutt?
@@ -668,13 +704,16 @@ index 0000000..eeae2cf
 +| Initials Expando     | Expando for Author's Initials
 +| Keywords             | Labels/Tagging for emails
 +| Limit-Current-Thread | Limit Index View to Current Thread
++| LMDB                 | LMDB backend for the header cache
 +| Nested If            | Allow deeply nested conditionals in format strings
++| New Mail Command     | Run a command when new mail arrives
 +| NNTP                 | Talk to a Usenet news server
 +| Notmuch              | Powerful email search engine
 +| Progress Bar         | Colourful Progress Bar
 +| Quasi-Delete         | Hide emails from view, but don't delete them
 +| Sidebar              | Panel containing list of Mailboxes
 +| Skip-Quoted          | Skip Quoted Text
++| SMIME Encrypt to Self| Save an self-encrypted copy of emails
 +| Status Color         | Theming of the Status Bar
 +| TLS-SNI              | Negotiate with a Server for a Certificate
 +| Trash Folder         | Move 'deleted' emails to a trash folder
@@ -685,6 +724,7 @@ index 0000000..eeae2cf
 +- Releases:        https://github.com/neomutt/neomutt/releases/latest
 +- Questions/Bugs:  https://github.com/neomutt/neomutt/issues
 +- Website:         http://www.neomutt.org/
++- IRC              irc://irc.freenode.net/neomutt
 +- Development:     http://www.neomutt.org/devel/
 +
 +## NeoMutt Developers
@@ -762,52 +802,6 @@ index 6021626..cd633dc 100644
  	  sed -e "s/@VERSION\@/`cat $(top_srcdir)/VERSION` ($$date)/" $(srcdir)/manual.xml.head && \
  	  $(MAKEDOC_CPP) $(top_srcdir)/init.h | ./makedoc$(EXEEXT) -s && \
  	  $(MAKEDOC_CPP) $(top_srcdir)/functions.h | \
-diff --git a/globals.h b/globals.h
-index d4e7fa6..336fa64 100644
---- a/globals.h
-+++ b/globals.h
-@@ -246,6 +246,7 @@ WHERE short ScoreThresholdFlag;
- 
- WHERE short SidebarWidth INITVAL(0);
- #ifdef USE_SIDEBAR
-+WHERE short SidebarRefreshTime;
- WHERE LIST *SidebarWhitelist INITVAL(0);
- WHERE int SidebarNeedsRedraw INITVAL (0);
- #endif
-diff --git a/init.h b/init.h
-index bc5134d..9e49e48 100644
---- a/init.h
-+++ b/init.h
-@@ -1518,7 +1518,7 @@ struct option_t MuttVars[] = {
-   ** When \fI$$mark_old\fP is set, Mutt does not consider the mailbox to contain new
-   ** mail if only old messages exist.
-   */
--  { "mail_check_stats", DT_BOOL, R_NONE, OPTMAILCHECKSTATS, 0 },
-+  { "mail_check_stats", DT_BOOL, R_NONE, OPTMAILCHECKSTATS, 1 },
-   /*
-   ** .pp
-   ** When \fIset\fP, mutt will periodically calculate message
-@@ -3020,7 +3020,7 @@ struct option_t MuttVars[] = {
-   ** .pp
-   ** \fBSee also:\fP $$sidebar_short_path, $$sidebar_indent_string, $$sidebar_delim_chars.
-   */
--  { "sidebar_format", DT_STR, R_SIDEBAR, UL &SidebarFormat, UL "%B%*  %n" },
-+  { "sidebar_format", DT_STR, R_SIDEBAR, UL &SidebarFormat, UL "%B%?F? [%F]?%* %?N?%N/?%S" },
-   /*
-   ** .pp
-   ** This variable allows you to customize the sidebar display. This string is
-@@ -3075,6 +3075,11 @@ struct option_t MuttVars[] = {
-   ** \fC<sidebar-prev-new>\fP command is similarly affected, wrapping around to
-   ** the end of the list.
-   */
-+  { "sidebar_refresh_time", DT_NUM, R_BOTH, UL &SidebarRefreshTime, 60 },
-+  /*
-+  ** .pp
-+  ** This option is obsolete and will be removed in the next release.
-+  */
-   { "sidebar_short_path", DT_BOOL, R_SIDEBAR, OPTSIDEBARSHORTPATH, 0 },
-   /*
-   ** .pp
 diff --git a/mkchangelog.sh b/mkchangelog.sh
 deleted file mode 100755
 index 2b610da..0000000

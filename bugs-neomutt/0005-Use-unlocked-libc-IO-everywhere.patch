@@ -1,4 +1,4 @@
-From edb4a6fb9f423c5018edf7aa4fa144a38ab569ba Mon Sep 17 00:00:00 2001
+From 5e06c5dbf3d4eb011d372a166a103e4e5a14fc01 Mon Sep 17 00:00:00 2001
 From: David Wilson <dw@botanicus.net>
 Date: Tue, 22 Oct 2013 11:34:57 -0700
 Subject: [PATCH 05/12] Use unlocked libc IO everywhere.

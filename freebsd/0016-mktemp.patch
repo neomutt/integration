@@ -1,4 +1,4 @@
-From cca5ebee02727fa0143607edc8eb4bf9ae793ee0 Mon Sep 17 00:00:00 2001
+From 98d672241691a1872a06a6f0df0314b2fbe0bb19 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 15:22:55 +0100
 Subject: [PATCH 16/21] mktemp

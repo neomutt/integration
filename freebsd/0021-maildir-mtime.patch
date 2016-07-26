@@ -1,4 +1,4 @@
-From 1324e9d5649eac4bf0053bad6c864381a3180e7a Mon Sep 17 00:00:00 2001
+From d00bea5e588952042108d0845a9d3dda7b18213a Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 15:24:27 +0100
 Subject: [PATCH 21/21] maildir-mtime

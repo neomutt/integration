@@ -1,4 +1,4 @@
-From 03d80da7fe63cdfc3d66ab88c565e7d05e85b2f8 Mon Sep 17 00:00:00 2001
+From 0a826c5b2711e850722daec25c053d2b3bb9b635 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 6 May 2016 00:36:57 +0100
 Subject: [PATCH 22/22] mutt-patched/multiple-fcc
