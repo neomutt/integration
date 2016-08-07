@@ -11,7 +11,16 @@ echo "# NeoMutt $(date +%F)"
 echo
 
 while read BRANCH EXCLUDE; do
+	SINCE="${EXCLUDE:1}"
+	SINCE="${SINCE%% *}"
+	if [ ${BRANCH%/*} = "mutt" ]; then
+		SINCE="Since: $SINCE"
+	else
+		SINCE="Base: $SINCE"
+	fi
 	echo "## $BRANCH"
+	echo
+	echo "$SINCE"
 	echo
 	git --no-pager log --oneline --no-merges --reverse $EXCLUDE $BRANCH
 	echo
@@ -20,6 +29,8 @@ done <<-EOF
 	mutt/default                 ^mutt-1.6.2
 	bugs/common                  ^mutt-1.6.2
 	bugs/neomutt                 ^mutt-1.6.2
+	contrib/keybase
+	contrib/vim-keybindings
 	feature/compress             ^mutt-1.6.2
 	feature/cond-date            ^mutt-1.6.2
 	feature/fmemopen             ^mutt-1.6.2
@@ -29,6 +40,7 @@ done <<-EOF
 	feature/keywords             ^mutt-1.6.2
 	feature/limit-current-thread ^mutt-1.6.2
 	feature/lmdb                 ^mutt-1.6.2
+	feature/multiple-fcc         ^mutt-1.6.2
 	feature/nested-if            ^mutt-1.6.2
 	feature/new-mail             ^mutt-1.6.2
 	feature/nntp                 ^mutt-1.6.2
@@ -39,8 +51,9 @@ done <<-EOF
 	feature/skip-quoted          ^mutt-1.6.2
 	feature/smime-encrypt-self   ^mutt-1.6.2
 	feature/status-color         ^mutt-1.6.2
+	feature/timeout              ^mutt-1.6.2
 	feature/tls-sni              ^mutt-1.6.2
 	feature/trash                ^mutt-1.6.2
-	neomutt                      ^mutt-1.6.2 ^bugs/common ^bugs/neomutt ^feature/compress ^feature/cond-date ^feature/fmemopen ^feature/ifdef ^feature/index-color ^feature/initials ^feature/keywords ^feature/limit-current-thread ^feature/lmdb ^feature/nested-if ^feature/new-mail ^feature/nntp ^feature/notmuch ^feature/progress ^feature/quasi-delete ^feature/sidebar ^feature/skip-quoted ^feature/smime-encrypt-self ^feature/status-color ^feature/tls-sni ^feature/trash
+	neomutt                      ^mutt-1.6.2 ^bugs/common ^bugs/neomutt ^feature/compress ^feature/cond-date ^feature/fmemopen ^feature/ifdef ^feature/index-color ^feature/initials ^feature/keywords ^feature/limit-current-thread ^feature/lmdb ^feature/nested-if ^feature/new-mail ^feature/nntp ^feature/notmuch ^feature/progress ^feature/quasi-delete ^feature/sidebar ^feature/skip-quoted ^feature/smime-encrypt-self ^feature/status-color ^feature/tls-sni ^feature/trash ^feature/timeout ^feature/multiple-fcc ^contrib/vim-keybindings ^contrib/keybase
 EOF
 
