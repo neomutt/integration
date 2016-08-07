@@ -1,7 +1,7 @@
-From 39ae3b1423490b671c7f3ceadfb248a0307dc8f1 Mon Sep 17 00:00:00 2001
+From b37dfe504b7453dda286da2060794fea99b3a003 Mon Sep 17 00:00:00 2001
 From: Sami Farin <hvtaifwkbgefbaei@gmail.com>
 Date: Wed, 16 Oct 2013 11:34:57 -0700
-Subject: [PATCH 02/12] More careful file writing for aliases and attachments
+Subject: [PATCH 02/10] More careful file writing for aliases and attachments
 
 Use fsync and check for errors when appending to alias file,
 saving attachments, and bouncing a message.  Still more checks are needed.
@@ -124,7 +124,7 @@ index 2f500bc..fa3067e 100644
  }
  
 diff --git a/sendlib.c b/sendlib.c
-index b661e71..f4c6ac3 100644
+index b16590c..53e0cc1 100644
 --- a/sendlib.c
 +++ b/sendlib.c
 @@ -2627,9 +2627,12 @@ static int _mutt_bounce_message (FILE *fp, HEADER *h, ADDRESS *to, const char *r

@@ -1,7 +1,7 @@
-From 34e74231a07eea97c2a12243f1419897de604f80 Mon Sep 17 00:00:00 2001
+From 4d3d9a0224451367927a74fb909af36fa0f97004 Mon Sep 17 00:00:00 2001
 From: David Sterba <dsterba@suse.cz>
 Date: Sat, 30 Jan 2016 16:53:57 +0000
-Subject: [PATCH 03/14] feature: status-color
+Subject: [PATCH 03/16] feature: status-color
 
 Custom rules for theming the status bar
 ---
@@ -314,7 +314,7 @@ index 3f40e4d..9114aeb 100644
  	menu->redraw &= ~REDRAW_STATUS;
  	if (option(OPTTSENABLED) && TSSupported)
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index f13d3c1..ddad314 100644
+index 3901190..1f3a6cd 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
 @@ -10769,6 +10769,209 @@ <sect1 id="skip-quoted-patch">

@@ -1,17 +1,17 @@
-From aafe68c99077ccd070d7b3ee6fe1eeb2db8dfa10 Mon Sep 17 00:00:00 2001
+From ca30663f1ee069ee6fb8ed0be806974f04f6d1f1 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 6 May 2016 00:24:01 +0100
-Subject: [PATCH 12/22] debian-specific/566076-build_doc_adjustments
+Subject: [PATCH 12/19] debian-specific/566076-build_doc_adjustments
 
 ---
  doc/Makefile.am | 8 +++-----
  1 file changed, 3 insertions(+), 5 deletions(-)
 
 diff --git a/doc/Makefile.am b/doc/Makefile.am
-index cd633dc..77c99df 100644
+index 68bc384..4173021 100644
 --- a/doc/Makefile.am
 +++ b/doc/Makefile.am
-@@ -110,9 +110,7 @@ uninstall-local:
+@@ -114,9 +114,7 @@ uninstall-local:
  
  check:
  manual.txt: manual.html
@@ -22,7 +22,7 @@ index cd633dc..77c99df 100644
  
  Muttrc: stamp-doc-rc
  
-@@ -124,10 +122,10 @@ stamp-doc-rc: $(top_srcdir)/init.h makedoc$(EXEEXT) $(srcdir)/Muttrc.head
+@@ -128,10 +126,10 @@ stamp-doc-rc: $(top_srcdir)/init.h makedoc$(EXEEXT) $(srcdir)/Muttrc.head
  	touch stamp-doc-rc
  
  manual.html: $(srcdir)/html.xsl $(srcdir)/mutt.xsl stamp-doc-xml $(srcdir)/mutt.css

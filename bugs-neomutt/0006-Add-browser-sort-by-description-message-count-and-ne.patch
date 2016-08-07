@@ -1,7 +1,7 @@
-From 3cc643ca15c0f8c0d9cbf2fc566f5f7e6bc23cd6 Mon Sep 17 00:00:00 2001
+From 940e7619f10593b6626912a4c6b3bb90c8e29bab Mon Sep 17 00:00:00 2001
 From: Tim Stoakes <tim@stoakes.net>
 Date: Sun, 16 Sep 2012 09:31:54 +0200
-Subject: [PATCH 06/12] Add browser sort by description, message count and new
+Subject: [PATCH 06/10] Add browser sort by description, message count and new
  message count
 
 Now the browser can sort by mail folder description, (all) message count, and
@@ -246,7 +246,7 @@ index ad89ab2..a41e0d5 100644
    char delim;
    
 diff --git a/init.h b/init.h
-index 3983fbd..bc5134d 100644
+index 332f355..237419a 100644
 --- a/init.h
 +++ b/init.h
 @@ -3516,7 +3516,10 @@ struct option_t MuttVars[] = {

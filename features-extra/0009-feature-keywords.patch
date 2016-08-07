@@ -1,7 +1,7 @@
-From d2dfefdce0cdedb7bfe94bdd1a1cb0dd55463e7b Mon Sep 17 00:00:00 2001
+From de5f9111ad314928f7b11c256af2a55f5272568c Mon Sep 17 00:00:00 2001
 From: David Champion <dgc@bikeshed.us>
 Date: Fri, 8 Apr 2016 01:01:50 +0100
-Subject: [PATCH 09/14] feature: keywords
+Subject: [PATCH 09/16] feature: keywords
 
 ---
  OPS                 |   1 +
@@ -354,7 +354,7 @@ index 81807c6..55f37c8 100644
  
  	CHECK_ATTACH;
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index 4c3cced..66393fc 100644
+index 22b080e..6af2f25 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
 @@ -1135,7 +1135,7 @@ <table id="tab-keys-editor">
@@ -527,7 +527,7 @@ index 4c3cced..66393fc 100644
  <sect1 id="new-mail">
  <title>New Mail Detection</title>
  
-@@ -10206,6 +10309,242 @@ <sect1 id="initials">
+@@ -10211,6 +10314,242 @@ <sect1 id="initials">
    </sect2>
  </sect1>
  
@@ -744,7 +744,7 @@ index 4c3cced..66393fc 100644
 +    <title>See Also</title>
 +
 +    <itemizedlist>
-+      <listitem><para><ulink url="https://github.com/neomutt/neomutt/wiki">NeoMutt Project</ulink></para></listitem>
++      <listitem><para><ulink url="http://www.neomutt.org/">NeoMutt Project</ulink></para></listitem>
 +      <listitem><para><link linkend="index-format">$index_format</link></para></listitem>
 +      <listitem><para><link linkend="index-color">index-color patch</link></para></listitem>
 +      <listitem><para><link linkend="folder-hook">folder-hook</link></para></listitem>
@@ -1753,7 +1753,7 @@ index 6a802ba..b02a044 100644
      if (e->subject)
      {
 diff --git a/pattern.c b/pattern.c
-index 57be53e..8c296ce 100644
+index 2ce465d..62531d9 100644
 --- a/pattern.c
 +++ b/pattern.c
 @@ -1250,7 +1250,19 @@ mutt_pattern_exec (struct pattern_t *pat, pattern_exec_flag flags, CONTEXT *ctx,

@@ -1,7 +1,7 @@
-From 0b9ce95fa6410ccded6b36dc5716ce9eb37d13e5 Mon Sep 17 00:00:00 2001
+From 3f574540cad20374ddb86ce11f3275eea75f1daa Mon Sep 17 00:00:00 2001
 From: David Sterba <dsterba@suse.cz>
 Date: Thu, 24 May 2012 15:34:53 +0200
-Subject: [PATCH 08/14] feature: limit-current-thread
+Subject: [PATCH 08/16] feature: limit-current-thread
 
 Add command to limit view on the thread from any of its message.
 Predefined on command <ESC>L, though the lowercase 'l' would be better
@@ -120,10 +120,10 @@ index a51d508..81807c6 100644
  	  if (menu->oldcurrent >= 0)
  	  {
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index 198ee6f..4c3cced 100644
+index 8b1c371..22b080e 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
-@@ -10206,6 +10206,125 @@ <sect1 id="initials">
+@@ -10211,6 +10211,125 @@ <sect1 id="initials">
    </sect2>
  </sect1>
  
@@ -285,7 +285,7 @@ index a486d88..c10171f 100644
 +
  #endif /* _MUTT_MENU_H_ */
 diff --git a/pattern.c b/pattern.c
-index b3f517d..57be53e 100644
+index 51e982a..2ce465d 100644
 --- a/pattern.c
 +++ b/pattern.c
 @@ -1335,6 +1335,74 @@ void mutt_check_simple (char *s, size_t len, const char *simple)

@@ -1,4 +1,4 @@
-From 728b1ee237e73e6be0e43daf0078dc51b938a801 Mon Sep 17 00:00:00 2001
+From 9803a6a5d35ee5a20f90cf0f4a5d40d9c5a33732 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 15:20:06 +0100
 Subject: [PATCH 10/21] doc-manual.xml.head
@@ -8,7 +8,7 @@ Subject: [PATCH 10/21] doc-manual.xml.head
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index 68cd800..f6065b0 100644
+index b8f6aa2..531d544 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
 @@ -1,6 +1,6 @@

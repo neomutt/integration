@@ -1,4 +1,4 @@
-From 2f37db1ac205e7abfaee0a63fff74488661d348e Mon Sep 17 00:00:00 2001
+From afa2cfe407e82ae3de18fcd026a34fbc6d22e209 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 03:03:32 +0100
 Subject: [PATCH 03/12] mutt-1.5.20-sendgroupreplyto
@@ -10,7 +10,7 @@ Subject: [PATCH 03/12] mutt-1.5.20-sendgroupreplyto
  3 files changed, 16 insertions(+)
 
 diff --git a/init.h b/init.h
-index 2cb541b..d9f16a9 100644
+index 2d06eef..659b55a 100644
 --- a/init.h
 +++ b/init.h
 @@ -2885,6 +2885,13 @@ struct option_t MuttVars[] = {
@@ -28,10 +28,10 @@ index 2cb541b..d9f16a9 100644
    /*
    ** .pp
 diff --git a/mutt.h b/mutt.h
-index d4e7404..0c5fd88 100644
+index 1d83793..3a49b19 100644
 --- a/mutt.h
 +++ b/mutt.h
-@@ -482,6 +482,7 @@ enum
+@@ -483,6 +483,7 @@ enum
    OPTSAVEADDRESS,
    OPTSAVEEMPTY,
    OPTSAVENAME,
@@ -40,7 +40,7 @@ index d4e7404..0c5fd88 100644
  #ifdef USE_SIDEBAR
    OPTSIDEBAR,
 diff --git a/send.c b/send.c
-index 43c6476..a86f2d1 100644
+index cea233d..7806b6b 100644
 --- a/send.c
 +++ b/send.c
 @@ -624,8 +624,16 @@ int mutt_fetch_recips (ENVELOPE *out, ENVELOPE *in, int flags)

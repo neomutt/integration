@@ -1,7 +1,7 @@
-From 3010f68d4c44625ccac77944f4faeab6a7604fcd Mon Sep 17 00:00:00 2001
+From 35cf0d828e5f2171509c0d77cc94c61832738778 Mon Sep 17 00:00:00 2001
 From: Stefan Kuhn <wuodan@hispeed.ch>
 Date: Sat, 30 Jan 2016 16:13:53 +0000
-Subject: [PATCH 01/14] feature: progress
+Subject: [PATCH 01/16] feature: progress
 
 Show a visual progress bar on slow operations
 ---
@@ -175,7 +175,7 @@ index 3178f22..1ab6d2d 100644
    }
  
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index df0d183..0bde796 100644
+index c8713bf..a58759c 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
 @@ -3302,6 +3302,7 @@ <sect1 id="color">

@@ -1,0 +1,330 @@
+From e77bcf768a5057c9c00d84dba16a1d099fab3fb9 Mon Sep 17 00:00:00 2001
+From: Richard Russon <rich@flatcap.org>
+Date: Fri, 6 May 2016 00:24:10 +0100
+Subject: [PATCH 15/16] feature: timeout
+
+---
+ PATCHES             | 31 ++++++++++----------
+ README.timeout      | 41 +++++++++++++++++++++++++++
+ curs_main.c         |  4 ++-
+ doc/manual.xml.head | 82 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ doc/muttrc.timeout  | 10 +++++++
+ doc/vimrc.timeout   |  5 ++++
+ hook.c              | 31 +++++++++++++++++++-
+ init.h              |  1 +
+ mutt.h              |  1 +
+ protos.h            |  1 +
+ 10 files changed, 190 insertions(+), 17 deletions(-)
+ create mode 100644 README.timeout
+ create mode 100644 doc/muttrc.timeout
+ create mode 100644 doc/vimrc.timeout
+
+diff --git a/PATCHES b/PATCHES
+index b9eeea4..f63ed4b 100644
+--- a/PATCHES
++++ b/PATCHES
+@@ -1,20 +1,21 @@
+-patch-new-mail-neo-git
+-patch-lmdb-neo-git
+-patch-nntp-neo-git
+-patch-keywords-neo-git
+-patch-limit-current-thread-neo-git
++patch-compress-neo-git
++patch-cond-date-neo-git
+ patch-fmemopen-neo-git
+-patch-quasi-delete-neo-git
+-patch-tls-sni-neo-git
++patch-ifdef-neo-git
+ patch-index-color-neo-git
+-patch-status-color-neo-git
+-patch-skip-quoted-neo-git
++patch-initials-neo-git
++patch-keywords-neo-git
++patch-limit-current-thread-neo-git
++patch-lmdb-neo-git
++patch-nested-if-neo-git
++patch-new-mail-neo-git
++patch-nntp-neo-git
+ patch-progress-neo-git
++patch-quasi-delete-neo-git
+ patch-sidebar-neo-git
+-patch-compress-neo-git
+-patch-cond-date-neo-git
+-patch-nested-if-neo-git
+-patch-trash-neo-git
+-patch-initials-neo-git
+-patch-ifdef-neo-git
++patch-skip-quoted-neo-git
+ patch-smime-encrypt-to-self-neo-git
++patch-status-color-neo-git
++patch-timeout-neo-git
++patch-tls-sni-neo-git
++patch-trash-neo-git
+diff --git a/README.timeout b/README.timeout
+new file mode 100644
+index 0000000..3b96a1c
+--- /dev/null
++++ b/README.timeout
+@@ -0,0 +1,41 @@
++Timeout Patch
++=============
++
++    Run a command periodically
++
++Patch
++-----
++
++    To check if Mutt supports "Timeout", look for "patch-timeout" in the mutt
++    version.
++
++    Dependencies
++    * mutt-1.6.2
++
++Introduction
++------------
++
++    This patch implements a new hook that is called periodically when Mutt
++    checks for new mail. This hook is called every `$timeout` seconds.
++
++Commands
++--------
++
++    timeout-hook .  MUTT-COMMAND
++
++See Also
++--------
++
++    * $timeout
++
++Known Bugs
++----------
++
++    None
++
++Credits
++-------
++
++    * Armin Wolfermann <armin@wolfermann.org>
++    * Richard Russon <rich@flatcap.org>
++
+diff --git a/curs_main.c b/curs_main.c
+index a8e1935..dfbcb4c 100644
+--- a/curs_main.c
++++ b/curs_main.c
+@@ -931,8 +931,10 @@ int mutt_index_menu (void)
+ 
+       dprint(4, (debugfile, "mutt_index_menu[%d]: Got op %d\n", __LINE__, op));
+ 
+-      if (op == -1)
++      if (op == -1) {
++        mutt_timeout_hook();
+ 	continue; /* either user abort or timeout */
++      }
+ 
+       mutt_curs_set (1);
+ 
+diff --git a/doc/manual.xml.head b/doc/manual.xml.head
+index 3bbd938..2ef9710 100644
+--- a/doc/manual.xml.head
++++ b/doc/manual.xml.head
+@@ -13040,6 +13040,88 @@ <sect1 id="status-color">
+   </sect2>
+ </sect1>
+ 
++<sect1 id="timeout-hook">
++  <title>Timeout Patch</title>
++  <subtitle>Run a command periodically</subtitle>
++
++  <sect2 id="timeout-patch">
++    <title>Patch</title>
++
++    <para>
++      To check if Mutt supports <quote>timeout</quote>, look for
++      <quote>patch-timeout</quote> in the mutt version.
++      See: <xref linkend="mutt-patches"/>.
++    </para>
++
++    <itemizedlist>
++      <title>Dependencies:</title>
++      <listitem><para>mutt-1.6.2</para></listitem>
++    </itemizedlist>
++
++    <para>This patch is part of the <ulink url="http://www.neomutt.org/">NeoMutt Project</ulink>.</para>
++  </sect2>
++
++  <sect2 id="timeout-intro">
++    <title>Introduction</title>
++
++    <para>
++      This patch implements a new hook that is called periodically when Mutt
++      checks for new mail. This hook is called every <literal>$timeout</literal> seconds.
++    </para>
++  </sect2>
++
++  <sect2 id="timeout-commands">
++    <title>Commands</title>
++    <cmdsynopsis>
++      <command>timeout-hook</command>
++      <arg choice="plain">
++        <replaceable class="parameter">.</replaceable>
++      </arg>
++      <arg choice="plain">
++        <replaceable class="parameter">MUTT-COMMAND</replaceable>
++      </arg>
++    </cmdsynopsis>
++  </sect2>
++
++  <sect2 id="timeout-muttrc">
++    <title>Muttrc</title>
++<screen>
++<emphasis role="comment"># This is a complete list of timeout configuration.
++
++# --------------------------------------------------------------------------
++# COMMANDS - shown with an example arguments
++# --------------------------------------------------------------------------
++
++# After $timeout seconds of inactivity, run this mutt command</emphasis>
++timeout-hook . 'exec sync-mailbox'
++
++<emphasis role="comment"># vim: syntax=muttrc</emphasis>
++</screen>
++  </sect2>
++
++  <sect2 id="timeout-see-also">
++    <title>See Also</title>
++
++    <itemizedlist>
++      <listitem><para><ulink url="http://www.neomutt.org/">NeoMutt Project</ulink></para></listitem>
++      <listitem><para><link linkend="timeout">$timeout</link></para></listitem>
++    </itemizedlist>
++  </sect2>
++
++  <sect2 id="timeout-known-bugs">
++    <title>Known Bugs</title>
++    <para>None</para>
++  </sect2>
++
++  <sect2 id="timeout-credits">
++    <title>Credits</title>
++    <itemizedlist>
++    <listitem><para>Armin Wolfermann <email>armin@wolfermann.org</email></para></listitem>
++    <listitem><para>Richard Russon <email>rich@flatcap.org</email></para></listitem>
++    </itemizedlist>
++  </sect2>
++</sect1>
++
+ <sect1 id="tls-sni">
+   <title>TLS-SNI Patch</title>
+   <subtitle>Negotiate with a server for a TSL/SSL certificate</subtitle>
+diff --git a/doc/muttrc.timeout b/doc/muttrc.timeout
+new file mode 100644
+index 0000000..911d92a
+--- /dev/null
++++ b/doc/muttrc.timeout
+@@ -0,0 +1,10 @@
++# This is a complete list of timeout configuration.
++
++# --------------------------------------------------------------------------
++# COMMANDS - shown with an example arguments
++# --------------------------------------------------------------------------
++
++# After $timeout seconds of inactivity, run this mutt command
++timeout-hook . 'exec sync-mailbox'
++
++# vim: syntax=muttrc
+diff --git a/doc/vimrc.timeout b/doc/vimrc.timeout
+new file mode 100644
+index 0000000..d94c40a
+--- /dev/null
++++ b/doc/vimrc.timeout
+@@ -0,0 +1,5 @@
++" Vim syntax file for the mutt timeout patch
++
++syntax keyword muttrcCommand    timeout-hook
++
++" vim: syntax=vim
+diff --git a/hook.c b/hook.c
+index 98c2f26..096e7d6 100644
+--- a/hook.c
++++ b/hook.c
+@@ -154,7 +154,7 @@ int mutt_parse_hook (BUFFER *buf, BUFFER *s, unsigned long data, BUFFER *err)
+ 	ptr->rx.not == not &&
+ 	!mutt_strcmp (pattern.data, ptr->rx.pattern))
+     {
+-      if (data & (M_FOLDERHOOK | M_SENDHOOK | M_SEND2HOOK | M_MESSAGEHOOK | M_ACCOUNTHOOK | M_REPLYHOOK | M_CRYPTHOOK))
++      if (data & (M_FOLDERHOOK | M_SENDHOOK | M_SEND2HOOK | M_MESSAGEHOOK | M_ACCOUNTHOOK | M_REPLYHOOK | M_CRYPTHOOK | M_TIMEOUTHOOK))
+       {
+ 	/* these hooks allow multiple commands with the same
+ 	 * pattern, so if we've already seen this pattern/command pair, just
+@@ -554,3 +554,32 @@ void mutt_account_hook (const char* url)
+   FREE (&err.data);
+ }
+ #endif
++
++void mutt_timeout_hook (void)
++{
++  HOOK *hook;
++  BUFFER token;
++  BUFFER err;
++  char buf[STRING];
++
++  err.data = buf;
++  err.dsize = sizeof (buf);
++  memset (&token, 0, sizeof (token));
++
++  for (hook = Hooks; hook; hook = hook->next)
++  {
++    if (!(hook->command && (hook->type & M_TIMEOUTHOOK)))
++      continue;
++
++    if (mutt_parse_rc_line (hook->command, &token, &err) == -1)
++    {
++      FREE (&token.data);
++      mutt_error ("%s", err.data);
++      mutt_sleep (1);
++
++      /* The hooks should be independent of each other, so even though this on
++       * failed, we'll carry on with the others. */
++    }
++  }
++}
++
+diff --git a/init.h b/init.h
+index 3983fbd..332f355 100644
+--- a/init.h
++++ b/init.h
+@@ -4309,6 +4309,7 @@ const struct command_t Commands[] = {
+   { "spam",		parse_spam_list,	M_SPAM },
+   { "nospam",		parse_spam_list,	M_NOSPAM },
+   { "subscribe",	parse_subscribe,	0 },
++  { "timeout-hook",	mutt_parse_hook,	M_TIMEOUTHOOK },
+   { "toggle",		parse_set,		M_SET_INV },
+   { "unalias",		parse_unalias,		0 },
+   { "unalternative_order",parse_unlist,		UL &AlternativeOrderList },
+diff --git a/mutt.h b/mutt.h
+index bc8f041..f3385b5 100644
+--- a/mutt.h
++++ b/mutt.h
+@@ -151,6 +151,7 @@ typedef enum
+ #define M_APPENDHOOK	(1<<13)
+ #define M_CLOSEHOOK	(1<<14)
+ #endif
++#define M_TIMEOUTHOOK	(1<<15)
+ 
+ /* tree characters for linearize_tree and print_enriched_string */
+ #define M_TREE_LLCORNER		1
+diff --git a/protos.h b/protos.h
+index bfe2ad0..87e5001 100644
+--- a/protos.h
++++ b/protos.h
+@@ -153,6 +153,7 @@ const char *mutt_get_name (ADDRESS *);
+ char *mutt_get_parameter (const char *, PARAMETER *);
+ LIST *mutt_crypt_hook (ADDRESS *);
+ char *mutt_make_date (char *, size_t);
++void mutt_timeout_hook (void);
+ 
+ const char *mutt_make_version (void);
+ 
+-- 
+2.7.4
+

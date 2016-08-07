@@ -1,7 +1,7 @@
-From 5e06c5dbf3d4eb011d372a166a103e4e5a14fc01 Mon Sep 17 00:00:00 2001
+From 1384385e3d6d7e5d4091eba0a45824fc271973b2 Mon Sep 17 00:00:00 2001
 From: David Wilson <dw@botanicus.net>
 Date: Tue, 22 Oct 2013 11:34:57 -0700
-Subject: [PATCH 05/12] Use unlocked libc IO everywhere.
+Subject: [PATCH 05/10] Use unlocked libc IO everywhere.
 
 Since mutt does not use threads, there is no reason it should use the
 locked variants of the FILE* IO functions. This checks if the unlocked
@@ -34,10 +34,10 @@ After: 6 seconds
  2 files changed, 9 insertions(+)
 
 diff --git a/configure.ac b/configure.ac
-index 5e2afcd..fc5eefc 100644
+index d029aa3..a97cfd8 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -356,6 +356,7 @@ AC_CHECK_HEADERS(sys/time.h sys/resource.h sys/syscall.h)
+@@ -355,6 +355,7 @@ AC_CHECK_HEADERS(sys/time.h sys/resource.h sys/syscall.h)
  AC_CHECK_HEADERS(unix.h)
  
  AC_CHECK_FUNCS(setrlimit getsid)
@@ -46,7 +46,7 @@ index 5e2afcd..fc5eefc 100644
  AC_MSG_CHECKING(for sig_atomic_t in signal.h)
  AC_EGREP_HEADER(sig_atomic_t,signal.h,
 diff --git a/mutt.h b/mutt.h
-index bc8f041..8f90a08 100644
+index f3385b5..dc1b1a8 100644
 --- a/mutt.h
 +++ b/mutt.h
 @@ -66,6 +66,14 @@

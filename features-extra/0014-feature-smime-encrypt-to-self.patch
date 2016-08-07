@@ -1,7 +1,7 @@
-From 9ea7c9aaadb50ca621a46fcf4ef3f6de5ec904ff Mon Sep 17 00:00:00 2001
+From aeeb10216578202c96ce232c7070a7daa814849c Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 17 Jun 2016 00:31:48 +0100
-Subject: [PATCH 14/14] feature: smime-encrypt-to-self
+Subject: [PATCH 14/16] feature: smime-encrypt-to-self
 
 ---
  PATCHES                       |   1 +
@@ -111,10 +111,10 @@ index 570cc36..f6fae83 100644
  	/* signed ? free it! */
  	return (-1);
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index b2ded65..272379d 100644
+index 7d9c0c0..3bbd938 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
-@@ -13315,6 +13315,112 @@ <sect1 id="trash-folder">
+@@ -13320,6 +13320,112 @@ <sect1 id="trash-folder">
    </sect2>
  </sect1>
  

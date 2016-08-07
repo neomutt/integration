@@ -1,4 +1,4 @@
-From 2805744943d80f42c5644c5d04ca3db1f817e411 Mon Sep 17 00:00:00 2001
+From dc5327016e567e892b9e0f965c91d985c202b0cf Mon Sep 17 00:00:00 2001
 From: Kevin McCarthy <kevin@8t8.us>
 Date: Tue, 14 Jun 2016 13:11:56 -0700
 Subject: [PATCH 6/6] Reset buffy->new for the current mailbox in IMAP.

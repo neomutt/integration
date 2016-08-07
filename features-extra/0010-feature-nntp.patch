@@ -1,7 +1,7 @@
-From 0f9506cab8b6128a9ee5952f5b694f7428617974 Mon Sep 17 00:00:00 2001
+From b2c464d41acc5d339d58f34f07ac73ef3d78aca4 Mon Sep 17 00:00:00 2001
 From: Vsevolod Volkov <vvv@mutt.org.ua>
 Date: Thu, 7 Apr 2016 23:02:56 +0100
-Subject: [PATCH 10/14] feature: nntp
+Subject: [PATCH 10/16] feature: nntp
 
 Talk to a Usenet news server
 ---
@@ -1912,7 +1912,7 @@ index 0098ab8..e528e0c 100644
  	  if (access (fname, R_OK) == -1)
  	  {
 diff --git a/configure.ac b/configure.ac
-index 9170070..f184f67 100644
+index 54b1bb7..19a9012 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -618,6 +618,15 @@ AC_ARG_ENABLE(imap, AS_HELP_STRING([--enable-imap],[Enable IMAP support]),
@@ -2378,10 +2378,10 @@ index 55f37c8..e123c1e 100644
  
  	CHECK_ATTACH;
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index 66393fc..6b66c32 100644
+index 6af2f25..bb72e2f 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
-@@ -10884,6 +10884,519 @@ <sect1 id="nested-if">
+@@ -10889,6 +10889,519 @@ <sect1 id="nested-if">
    </sect2>
  </sect1>
  
@@ -8399,7 +8399,7 @@ index b02a044..afee665 100644
      default:
      break;
 diff --git a/pattern.c b/pattern.c
-index 8c296ce..066e2a0 100644
+index 62531d9..db0b5e8 100644
 --- a/pattern.c
 +++ b/pattern.c
 @@ -92,6 +92,9 @@ Flags[] =
@@ -9196,10 +9196,10 @@ index 926416e..15ec9ce 100644
    U_SMTPS,
    U_MAILTO,
 diff --git a/version.c b/version.c
-index a0cd472..ac3c8ed 100644
+index ac86eb2..23a0926 100644
 --- a/version.c
 +++ b/version.c
-@@ -271,6 +271,11 @@ static struct compile_options comp_opts[] = {
+@@ -276,6 +276,11 @@ static struct compile_options comp_opts[] = {
  #else
  	{ "USE_IMAP", 0 },
  #endif

@@ -1,7 +1,7 @@
-From 1d8bcf8907d0c48f81d8c2d31cd232967cdb48ae Mon Sep 17 00:00:00 2001
+From 2f8d56b2051510ebb89f4131ea67782a00f01e32 Mon Sep 17 00:00:00 2001
 From: Karel Zak <kzak@redhat.com>
 Date: Sat, 30 Jan 2016 16:27:19 +0000
-Subject: [PATCH 06/14] feature: quasi-delete
+Subject: [PATCH 06/16] feature: quasi-delete
 
 Mark emails that should be hidden, but not deleted
 ---
@@ -122,7 +122,7 @@ index 9114aeb..a51d508 100644
        case OP_SIDEBAR_OPEN:
  #endif
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index c7c1727..fa5d0ef 100644
+index 91c540e..2647fb3 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
 @@ -10442,6 +10442,126 @@ <sect1 id="progress">

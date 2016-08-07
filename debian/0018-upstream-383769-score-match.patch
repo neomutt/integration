@@ -1,7 +1,7 @@
-From c1f7481d21bb7996a0f5617bb8e51d02c20524a4 Mon Sep 17 00:00:00 2001
+From 553635ed8fae1e5916b433195cd005b732f17cf8 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 6 May 2016 00:24:03 +0100
-Subject: [PATCH 18/22] upstream/383769-score-match
+Subject: [PATCH 18/19] upstream/383769-score-match
 
 ---
  score.c | 2 +-

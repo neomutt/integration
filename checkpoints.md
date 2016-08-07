@@ -1,4 +1,4 @@
-# NeoMutt 2016-07-22
+# NeoMutt 2016-08-07
 
 ## List of Merged Branches
 
@@ -6,6 +6,8 @@
 |:-----------------------------|:------------------------------------------|
 | bugs/common                  | Various upstream bug fixes                |
 | bugs/neomutt                 | Various downstream bug fixes              |
+| contrib/keybase              | Keybase integration                       |
+| contrib/vim-keybindings      | Make Mutt behave more like Vim            |
 | feature/compress             | Read from compressed mailboxes            |
 | feature/cond-date            | Use rules to choose date format           |
 | feature/fmemopen             | Use memory buffers instead of files       |
@@ -15,6 +17,7 @@
 | feature/keywords             | Email labels/keywords/tagging             |
 | feature/limit-current-thread | Only show the current thread              |
 | feature/lmdb                 | LMDB backend for the header cache         |
+| feature/multiple-fcc         | Save multiple copies of outgoing mail     |
 | feature/nested-if            | Allow deeply nested conditions            |
 | feature/new-mail             | Run a command when new mail arrives       |
 | feature/nntp                 | Talk to a usenet news server              |
@@ -25,13 +28,15 @@
 | feature/skip-quoted          | Configure quote lines context             |
 | feature/smime-encrypt-self   | Save an self-encrypted copy of emails     |
 | feature/status-color         | Theming the status bar                    |
+| feature/timeout              | Run a command periodically                |
 | feature/tls-sni              | Negotiate for a certificate               |
 | feature/trash                | Move 'deleted' emails to a trash bin      |
 | neomutt                      | NeoMutt customisations                    |
 
+
 ## mutt/stable
 
-Since: Mutt-1.6.0
+Since: mutt-1.6.0
 
 + 70553d3 Added tag mutt-1-6-rel for changeset be82a2fde82f
 + f55b1d1 mutt-1.6.0 signed
@@ -52,9 +57,7 @@ Since: Mutt-1.6.0
 
 ## mutt/default
 
-Since: Mutt-1.6.0
-
-These appear in gentoo-pre
+Since: mutt-1.6.2
 
 + 6ee72bb Reset mbstate for other mbrtowc() calls returning -1
 + f1faba9 Fix pager.c format_line() to use size_t for mbrtowc() retvals.
@@ -164,6 +167,21 @@ These appear in gentoo-pre
 + 679cbdf Add imap-fast-trash patch.
 - 4fb25aa travis: new build script
 + e94eaaa Fix arithmetic exception due to menu->pagelen being negative.
++ 825e5b2 Filter directional markers that corrupt the screen. (closes #3854)
++ 9fcd259 Updated French translation.
++ ab20c35 Fix memleak in the new trash folder code.
++ 4f17552 Convert buffy_mbox_check() and trash_append() to use local context.
++ c5a9e16 Fix imap buffy msg_count overwrite issue.
++ 422c991 Add unread and total message count format strings to $folder_format.
++ c4c9439 Move fflush and fsync to the mbox and mmdf commit_msg functions.
++ 98ff824 Convert mx_open_mailbox_append() to use ctx->mx_ops.
++ 78eba0d Use a different flag in mx_open_mailbox_append() when mailbox doesn't exist.
++ d844205 Use the ctx->mx_ops instead of calling mx_get_ops()
++ 74756ac Explicitly NULL unimplemented pop mx_ops functions.
++ a2cd3ac Update copyright notices.
++ ddac530 Fix memleak in mh_read_dir() when sequence parsing fails.
++ 5a8c474 Fix memory leak in mutt_choose_charset().
++ eb38636 Remove nonsensical size check in mutt_choose_charset()
 
 ## bugs/common
 
@@ -198,6 +216,38 @@ Base: mutt-1.6.2
 - 7cad3cb Revert "separate key bindings for <return> and <enter>"
 + 333f8a6 separate key bindings for <return> and <enter>
 - f04aa8d travis: tidy build script
+- efcff00 Update travis script
+- 5884d05 We need a deeper git clone for tests
+
+## contrib/keybase
+
+Base: 
+
++ 966e28f contrib: keybase
++ e743c19 basic stuff to get keybase to work with mutt
++ ded3f8e basic stuff to get keybase to work with mutt
++ 157fb65 forgot to include this in the previous commit. Minorly important. Nothing would work without it
++ 4b9dd03 updates to scripts. Fixed some issues I didn't realize I had
++ 0bd1cad included gist
++ 4060e87 Create LICENSE
++ bb8defa included gist
++ 14ae597 Update README.md
++ a085af5 added install.sh and updated readme
++ ffa891e updated readme and included image
++ a2f2d7d updated readme
++ 650cd93 updated readme
++ 012642b updated picture
++ e0c97d0 Update README.md
++ eee7774 minor update to keybase.py
++ 802f361 readme updated. Not finished
+
+## contrib/vim-keybindings
+
+Base: 
+
++ 926af45 contrib: vim-keybindings
++ 3efbd41 Mutt config for vim users
++ 2bab308 Scroll half page thanks to @rgrinberg
 
 ## feature/compress
 
@@ -222,6 +272,9 @@ Base: mutt-1.6.2
 - f84f221 travis: new build script
 + b34e0d9 change ident to -git
 + ce858ab docs: big update
++ 0c7a5ca update project link
++ 75dd32f Clean up compressed folders configure
++ 62c3535 Fix crash opening a second compressed mailbox
 
 ## feature/cond-date
 
@@ -256,6 +309,8 @@ Base: mutt-1.6.2
 - b905a0f travis: tidy build script
 + 9909106 change ident to -git
 + e8c7147 docs: big update
++ ac65561 add option to disable fmemopen
+- cfe2dc8 travis: use new build script
 
 ## feature/ifdef
 
@@ -337,6 +392,7 @@ Base: mutt-1.6.2
 - 822704e travis: new build script
 + b2c7786 change ident to -git
 + 8dd3a3e docs: big update
++ 1d98d56 update project link
 
 ## feature/limit-current-thread
 
@@ -364,6 +420,16 @@ Base: mutt-1.6.2
 - e9f527f travis: new build script
 + d2f8965 change ident to -git
 + 0055523 docs: big update
++ 553c7ee Fix issue with choosing lmdb as hcache
+
+## feature/multiple-fcc
+
+Base: mutt-1.6.2
+
++ 64841b7 feature: multiple-fcc
++ 5841371 add ident to PATCHES
++ b9353ec add docs
+- 3f61ef9 travis: use new build script
 
 ## feature/nested-if
 
@@ -552,6 +618,8 @@ Base: mutt-1.6.2
 + 908d9ba change ident to -git
 + 1e96d79 fix crash when notmuch tries to read a message
 + 652c7f3 docs: big update
++ 5de095c Fix typo in comment
++ ae246d3 Clean up Notmuch. More work needed
 
 ## feature/progress
 
@@ -699,6 +767,8 @@ Base: mutt-1.6.2
 + a064e26 Fix sidebar crash for non-existent mailbox
 + 81130f3 change ident to -git
 + bb08244 docs: big update
++ 7ab9c70 clean up sidebar configure
++ ae9aca0 fix broken links
 
 ## feature/skip-quoted
 
@@ -742,7 +812,16 @@ Base: mutt-1.6.2
 - 61775be travis: new build script
 + cf2d8e2 change ident to -git
 + 59a364b docs: big update
-+ 2522b02 fix: status line wrapping
+! 2522b02 fix: status line wrapping
+
+## feature/timeout
+
+Base: mutt-1.6.2
+
++ aa5defe feature: timeout
++ 111d759 add ident to PATCHES
++ b812c30 add docs
+- 95fde86 travis: use new build script
 
 ## feature/tls-sni
 
@@ -814,10 +893,7 @@ Base: mutt-1.6.2
 + 573de36 news
 + 7742cc7 Alter ChangeLog date format to simplify Makefiles
 + 32378e1 update changelog
-+ 926af45 contrib: vim-keybindings
-+ 3efbd41 Mutt config for vim users
 - 20801c1 travis: new build script
-+ 2bab308 Scroll half page thanks to @rgrinberg
 + f323ca5 Temporary compatibility workaround
 - 5269f57 sort manual sections
 - c08f4e1 change ident to -git
@@ -825,4 +901,26 @@ Base: mutt-1.6.2
 + c874276 docs: fix broken link
 + 4f8f526 Revert "Temporary compatibility workaround"
 + 8e167d9 document new changes
++ bbadc7b Add a gitignore file for NeoMutt
++ e519143 Add basic configure summary
++ 69bd376 Clean up GPGME configure
++ f7de453 Clean up PGP configure option
++ 77ebdd2 More cleanup for GPGME
++ bfdfb0d Need to explicitly set values for configure summary
++ fd031e7 Clean up SMIME
++ 4cdfe40 Explicitly set GPGME vars
++ 58caee1 clean up sidebar configure
++ 0489d0c Clean up Notmuch. More work needed
++ 60683b3 Clean up compressed folders configure
++ 4e5df4b Update AC_INIT macro
++ f20233b M4-ify GPGME
++ d16a1f2 Ensure C compiler supports C99
++ 62afb86 Add configure summary for Header Cache database
++ 91e34eb Cleaner configure summary output for header cache
++ cda6311 Fix imap/sidebar update bug
++ 7e109e2 install all the READMEs and contribs
++ 0b3b23c fix image link
++ 888e634 docs: fix version string in the manual
++ 2484ba4 drop unused mutt scripts
++ 9e3b31d look for /etc/NeoMuttrc and ~/.neomuttrc
 

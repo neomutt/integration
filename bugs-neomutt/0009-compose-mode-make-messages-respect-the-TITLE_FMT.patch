@@ -1,7 +1,7 @@
-From aebb155e27d0805c8a2ebb028cf04cee7997348d Mon Sep 17 00:00:00 2001
+From 4e311513af1c83159d1adb9869179947c2cdedb6 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Wed, 13 Apr 2016 21:42:34 +0100
-Subject: [PATCH 09/12] compose mode: make messages respect the TITLE_FMT
+Subject: [PATCH 09/10] compose mode: make messages respect the TITLE_FMT
 
 Some messages on the compose screen didn't use the TITLE_FMT.
 Should it ever change, it would lead to formatting problems.

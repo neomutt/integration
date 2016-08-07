@@ -1,4 +1,4 @@
-From 94de148b5d824bc1a54bf4e3f51d219ad6459b1a Mon Sep 17 00:00:00 2001
+From c7f9394f5324ff71b1018560fa1639798bed19bd Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 15:22:31 +0100
 Subject: [PATCH 15/21] Makefile.am.doc

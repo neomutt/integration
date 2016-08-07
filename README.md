@@ -1,6 +1,6 @@
 # NeoMutt Patch Sets
 
-These patches are part of the NeoMutt Project: Bringing together all the Mutt Code
+These patches are part of the NeoMutt Project: Teaching an Old Dog New Tricks
 
 http://www.neomutt.org/
 https://github.com/neomutt
@@ -28,6 +28,8 @@ Each directory contains a set of patches which should be applied as a set.
 
 - bugs-common/     -- Bug-fixes shared by all distros
 - bugs-neomutt/    -- Bug-fixes specific to NeoMutt
+- contrib/         -- Contributed scripts and config
+- copr/            -- Patches specific to Fedora (COPR)
 - debian/          -- Patches specific to Debian
 - features-common/ -- Feature patches used by all distros
 - features-extra/  -- Feature patches used by some distros
@@ -56,6 +58,7 @@ Extra:
 - keywords              -- Email labels/keywords/tagging
 - ldmb                  -- LMDB backend for the header cache
 - limit-current-thread  -- Only show the current thread
+- multiple-fcc          -- Save multiple copies of outgoing mail
 - new-mail              -- Run a command when new mail arrives
 - nntp                  -- Talk to a usenet news server
 - notmuch               -- Email search engine
@@ -64,7 +67,15 @@ Extra:
 - skip-quoted           -- Configure quote lines context
 - smime-encrypt-to-self -- Save an self-encrypted copy of emails
 - status-color          -- Theming the status bar
+- timeout               -- Run a command periodically
 - tls-sni               -- Negotiate for a certificate
+
+## Contrib
+
+The following user contributions are available:
+
+- keybase               -- Keybase integration
+- vim-keybindings       -- Make Mutt behave more like Vim
 
 ## Application of Patches
 
@@ -77,6 +88,7 @@ The instructions, below, show the order in which they should be applied.
 - features-common/*
 - features-extra/*
 - bugs-neomutt/*
+- neomutt-customisations.patch
 
 ### COPR (Fedora)
 
@@ -84,6 +96,7 @@ The instructions, below, show the order in which they should be applied.
 - features-common/*
 - features-extra/*
 - bugs-neomutt/*
+- neomutt-customisations.patch
 - copr/*
 
 ### Debian
@@ -92,6 +105,7 @@ The instructions, below, show the order in which they should be applied.
 - features-common/*
 - features-extra/*
 - bugs-neomutt/*
+- neomutt-customisations.patch
 - debian/*
 
 ### Fedora
@@ -110,6 +124,7 @@ The instructions, below, show the order in which they should be applied.
 - features-common/*
 - features-extra/*
 - bugs-neomutt/*
+- neomutt-customisations.patch
 - gentoo-pre/*
 - gentoo/*
 
@@ -119,5 +134,6 @@ The instructions, below, show the order in which they should be applied.
 - features-common/*
 - features-extra/*
 - bugs-neomutt/*
+- neomutt-customisations.patch
 - suse/*
 

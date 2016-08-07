@@ -1,4 +1,4 @@
-From 0b72d7815a4f4bafd1a9b06ec9ef90481def7819 Mon Sep 17 00:00:00 2001
+From 1eb34cc601ba620a6851c11464c448219c15533b Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 03:04:29 +0100
 Subject: [PATCH 05/12] mutt-1.6.1-opennfs
@@ -15,7 +15,7 @@ Subject: [PATCH 05/12] mutt-1.6.1-opennfs
  create mode 100644 opennfs.c
 
 diff --git a/Makefile.am b/Makefile.am
-index 30da750..edd04e8 100644
+index 8186e8f..090c97e 100644
 --- a/Makefile.am
 +++ b/Makefile.am
 @@ -32,7 +32,7 @@ mutt_SOURCES = \
@@ -142,10 +142,10 @@ index c36b413..e32c60e 100644
        if (errno != EEXIST)
        {
 diff --git a/mutt.h b/mutt.h
-index 0c5fd88..133e6f3 100644
+index 3a49b19..7f5f406 100644
 --- a/mutt.h
 +++ b/mutt.h
-@@ -1075,4 +1075,5 @@ typedef struct
+@@ -1076,4 +1076,5 @@ typedef struct
  #include "lib.h"
  #include "globals.h"
  
@@ -280,7 +280,7 @@ index 0000000..60c0bfd
 +    return open(path, flags, mode);
 +}
 diff --git a/sendlib.c b/sendlib.c
-index 449bf0b..c0e7f37 100644
+index 2ed0f13..13cc7c0 100644
 --- a/sendlib.c
 +++ b/sendlib.c
 @@ -2260,7 +2260,7 @@ send_msg (const char *path, char **args, const char *msg, char **tempfile)

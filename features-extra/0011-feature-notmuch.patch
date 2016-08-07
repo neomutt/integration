@@ -1,7 +1,7 @@
-From f549315a22b480047b99b8d3d170164c2a06fbd7 Mon Sep 17 00:00:00 2001
+From d3bb07b47077e506d6fd71b70b75fa1170078c22 Mon Sep 17 00:00:00 2001
 From: Karel Zak <kzak@redhat.com>
 Date: Wed, 14 Dec 2011 11:58:47 +0100
-Subject: [PATCH 11/14] feature: notmuch
+Subject: [PATCH 11/16] feature: notmuch
 
 Signed-off-by: Karel Zak <kzak@redhat.com>
 ---
@@ -17,12 +17,12 @@ Signed-off-by: Karel Zak <kzak@redhat.com>
  color.c                 |   28 +-
  commands.c              |   38 +-
  compose.c               |    5 +-
- configure.ac            |   28 +-
+ configure.ac            |   27 +-
  copy.c                  |   25 +-
  copy.h                  |    3 +-
  curs_lib.c              |   18 +-
  curs_main.c             |  324 ++++++--
- doc/manual.xml.head     |  426 +++++++++-
+ doc/manual.xml.head     |  422 +++++++++-
  doc/muttrc.notmuch      |  114 +++
  doc/muttrc.status-color |    2 +-
  doc/vimrc.notmuch       |   28 +
@@ -53,7 +53,7 @@ Signed-off-by: Karel Zak <kzak@redhat.com>
  url.c                   |    5 +-
  url.h                   |    4 +
  version.c               |    5 +
- 48 files changed, 4360 insertions(+), 293 deletions(-)
+ 48 files changed, 4357 insertions(+), 291 deletions(-)
  create mode 100644 OPS.NOTMUCH
  create mode 100644 README.notmuch
  create mode 100644 UPDATING.kz
@@ -1036,15 +1036,15 @@ index e528e0c..d555d92 100644
           else
             mutt_message _("Message written.");
 diff --git a/configure.ac b/configure.ac
-index f184f67..c1910c0 100644
+index 19a9012..7ee23b2 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -191,6 +191,31 @@ AC_ARG_ENABLE(sidebar, AC_HELP_STRING([--enable-sidebar], [Enable Sidebar suppor
-         fi
+@@ -191,6 +191,30 @@ AS_IF([test x$enable_sidebar = "xyes"], [
+ 	   MUTT_LIB_OBJECTS="$MUTT_LIB_OBJECTS sidebar.o"
  ])
  
-+AC_ARG_ENABLE(notmuch, AC_HELP_STRING([--enable-notmuch], [Enable NOTMUCH support]),
-+[       if test x$enableval = xyes ; then
++AC_ARG_ENABLE(notmuch, AC_HELP_STRING([--enable-notmuch], [Enable NOTMUCH support]), enable_notmuch=$enableval, enable_notmuch=no)
++AS_IF([test x$enable_notmuch = "xyes"], [
 +		AC_CHECK_LIB(notmuch, notmuch_database_open,,
 +			AC_MSG_ERROR([Unable to find Notmuch library]))
 +		AC_DEFINE(USE_NOTMUCH,1,[ Define if you want support for the notmuch. ])
@@ -1063,7 +1063,6 @@ index f184f67..c1910c0 100644
 +		[notmuch_api_3=no]
 +		)
 +		AC_MSG_RESULT([$notmuch_api_3])
-+        fi
 +])
 +AM_CONDITIONAL(BUILD_NOTMUCH, test x$need_notmuch = xyes)
 +
@@ -1071,7 +1070,7 @@ index f184f67..c1910c0 100644
  AC_ARG_WITH(mixmaster, AS_HELP_STRING([--with-mixmaster@<:@=PATH@:>@],[Include Mixmaster support]),
    [if test "$withval" != no
     then
-@@ -327,7 +352,7 @@ main ()
+@@ -327,7 +351,7 @@ main ()
  AC_HEADER_STDC
  
  AC_CHECK_HEADERS(stdarg.h sys/ioctl.h ioctl.h sysexits.h)
@@ -1080,7 +1079,7 @@ index f184f67..c1910c0 100644
  AC_CHECK_HEADERS(unix.h)
  
  AC_CHECK_FUNCS(setrlimit getsid)
-@@ -1092,6 +1117,7 @@ AC_SUBST(MUTTLIBS)
+@@ -1092,6 +1116,7 @@ AC_SUBST(MUTTLIBS)
  AC_SUBST(MUTT_LIB_OBJECTS)
  AC_SUBST(LIBIMAP)
  AC_SUBST(LIBIMAPDEPS)
@@ -1626,30 +1625,18 @@ index e123c1e..5631e8a 100644
      {
        menu->menu = MENU_MAIN;
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index 6b66c32..15a9557 100644
+index bb72e2f..e8ee958 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
-@@ -9256,7 +9256,7 @@ <sect1 id="compress">
-     <title>See Also</title>
- 
-     <itemizedlist>
--      <listitem><para><ulink url="https://github.com/neomutt/neomutt/wiki">NeoMutt Project</ulink></para></listitem>
-+      <listitem><para><ulink url="http://www.neomutt.org/">NeoMutt Project</ulink></para></listitem>
-       <listitem><para><link linkend="compile-time-features">Compile-Time Features</link></para></listitem>
-       <listitem><para><link linkend="regexp">Regular Expressions</link></para></listitem>
-       <listitem><para><link linkend="tmpdir">$tmpdir</link></para></listitem>
-@@ -10520,9 +10520,8 @@ <sect1 id="keywords">
+@@ -10525,7 +10525,6 @@ <sect1 id="keywords">
  
    <sect2 id="keywords-see-also">
      <title>See Also</title>
 -
      <itemizedlist>
--      <listitem><para><ulink url="https://github.com/neomutt/neomutt/wiki">NeoMutt Project</ulink></para></listitem>
-+      <listitem><para><ulink url="http://www.neomutt.org/">NeoMutt Project</ulink></para></listitem>
+       <listitem><para><ulink url="http://www.neomutt.org/">NeoMutt Project</ulink></para></listitem>
        <listitem><para><link linkend="index-format">$index_format</link></para></listitem>
-       <listitem><para><link linkend="index-color">index-color patch</link></para></listitem>
-       <listitem><para><link linkend="folder-hook">folder-hook</link></para></listitem>
-@@ -11397,6 +11396,425 @@ <sect1 id="nntp">
+@@ -11402,6 +11401,425 @@ <sect1 id="nntp">
    </sect2>
  </sect1>
  
@@ -2075,7 +2062,7 @@ index 6b66c32..15a9557 100644
  <sect1 id="progress">
    <title>Progress Bar Patch</title>
    <subtitle>Show a visual progress bar on slow operations</subtitle>
-@@ -12367,7 +12785,7 @@ <sect1 id="status-color">
+@@ -12372,7 +12790,7 @@ <sect1 id="status-color">
  # First, highlight anything (*/*)</emphasis>
  color status brightred default '\([^)]+/[^)]+\)'
   
@@ -5516,7 +5503,7 @@ index 37e8adf..760851b 100644
    if (scheme != U_UNKNOWN)
    {
 diff --git a/mx.c b/mx.c
-index e813ca4..7299ba0 100644
+index e813ca4..7a0f237 100644
 --- a/mx.c
 +++ b/mx.c
 @@ -45,6 +45,10 @@
@@ -5586,7 +5573,7 @@ index e813ca4..7299ba0 100644
 +    case M_NOTMUCH:
 +      rc = nm_read_query (ctx);
 +      break;
-+#endif /* USE_IMAP */
++#endif /* USE_NOTMUCH */
 +
  #ifdef USE_NNTP
      case M_NNTP:
@@ -5765,7 +5752,7 @@ index dceacc7..5d65b52 100644
  int mbox_strict_cmp_headers (const HEADER *, const HEADER *);
  int mutt_reopen_mailbox (CONTEXT *, int *);
 diff --git a/pattern.c b/pattern.c
-index 066e2a0..8dc7fb4 100644
+index db0b5e8..5e6c87e 100644
 --- a/pattern.c
 +++ b/pattern.c
 @@ -42,6 +42,10 @@
@@ -6236,10 +6223,10 @@ index 15ec9ce..d07150f 100644
  
  #endif
 diff --git a/version.c b/version.c
-index ac3c8ed..e7b4f21 100644
+index 23a0926..61c51ef 100644
 --- a/version.c
 +++ b/version.c
-@@ -271,6 +271,11 @@ static struct compile_options comp_opts[] = {
+@@ -276,6 +276,11 @@ static struct compile_options comp_opts[] = {
  #else
  	{ "USE_IMAP", 0 },
  #endif

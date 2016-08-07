@@ -1,7 +1,7 @@
-From 1880dd1142875d123b4832d543d5de2578e1f1ec Mon Sep 17 00:00:00 2001
+From 5a25803238ebd982ed6846eed70897745b5fb78d Mon Sep 17 00:00:00 2001
 From: David Sterba <dsterba@suse.cz>
 Date: Fri, 15 Nov 2013 14:21:02 +0100
-Subject: [PATCH 02/14] feature: skip-quoted
+Subject: [PATCH 02/16] feature: skip-quoted
 
 Tunable for number of lines of quoted text that are displayed before the
 unquoted text after 'skip to quoted' command (S).
@@ -82,7 +82,7 @@ index 0000000..fe611d1
 +    * Richard Russon <rich@flatcap.org>
 +
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index 0bde796..f13d3c1 100644
+index a58759c..3901190 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
 @@ -10648,6 +10648,127 @@ <sect1 id="sidebar">

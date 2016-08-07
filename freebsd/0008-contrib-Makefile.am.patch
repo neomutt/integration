@@ -1,4 +1,4 @@
-From 90efb35af516f225d8e03b6c73f18c81c85bbcf8 Mon Sep 17 00:00:00 2001
+From e8a7a072f6c6ceeb54528903dbd0c6c6db1ebace Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 15:19:25 +0100
 Subject: [PATCH 08/21] contrib-Makefile.am

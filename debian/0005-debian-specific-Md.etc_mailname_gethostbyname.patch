@@ -1,14 +1,14 @@
-From 2fedcb8b6565d738ea5138b691813a55c8c1e89d Mon Sep 17 00:00:00 2001
+From 1c2d3d6350dbe7b3f3fd9856fc1048e7bd149974 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 6 May 2016 00:23:58 +0100
-Subject: [PATCH 05/22] debian-specific/Md.etc_mailname_gethostbyname
+Subject: [PATCH 05/19] debian-specific/Md.etc_mailname_gethostbyname
 
 ---
  init.c | 32 ++++++++++++++++++++++++++++++--
  1 file changed, 30 insertions(+), 2 deletions(-)
 
 diff --git a/init.c b/init.c
-index b22e8e9..b34fa91 100644
+index e7b0bce..2444cde 100644
 --- a/init.c
 +++ b/init.c
 @@ -51,6 +51,7 @@

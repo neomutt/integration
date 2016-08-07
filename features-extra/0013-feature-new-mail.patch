@@ -1,7 +1,7 @@
-From e1722c27c9d38184b5ee513cf100ade15ef9afca Mon Sep 17 00:00:00 2001
+From 5b432112763442bd2ca9799662f0a0510ead0fe3 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Yoshiki=20V=C3=A1zquez=20Baeza?= <yoshiki89@gmail.com>
 Date: Sat, 23 Apr 2016 13:33:50 -0700
-Subject: [PATCH 13/14] feature: new-mail
+Subject: [PATCH 13/16] feature: new-mail
 
 This setting executes a command when new mail is received.
 ---
@@ -126,7 +126,7 @@ index 5631e8a..a8e1935 100644
       }
       else
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index d3c447d..b2ded65 100644
+index aff1f30..7d9c0c0 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
 @@ -6824,7 +6824,10 @@ <sect2 id="new-mail-formats">
@@ -141,7 +141,7 @@ index d3c447d..b2ded65 100644
  </para>
  
  <para>
-@@ -10937,6 +10940,148 @@ <sect1 id="nested-if">
+@@ -10942,6 +10945,148 @@ <sect1 id="nested-if">
    </sect2>
  </sect1>
  

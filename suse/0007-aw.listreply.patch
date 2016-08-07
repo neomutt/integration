@@ -1,4 +1,4 @@
-From 34849a9d9d5e2bc9454b4c0d0d4758e42b57b1bb Mon Sep 17 00:00:00 2001
+From 156448bdee768675b45b3276f637564739731e23 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 03:07:24 +0100
 Subject: [PATCH 07/12] aw.listreply
@@ -11,16 +11,16 @@ Subject: [PATCH 07/12] aw.listreply
  4 files changed, 27 insertions(+)
 
 diff --git a/PATCHES b/PATCHES
-index b9eeea4..9ea7e99 100644
+index 6f0c09b..2b899a9 100644
 --- a/PATCHES
 +++ b/PATCHES
-@@ -18,3 +18,4 @@ patch-trash-neo-git
- patch-initials-neo-git
- patch-ifdef-neo-git
- patch-smime-encrypt-to-self-neo-git
-+patch-1.5.9.aw.listreply.1
+@@ -20,3 +20,4 @@ patch-status-color-neo-git
+ patch-timeout-neo-git
+ patch-tls-sni-neo-git
+ patch-trash-neo-git
+++patch-1.5.9.aw.listreply.1
 diff --git a/init.h b/init.h
-index 8de51f1..6068749 100644
+index f4a14c9..95412b3 100644
 --- a/init.h
 +++ b/init.h
 @@ -1501,6 +1501,13 @@ struct option_t MuttVars[] = {
@@ -38,10 +38,10 @@ index 8de51f1..6068749 100644
    /*
    ** .pp
 diff --git a/mutt.h b/mutt.h
-index 9f54db5..5032fdb 100644
+index 0b53e12..8e07c42 100644
 --- a/mutt.h
 +++ b/mutt.h
-@@ -314,6 +314,7 @@ enum
+@@ -315,6 +315,7 @@ enum
  #endif
    OPT_SUBJECT,
    OPT_VERIFYSIG,      /* verify PGP signatures */
@@ -50,7 +50,7 @@ index 9f54db5..5032fdb 100644
    OPT_TOMODERATED,
    OPT_CATCHUP,
 diff --git a/send.c b/send.c
-index a86f2d1..a377883 100644
+index 7806b6b..ebc7289 100644
 --- a/send.c
 +++ b/send.c
 @@ -516,6 +516,7 @@ static int include_reply (CONTEXT *ctx, HEADER *cur, FILE *out)

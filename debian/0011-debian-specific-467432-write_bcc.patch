@@ -1,7 +1,7 @@
-From 2c2dbd77bdef5035d51b0e9c4ed82061312ce02d Mon Sep 17 00:00:00 2001
+From a2df4d4970222bd024fff86fce59a6be10e2a598 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 6 May 2016 00:24:00 +0100
-Subject: [PATCH 11/22] debian-specific/467432-write_bcc
+Subject: [PATCH 11/19] debian-specific/467432-write_bcc
 
 ---
  headers.c |  2 +-
@@ -26,7 +26,7 @@ index d1343ad..22f851a 100644
  
    /* now copy the body of the message. */
 diff --git a/init.h b/init.h
-index a46d43b..064a945 100644
+index f13aaa0..41de402 100644
 --- a/init.h
 +++ b/init.h
 @@ -4096,14 +4096,9 @@ struct option_t MuttVars[] = {
@@ -61,10 +61,10 @@ index 09d6be6..1aa4666 100644
            fprintf (fout, "X-Mutt-Resume-Draft: 1\n");
          fputc ('\n', fout);
 diff --git a/protos.h b/protos.h
-index a9ac086..a295b23 100644
+index 10c1715..23d3a52 100644
 --- a/protos.h
 +++ b/protos.h
-@@ -388,7 +388,7 @@ int mutt_write_fcc (const char *path, HEADER *hdr, const char *msgid, int, char
+@@ -390,7 +390,7 @@ int mutt_write_multiple_fcc (const char *path, HEADER *hdr, const char *msgid, i
  int mutt_write_mime_body (BODY *, FILE *);
  int mutt_write_mime_header (BODY *, FILE *);
  int mutt_write_one_header (FILE *fp, const char *tag, const char *value, const char *pfx, int wraplen, int flags);
@@ -74,7 +74,7 @@ index a9ac086..a295b23 100644
  int mutt_yesorno (const char *, int);
  void mutt_set_header_color(CONTEXT *, HEADER *);
 diff --git a/send.c b/send.c
-index 43c6476..474c36c 100644
+index cea233d..bca6673 100644
 --- a/send.c
 +++ b/send.c
 @@ -1086,10 +1086,10 @@ static int send_message (HEADER *msg)
@@ -91,7 +91,7 @@ index 43c6476..474c36c 100644
  #ifdef USE_SMTP
    if (old_write_bcc)
 diff --git a/sendlib.c b/sendlib.c
-index 449bf0b..5869755 100644
+index 2ed0f13..03357bc 100644
 --- a/sendlib.c
 +++ b/sendlib.c
 @@ -1942,7 +1942,7 @@ out:
@@ -112,7 +112,7 @@ index 449bf0b..5869755 100644
    {
      if(mode != 0 || option(OPTWRITEBCC))
      {
-@@ -2808,7 +2808,7 @@ int mutt_write_fcc (const char *path, HEADER *hdr, const char *msgid,
+@@ -2844,7 +2844,7 @@ int mutt_write_fcc (const char *path, HEADER *hdr, const char *msgid,
    /* post == 1 => postpone message. Set mode = -1 in mutt_write_rfc822_header()
     * post == 0 => Normal mode. Set mode = 0 in mutt_write_rfc822_header()
     * */

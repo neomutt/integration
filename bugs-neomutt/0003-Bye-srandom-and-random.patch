@@ -1,7 +1,7 @@
-From 32f4e2f3f9592f1f1b359b9ecf036f7053646ae7 Mon Sep 17 00:00:00 2001
+From 3d22559b443918a3b04e06708a73215ac4e859af Mon Sep 17 00:00:00 2001
 From: Sami Farin <hvtaifwkbgefbaei@gmail.com>
 Date: Wed, 16 Oct 2013 11:34:57 -0700
-Subject: [PATCH 03/12] Bye srandom() and random()
+Subject: [PATCH 03/10] Bye srandom() and random()
 
 Prefer getrandom on Linux, use /dev/urandom otherwise to
 get entropy for MIME boundaries, message-id, Maildir filename,
@@ -212,10 +212,10 @@ index 760851b..5262a0d 100644
    if (n >= slen)
      dprint (1, (debugfile, "%s:%d: ERROR: insufficient buffer space to hold temporary filename! slen=%zu but need %zu\n",
 diff --git a/protos.h b/protos.h
-index 4bd4dac..a9ac086 100644
+index a7b2e7b..10c1715 100644
 --- a/protos.h
 +++ b/protos.h
-@@ -394,6 +394,11 @@ int mutt_yesorno (const char *, int);
+@@ -396,6 +396,11 @@ int mutt_yesorno (const char *, int);
  void mutt_set_header_color(CONTEXT *, HEADER *);
  void mutt_sleep (short);
  int mutt_save_confirm (const char  *, struct stat *);
@@ -227,7 +227,7 @@ index 4bd4dac..a9ac086 100644
  
  int mh_valid_message (const char *);
  
-@@ -441,16 +446,6 @@ void mutt_pattern_free (pattern_t **pat);
+@@ -443,16 +448,6 @@ void mutt_pattern_free (pattern_t **pat);
  #define LONGLONG long
  #endif
  
@@ -245,7 +245,7 @@ index 4bd4dac..a9ac086 100644
  #ifndef S_ISLNK
  #define S_ISLNK(x) (((x) & S_IFMT) == S_IFLNK ? 1 : 0)
 diff --git a/sendlib.c b/sendlib.c
-index f4c6ac3..449bf0b 100644
+index 53e0cc1..2ed0f13 100644
 --- a/sendlib.c
 +++ b/sendlib.c
 @@ -77,8 +77,6 @@ const char B64Chars[64] = {

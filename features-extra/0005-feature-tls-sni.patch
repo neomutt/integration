@@ -1,7 +1,7 @@
-From df69a8fbaf61f1b3faeda3a3dfbba86168a35166 Mon Sep 17 00:00:00 2001
+From 6caa64e0363f78910ac86e5279bc6275ad4905ff Mon Sep 17 00:00:00 2001
 From: Phil Pennock <mutt-dev@spodhuis.demon.nl>
 Date: Sat, 30 Jan 2016 16:22:13 +0000
-Subject: [PATCH 05/14] feature: tls-sni
+Subject: [PATCH 05/16] feature: tls-sni
 
 Negotiate with a server for a TSL/SSL certificate
 ---
@@ -124,7 +124,7 @@ index 0000000..76d5052
 +    * Richard Russon <rich@flatcap.org>
 +
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index 64ea520..c7c1727 100644
+index c871c35..91c540e 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
 @@ -11224,6 +11224,113 @@ <sect1 id="status-color">

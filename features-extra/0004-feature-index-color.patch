@@ -1,7 +1,7 @@
-From 070532bd38b5e5474348137c30b32c224239d9e5 Mon Sep 17 00:00:00 2001
+From e88663ea76f04ef445e1acd1584017038fcaaf61 Mon Sep 17 00:00:00 2001
 From: Christian Aichinger <Greek0@gmx.net>
 Date: Mon, 25 Jan 2016 17:02:57 +0000
-Subject: [PATCH 04/14] feature: index-color
+Subject: [PATCH 04/16] feature: index-color
 
 Custom rules for theming the email index
 ---
@@ -390,7 +390,7 @@ index 1ab6d2d..3086ad7 100644
      {
        k = (k == (size_t)(-1)) ? 1 : n;
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index ddad314..64ea520 100644
+index 1f3a6cd..c871c35 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
 @@ -3238,7 +3238,7 @@ <sect1 id="color">

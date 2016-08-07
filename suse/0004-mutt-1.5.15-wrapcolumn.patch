@@ -1,4 +1,4 @@
-From 84a56c49bfde016006024353e18307fdf7a6766b Mon Sep 17 00:00:00 2001
+From 44e327e863ee3209c35ea6043019032bd8fb5438 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 03:03:48 +0100
 Subject: [PATCH 04/12] mutt-1.5.15-wrapcolumn
@@ -8,7 +8,7 @@ Subject: [PATCH 04/12] mutt-1.5.15-wrapcolumn
  1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/init.h b/init.h
-index d9f16a9..8de51f1 100644
+index 659b55a..f4a14c9 100644
 --- a/init.h
 +++ b/init.h
 @@ -4047,7 +4047,8 @@ struct option_t MuttVars[] = {

@@ -1,7 +1,7 @@
-From 3a32324a30140fe7d5fca86cf06646588f8dc4ef Mon Sep 17 00:00:00 2001
+From 607237a947aeeb4eee66c79b1a149c24bec09e41 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 6 May 2016 19:53:13 +0100
-Subject: [PATCH 02/22] patches-20160502/sensible-browser
+Subject: [PATCH 02/19] patches-20160502/sensible-browser
 
 ---
  PATCHES                 |  1 +
@@ -14,13 +14,13 @@ Subject: [PATCH 02/22] patches-20160502/sensible-browser
  create mode 100644 README.sensible-browser
 
 diff --git a/PATCHES b/PATCHES
-index b9eeea4..ee68d06 100644
+index 6f0c09b..eda3ee1 100644
 --- a/PATCHES
 +++ b/PATCHES
-@@ -18,3 +18,4 @@ patch-trash-neo-git
- patch-initials-neo-git
- patch-ifdef-neo-git
- patch-smime-encrypt-to-self-neo-git
+@@ -20,3 +20,4 @@ patch-status-color-neo-git
+ patch-timeout-neo-git
+ patch-tls-sni-neo-git
+ patch-trash-neo-git
 +patch-sensible-browser-neo-git
 diff --git a/README.sensible-browser b/README.sensible-browser
 new file mode 100644
@@ -128,10 +128,10 @@ index 875101b..476b743 100644
  	    strfcpy (OldLastDir, LastDir, sizeof (OldLastDir));
  
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index 272379d..5e70f63 100644
+index 2fbe7fa..b8e2739 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
-@@ -13421,6 +13421,96 @@ <sect1 id="smime-encrypt-self-patch">
+@@ -13599,6 +13599,96 @@ <sect1 id="smime-encrypt-self-patch">
    </sect2>
  </sect1>
  

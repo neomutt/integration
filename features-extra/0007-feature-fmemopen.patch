@@ -1,17 +1,18 @@
-From 1fb90ec51d4dddc4a5a4aa4501564584bfcda938 Mon Sep 17 00:00:00 2001
+From c2d7be62c2374514d68ae7fc66aae25b5b456412 Mon Sep 17 00:00:00 2001
 From: Julius Plenz <plenz@cis.fu-berlin.de>
 Date: Sat, 30 Jan 2016 16:20:14 +0000
-Subject: [PATCH 07/14] feature: fmemopen
+Subject: [PATCH 07/16] feature: fmemopen
 
 Replace some temporary files with memory buffers
 ---
  PATCHES             |   1 +
- README.fmemopen     |  47 ++++++++++++++++++++++++
- configure.ac        |   2 +
- doc/manual.xml.head | 103 ++++++++++++++++++++++++++++++++++++++++++++++++++++
- handler.c           |  33 ++++++++++++++++-
- pattern.c           |  45 ++++++++++++++++++++++-
- 6 files changed, 228 insertions(+), 3 deletions(-)
+ README.fmemopen     |  47 +++++++++++++++++++++++
+ configure.ac        |   6 +++
+ doc/manual.xml.head | 108 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ handler.c           |  33 +++++++++++++++-
+ pattern.c           |  45 +++++++++++++++++++++-
+ version.c           |   5 +++
+ 7 files changed, 242 insertions(+), 3 deletions(-)
  create mode 100644 README.fmemopen
 
 diff --git a/PATCHES b/PATCHES
@@ -77,23 +78,39 @@ index 0000000..9bd7de7
 +    * Richard Russon <rich@flatcap.org>
 +
 diff --git a/configure.ac b/configure.ac
-index 52a259f..9170070 100644
+index b23f3a4..54b1bb7 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -1326,6 +1326,8 @@ if test $mutt_cv_langinfo_yesexpr = yes; then
+@@ -1326,6 +1326,12 @@ if test $mutt_cv_langinfo_yesexpr = yes; then
    AC_DEFINE(HAVE_LANGINFO_YESEXPR,1,[ Define if you have <langinfo.h> and nl_langinfo(YESEXPR). ])
  fi
  
-+AC_CHECK_FUNCS(fmemopen open_memstream)
++AC_CHECK_FUNCS(fmemopen open_memstream, [
++	AC_ARG_ENABLE(fmemopen, AS_HELP_STRING([--disable-fmemopen],[Do NOT use fmemopen]),
++	[],
++	[AC_DEFINE(USE_FMEMOPEN, 1, [Use fmemopen])])
++])
 +
  dnl Documentation tools
  have_openjade="no"
  AC_PATH_PROG([OSPCAT], [ospcat], [none])
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index fa5d0ef..198ee6f 100644
+index 2647fb3..8b1c371 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
-@@ -9590,6 +9590,109 @@ <sect1 id="cond-date">
+@@ -8822,6 +8822,11 @@ <sect1 id="compress">
+       <listitem><para>mutt-1.6.2</para></listitem>
+     </itemizedlist>
+ 
++    <para>
++      This patch can be disabled by running <literal>configure</literal> with
++      the option <literal>--disable-fmemopen</literal>
++    </para>
++
+     <para>This patch is part of the <ulink url="http://www.neomutt.org/">NeoMutt Project</ulink>.</para>
+   </sect2>
+ 
+@@ -9590,6 +9595,109 @@ <sect1 id="cond-date">
    </sect2>
  </sect1>
  
@@ -204,14 +221,14 @@ index fa5d0ef..198ee6f 100644
    <title>Ifdef Patch</title>
    <subtitle>Conditional config options</subtitle>
 diff --git a/handler.c b/handler.c
-index 4944d49..6068291 100644
+index 4944d49..91b93af 100644
 --- a/handler.c
 +++ b/handler.c
 @@ -1595,7 +1595,9 @@ static int run_decode_and_handler (BODY *b, STATE *s, handler_t handler, int pla
    int origType;
    char *savePrefix = NULL;
    FILE *fp = NULL;
-+#ifndef HAVE_FMEMOPEN
++#ifndef USE_FMEMOPEN
    char tempfile[_POSIX_PATH_MAX];
 +#endif
    size_t tmplength = 0;
@@ -221,7 +238,7 @@ index 4944d49..6068291 100644
  
    fseeko (s->fpin, b->offset, 0);
  
-+#ifdef HAVE_FMEMOPEN
++#ifdef USE_FMEMOPEN
 +  char *temp;
 +  size_t tempsize;
 +#endif
@@ -233,7 +250,7 @@ index 4944d49..6068291 100644
      {
        /* decode to a tempfile, saving the original destination */
        fp = s->fpout;
-+#ifdef HAVE_FMEMOPEN
++#ifdef USE_FMEMOPEN
 +     s->fpout = open_memstream (&temp, &tempsize);
 +     if (!s->fpout) {
 +       mutt_error _("Unable to open memory stream!");
@@ -256,7 +273,7 @@ index 4944d49..6068291 100644
        /* restore final destination and substitute the tempfile for input */
        s->fpout = fp;
        fp = s->fpin;
-+#ifdef HAVE_FMEMOPEN
++#ifdef USE_FMEMOPEN
 +      if (tempsize) {
 +        s->fpin = fmemopen (temp, tempsize, "r");
 +      } else { /* fmemopen cannot handle zero-length buffers */
@@ -278,7 +295,7 @@ index 4944d49..6068291 100644
  
        /* restore the original source stream */
        safe_fclose (&s->fpin);
-+#ifdef HAVE_FMEMOPEN
++#ifdef USE_FMEMOPEN
 +      if (tempsize)
 +        FREE(&temp);
 +#endif
@@ -286,7 +303,7 @@ index 4944d49..6068291 100644
      }
    }
 diff --git a/pattern.c b/pattern.c
-index ea0230e..b3f517d 100644
+index ea0230e..51e982a 100644
 --- a/pattern.c
 +++ b/pattern.c
 @@ -144,16 +144,21 @@ int mutt_which_case (const char *s)
@@ -303,7 +320,7 @@ index ea0230e..b3f517d 100644
    HEADER *h = ctx->hdrs[msgno];
    char *buf;
    size_t blen;
-+#ifdef HAVE_FMEMOPEN
++#ifdef USE_FMEMOPEN
 +  char *temp;
 +  size_t tempsize;
 +#else
@@ -317,7 +334,7 @@ index ea0230e..b3f517d 100644
        memset (&s, 0, sizeof (s));
        s.fpin = msg->fp;
        s.flags = M_CHARCONV;
-+#ifdef HAVE_FMEMOPEN
++#ifdef USE_FMEMOPEN
 +      s.fpout = open_memstream (&temp, &tempsize);
 +      if (!s.fpout) {
 +	mutt_perror ("Error opening memstream");
@@ -338,7 +355,7 @@ index ea0230e..b3f517d 100644
  	  if (s.fpout)
  	  {
  	    safe_fclose (&s.fpout);
-+#ifdef HAVE_FMEMOPEN
++#ifdef USE_FMEMOPEN
 +            FREE(&temp);
 +#else
  	    unlink (tempfile);
@@ -350,7 +367,7 @@ index ea0230e..b3f517d 100644
  	mutt_body_handler (h->content, &s);
        }
  
-+#ifdef HAVE_FMEMOPEN
++#ifdef USE_FMEMOPEN
 +      fclose (s.fpout);
 +      lng = tempsize;
 +
@@ -381,7 +398,7 @@ index ea0230e..b3f517d 100644
      if (option (OPTTHOROUGHSRC))
      {
        safe_fclose (&fp);
-+#ifdef HAVE_FMEMOPEN
++#ifdef USE_FMEMOPEN
 +      if (tempsize)
 +        FREE(&temp);
 +#else
@@ -390,6 +407,22 @@ index ea0230e..b3f517d 100644
      }
    }
  
+diff --git a/version.c b/version.c
+index a0cd472..ac86eb2 100644
+--- a/version.c
++++ b/version.c
+@@ -251,6 +251,11 @@ static struct compile_options comp_opts[] = {
+ #else
+ 	{ "USE_FLOCK", 0 },
+ #endif
++#ifdef USE_FMEMOPEN
++	{ "USE_FMEMOPEN", 1 },
++#else
++	{ "USE_FMEMOPEN", 0 },
++#endif
+ #ifdef USE_GNU_REGEX
+ 	{ "USE_GNU_REGEX", 1 },
+ #else
 -- 
 2.7.4
 

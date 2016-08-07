@@ -1,7 +1,7 @@
-From 46e57737a14683ecd7af61fce39e1eee868c4fcf Mon Sep 17 00:00:00 2001
+From b638b52122f901df79af944ffd9ce438f4ea02c6 Mon Sep 17 00:00:00 2001
 From: Karel Zak <kzak@redhat.com>
 Date: Thu, 6 Sep 2012 09:31:54 +0200
-Subject: [PATCH 01/12] add strndup.c strnlen.c
+Subject: [PATCH 01/10] add strndup.c strnlen.c
 
 Reported-by: Vladimir.Marek@oracle.com
 Signed-off-by: Karel Zak <kzak@redhat.com>
@@ -15,10 +15,10 @@ Signed-off-by: Karel Zak <kzak@redhat.com>
  create mode 100644 strnlen.c
 
 diff --git a/configure.ac b/configure.ac
-index 17931dd..5e2afcd 100644
+index 5bfc1e1..d029aa3 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -397,7 +397,7 @@ AC_CHECK_TYPE(ssize_t, int)
+@@ -396,7 +396,7 @@ AC_CHECK_TYPE(ssize_t, int)
  
  AC_CHECK_FUNCS(fgetpos memmove setegid srand48 strerror)
  
@@ -28,7 +28,7 @@ index 17931dd..5e2afcd 100644
  
  AC_CHECK_FUNC(getopt)
 diff --git a/protos.h b/protos.h
-index bfe2ad0..4bd4dac 100644
+index d63ef65..a7b2e7b 100644
 --- a/protos.h
 +++ b/protos.h
 @@ -1,5 +1,6 @@
@@ -38,7 +38,7 @@ index bfe2ad0..4bd4dac 100644
   * 
   *     This program is free software; you can redistribute it and/or modify
   *     it under the terms of the GNU General Public License as published by
-@@ -583,3 +584,11 @@ char *strcasestr (const char *, const char *);
+@@ -585,3 +586,11 @@ char *strcasestr (const char *, const char *);
  #ifndef HAVE_MKDTEMP
  char *mkdtemp (char *tmpl);
  #endif

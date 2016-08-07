@@ -1,15 +1,15 @@
-From df8b21366a030a78c32f751b4711880494ef4705 Mon Sep 17 00:00:00 2001
+From 1a6f5cacde1e399ef6d16d29ef6ad7a8ba051b45 Mon Sep 17 00:00:00 2001
 From: Pietro Cerutti <gahr@gahr.ch>
 Date: Thu, 2 Jun 2016 23:26:09 +0100
-Subject: [PATCH 12/14] feature: ldmb
+Subject: [PATCH 12/16] feature: ldmb
 
 ---
  PATCHES             |   1 +
  README.lmdb         |  38 +++++++++++
- configure.ac        |  38 +++++++++++
+ configure.ac        |  41 +++++++++++-
  doc/manual.xml.head |  54 +++++++++++++++
  hcache.c            | 184 ++++++++++++++++++++++++++++++++++++++++++++++++++++
- 5 files changed, 315 insertions(+)
+ 5 files changed, 317 insertions(+), 1 deletion(-)
  create mode 100644 README.lmdb
 
 diff --git a/PATCHES b/PATCHES
@@ -66,10 +66,10 @@ index 0000000..1e12926
 +    * Jan-Piet Mens <jp@mens.de>
 +
 diff --git a/configure.ac b/configure.ac
-index c1910c0..17931dd 100644
+index 7ee23b2..5bfc1e1 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -907,6 +907,7 @@ AC_ARG_WITH(tokyocabinet, AS_HELP_STRING([--without-tokyocabinet],[Don't use tok
+@@ -906,6 +906,7 @@ AC_ARG_WITH(tokyocabinet, AS_HELP_STRING([--without-tokyocabinet],[Don't use tok
  AC_ARG_WITH(qdbm, AS_HELP_STRING([--without-qdbm],[Don't use qdbm even if it is available]))
  AC_ARG_WITH(gdbm, AS_HELP_STRING([--without-gdbm],[Don't use gdbm even if it is available]))
  AC_ARG_WITH(bdb, AS_HELP_STRING([--with-bdb@<:@=DIR@:>@],[Use BerkeleyDB4 if gdbm is not available]))
@@ -77,7 +77,7 @@ index c1910c0..17931dd 100644
  
  db_found=no
  if test x$enable_hcache = xyes
-@@ -951,6 +952,15 @@ then
+@@ -950,6 +951,15 @@ then
          db_requested=bdb
        fi
      fi
@@ -93,7 +93,17 @@ index c1910c0..17931dd 100644
      
      dnl -- Tokyo Cabinet --
      if test "$with_tokyocabinet" != "no" \
-@@ -1094,6 +1104,34 @@ then
+@@ -1037,7 +1047,8 @@ then
+ 
+     dnl -- BDB --
+     ac_bdb_prefix="$with_bdb"
+-    if test x$ac_bdb_prefix != xno && test $db_found = no
++    if test x$with_bdb != xno && test $db_found = no \
++	    && test "$db_requested" = auto -o "$db_requested" = bdb
+     then
+         if test x$ac_bdb_prefix = xyes || test x$ac_bdb_prefix = x
+         then
+@@ -1093,6 +1104,34 @@ then
          fi
      fi
  
@@ -129,10 +139,10 @@ index c1910c0..17931dd 100644
      then
          AC_MSG_ERROR([You need Tokyo Cabinet, QDBM, GDBM or Berkeley DB4 for hcache])
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index 15a9557..d3c447d 100644
+index e8ee958..aff1f30 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
-@@ -10663,6 +10663,60 @@ <sect1 id="limit-current-thread">
+@@ -10668,6 +10668,60 @@ <sect1 id="limit-current-thread">
    </sect2>
  </sect1>
  

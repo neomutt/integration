@@ -1,4 +1,4 @@
-From cae9a502b86445ee005047c19a17a5aa36e2fe19 Mon Sep 17 00:00:00 2001
+From 2a1466d8e48de078b9d6bdf0d36063cb4786bd02 Mon Sep 17 00:00:00 2001
 From: Terry Chan <tchan@lunar-linux.org>
 Date: Mon, 16 Nov 2015 20:39:28 +0000
 Subject: [PATCH 7/7] feature: sidebar
@@ -19,7 +19,7 @@ http://lunar-linux.org/~tchan/mutt/patch-1.5.24.sidebar.20151111.txt
  color.c             |   11 +
  compose.c           |   57 +--
  compress.c          |    4 +-
- configure.ac        |    8 +
+ configure.ac        |    7 +
  copy.c              |    3 +-
  crypt-gpgme.c       |    7 +-
  curs_main.c         |   81 +++-
@@ -63,7 +63,7 @@ http://lunar-linux.org/~tchan/mutt/patch-1.5.24.sidebar.20151111.txt
  sort.h              |    6 +
  status.c            |   14 +-
  version.c           |    5 +
- 56 files changed, 3421 insertions(+), 226 deletions(-)
+ 56 files changed, 3420 insertions(+), 226 deletions(-)
  create mode 100644 OPS.SIDEBAR
  create mode 100644 README.sidebar
  create mode 100644 doc/muttrc.sidebar
@@ -148,7 +148,7 @@ index 3bf1049..2260cee 100644
  patch-nested-if-neo-git
 diff --git a/README.sidebar b/README.sidebar
 new file mode 100644
-index 0000000..6ee820b
+index 0000000..da710ff
 --- /dev/null
 +++ b/README.sidebar
 @@ -0,0 +1,143 @@
@@ -162,12 +162,12 @@ index 0000000..6ee820b
 +    If you haven't used the sidebar before, you might like to read the
 +    Sidebar Introduction:
 +
-+        http://www.neomutt.org/sidebar-intro.html
++        http://www.neomutt.org/feature/sidebar-intro
 +
 +    If you have used an older version of the Sidebar, please note that some
 +    of the configuration has changed.
 +
-+        http://www.neomutt.org/sidebar-intro.html#intro-sidebar-config-changes
++        http://www.neomutt.org/feature/sidebar-intro#intro-sidebar-config-changes
 +
 +Patch
 +-----
@@ -1028,10 +1028,10 @@ index 6af817f..0098ab8 100644
  	SETCOLOR (MT_COLOR_STATUS);
  	mutt_paddstr (COLS, buf);
 diff --git a/compress.c b/compress.c
-index b486755..3eb02a7 100644
+index 632ae98..65f52e4 100644
 --- a/compress.c
 +++ b/compress.c
-@@ -324,7 +324,7 @@ store_size (const CONTEXT *ctx)
+@@ -325,7 +325,7 @@ store_size (const CONTEXT *ctx)
   * Returns: src (unchanged)
   */
  static const char *
@@ -1040,7 +1040,7 @@ index b486755..3eb02a7 100644
  	const char *fmt, const char *ifstring, const char *elsestring,
  	unsigned long data, format_flag flags)
  {
-@@ -379,7 +379,7 @@ get_compression_cmd (const CONTEXT *ctx, const char *cmd)
+@@ -380,7 +380,7 @@ get_compression_cmd (const CONTEXT *ctx, const char *cmd)
  
  	char expanded[_POSIX_PATH_MAX];
  
@@ -1050,19 +1050,18 @@ index b486755..3eb02a7 100644
  }
  
 diff --git a/configure.ac b/configure.ac
-index 9106368..52a259f 100644
+index 8608f4b..b23f3a4 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -183,6 +183,14 @@ AC_ARG_ENABLE(compressed, AC_HELP_STRING([--enable-compressed], [Enable compress
+@@ -184,6 +184,13 @@ AS_IF([test x$enable_compressed = "xyes"], [
  ])
- AM_CONDITIONAL(BUILD_COMPRESS, test x$need_compress = xyes)
+ AM_CONDITIONAL(BUILD_COMPRESS, test x$enable_compressed = xyes)
  
-+AC_ARG_ENABLE(sidebar, AC_HELP_STRING([--enable-sidebar], [Enable Sidebar support]),
-+[       if test x$enableval = xyes ; then
-+		AC_DEFINE(USE_SIDEBAR, 1, [Define if you want support for the sidebar.])
-+		OPS="$OPS \$(srcdir)/OPS.SIDEBAR"
-+                MUTT_LIB_OBJECTS="$MUTT_LIB_OBJECTS sidebar.o"
-+        fi
++AC_ARG_ENABLE(sidebar, AC_HELP_STRING([--enable-sidebar], [Enable Sidebar support]), enable_sidebar=$enableval, enable_sidebar=no)
++AS_IF([test x$enable_sidebar = "xyes"], [
++	   AC_DEFINE(USE_SIDEBAR, 1, [Define if you want support for the sidebar.])
++	   OPS="$OPS \$(srcdir)/OPS.SIDEBAR"
++	   MUTT_LIB_OBJECTS="$MUTT_LIB_OBJECTS sidebar.o"
 +])
 +
  AC_ARG_WITH(mixmaster, AS_HELP_STRING([--with-mixmaster@<:@=PATH@:>@],[Include Mixmaster support]),
@@ -1283,7 +1282,7 @@ index 8f1a349..ac6cd33 100644
 +# endif
  #endif
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index bbad120..df0d183 100644
+index 4102748..c8713bf 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
 @@ -405,6 +405,602 @@ <sect2 id="intro-browser">

@@ -1,0 +1,229 @@
+From 8ed1eda486832d4a20af32187434d296e8a421e5 Mon Sep 17 00:00:00 2001
+From: Richard Russon <rich@flatcap.org>
+Date: Fri, 6 May 2016 00:36:57 +0100
+Subject: [PATCH 16/16] feature: multiple-fcc
+
+---
+ PATCHES             |  1 +
+ README.multiple-fcc | 44 +++++++++++++++++++++++++++++++++++
+ doc/manual.xml.head | 66 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ protos.h            |  1 +
+ send.c              |  2 +-
+ sendlib.c           | 36 +++++++++++++++++++++++++++++
+ 6 files changed, 149 insertions(+), 1 deletion(-)
+ create mode 100644 README.multiple-fcc
+
+diff --git a/PATCHES b/PATCHES
+index f63ed4b..6f0c09b 100644
+--- a/PATCHES
++++ b/PATCHES
+@@ -7,6 +7,7 @@ patch-initials-neo-git
+ patch-keywords-neo-git
+ patch-limit-current-thread-neo-git
+ patch-lmdb-neo-git
++patch-multiple-fcc-neo-git
+ patch-nested-if-neo-git
+ patch-new-mail-neo-git
+ patch-nntp-neo-git
+diff --git a/README.multiple-fcc b/README.multiple-fcc
+new file mode 100644
+index 0000000..e159d0b
+--- /dev/null
++++ b/README.multiple-fcc
+@@ -0,0 +1,44 @@
++multiple-fcc Patch
++==================
++
++Save multiple copies of outgoing mail
++
++Patch
++-----
++
++    To check if Mutt supports "multiple-fcc", look for "patch-multiple-fcc" in the mutt
++    version.
++
++    Dependencies
++    * mutt-1.6.2
++
++Introduction
++------------
++
++    This patch allows the user to save outgoing emails in multiple folders.
++
++    Folders should be listed separated by commas, **but no spaces**.
++
++    The "fcc" field of an email can be set in two ways:
++
++    * The <edit-fcc> command in the compose menu (default key: "f")
++    * Creating a `fcc-hook` in your `.muttrc`
++
++See Also
++--------
++
++    * NeoMutt project
++    * $record
++    * folder-hook
++
++Known Bugs
++----------
++
++    None
++
++Credits
++-------
++
++    * Omen Wild <omen@mandarb.com>
++    * Richard Russon <rich@flatcap.org>
++
+diff --git a/doc/manual.xml.head b/doc/manual.xml.head
+index 2ef9710..61b06ba 100644
+--- a/doc/manual.xml.head
++++ b/doc/manual.xml.head
+@@ -10725,6 +10725,72 @@ <sect1 id="lmdb">
+   </sect2>
+ </sect1>
+ 
++<sect1 id="multiple-fcc">
++  <title>multiple-fcc Patch</title>
++  <subtitle>Save multiple copies of outgoing mail</subtitle>
++
++  <sect2 id="multiple-fcc-patch">
++    <title>Patch</title>
++
++    <para>
++      To check if Mutt supports <quote>multiple-fcc</quote>, look for
++      <quote>patch-multiple-fcc</quote> in the mutt version.
++      See: <xref linkend="mutt-patches"/>.
++    </para>
++
++    <itemizedlist>
++      <title>Dependencies:</title>
++      <listitem><para>mutt-1.6.2</para></listitem>
++    </itemizedlist>
++
++    <para>This patch is part of the <ulink url="http://www.neomutt.org/">NeoMutt Project</ulink>.</para>
++  </sect2>
++
++  <sect2 id="multiple-fcc-intro">
++    <title>Introduction</title>
++
++    <para>
++      This patch allows the user to save outgoing emails in multiple folders.
++    </para>
++
++    <para>
++      Folders should be listed separated by commas, <emphasis role="bold">but no spaces</emphasis>.
++    </para>
++
++    <para>
++      The <quote>fcc</quote> field of an email can be set in two ways:
++    </para>
++
++    <itemizedlist>
++      <listitem><para>The &lt;edit-fcc&gt; command in the compose menu (default key: <quote>f</quote>)</para></listitem>
++      <listitem><para>Creating a <literal>fcc-hook</literal> in your <literal>.muttrc</literal></para></listitem>
++    </itemizedlist>
++  </sect2>
++
++  <sect2 id="multiple-fcc-see-also">
++    <title>See Also</title>
++
++    <itemizedlist>
++      <listitem><para><ulink url="http://www.neomutt.org/">NeoMutt Project</ulink></para></listitem>
++      <listitem><para><link linkend="record">$record</link></para></listitem>
++      <listitem><para><link linkend="fcc-hook">fcc-hook</link></para></listitem>
++    </itemizedlist>
++  </sect2>
++
++  <sect2 id="multiple-fcc-known-bugs">
++    <title>Known Bugs</title>
++    <para>None</para>
++  </sect2>
++
++  <sect2 id="multiple-fcc-credits">
++    <title>Credits</title>
++    <itemizedlist>
++    <listitem><para>Omen Wild <email>omen@mandarb.com</email></para></listitem>
++    <listitem><para>Richard Russon <email>rich@flatcap.org</email></para></listitem>
++    </itemizedlist>
++  </sect2>
++</sect1>
++
+ <sect1 id="nested-if">
+   <title>Nested If Patch</title>
+   <subtitle>Allow complex nested conditions in format strings</subtitle>
+diff --git a/protos.h b/protos.h
+index 87e5001..d63ef65 100644
+--- a/protos.h
++++ b/protos.h
+@@ -385,6 +385,7 @@ void mutt_update_num_postponed (void);
+ int mutt_wait_filter (pid_t);
+ int mutt_which_case (const char *);
+ int mutt_write_fcc (const char *path, HEADER *hdr, const char *msgid, int, char *, char **);
++int mutt_write_multiple_fcc (const char *path, HEADER *hdr, const char *msgid, int, char *, char **);
+ int mutt_write_mime_body (BODY *, FILE *);
+ int mutt_write_mime_header (BODY *, FILE *);
+ int mutt_write_one_header (FILE *fp, const char *tag, const char *value, const char *pfx, int wraplen, int flags);
+diff --git a/send.c b/send.c
+index 43c6476..cea233d 100644
+--- a/send.c
++++ b/send.c
+@@ -1975,7 +1975,7 @@ full_fcc:
+        * message was first postponed.
+        */
+       msg->received = time (NULL);
+-      if (mutt_write_fcc (fcc, msg, NULL, 0, NULL, &finalpath) == -1)
++      if (mutt_write_multiple_fcc (fcc, msg, NULL, 0, NULL, &finalpath) == -1)
+       {
+ 	/*
+ 	 * Error writing FCC, we should abort sending.
+diff --git a/sendlib.c b/sendlib.c
+index b661e71..b16590c 100644
+--- a/sendlib.c
++++ b/sendlib.c
+@@ -2759,6 +2759,42 @@ static void set_noconv_flags (BODY *b, short flag)
+   }
+ }
+ 
++/* Handle a Fcc with multiple, comma separated entries. */
++int mutt_write_multiple_fcc (const char *path, HEADER *hdr, const char *msgid,
++        int post, char *fcc, char **finalpath)
++{
++  char fcc_tok[_POSIX_PATH_MAX];
++  char fcc_expanded[_POSIX_PATH_MAX];
++  char *tok = NULL;
++  int status;
++
++  strfcpy(fcc_tok, path, sizeof (fcc_tok));
++
++  tok = strtok(fcc_tok, ",");
++  dprint(1, (debugfile, "Fcc: initial mailbox = '%s'\n", tok));
++  /* mutt_expand_path already called above for the first token */
++  status = mutt_write_fcc (tok, hdr, msgid, post, fcc, finalpath);
++  if (status != 0)
++    return status;
++
++  while ((tok = strtok (NULL, ",")) != NULL)
++  {
++    if (!*tok)
++      continue;
++
++    /* Only call mutt_expand_path iff tok has some data */
++    dprint (1, (debugfile, "Fcc: additional mailbox token = '%s'\n", tok));
++    strfcpy (fcc_expanded, tok, sizeof (fcc_expanded));
++    mutt_expand_path (fcc_expanded, sizeof (fcc_expanded));
++    dprint (1, (debugfile, "     Additional mailbox expanded = '%s'\n", fcc_expanded));
++    status = mutt_write_fcc (fcc_expanded, hdr, msgid, post, fcc, finalpath);
++    if (status != 0)
++      return status;
++  }
++
++  return 0;
++}
++
+ int mutt_write_fcc (const char *path, HEADER *hdr, const char *msgid,
+ 		    int post, char *fcc, char **finalpath)
+ {
+-- 
+2.7.4
+

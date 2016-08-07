@@ -1,4 +1,4 @@
-From 5b191e47bd93ddf433f979255cbbf338fd6940f2 Mon Sep 17 00:00:00 2001
+From 55c2f251d2d2511a2d33df4fe991144ac3bd8af5 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 03:08:25 +0100
 Subject: [PATCH 09/12] widechar.sidebar
@@ -8,7 +8,7 @@ Subject: [PATCH 09/12] widechar.sidebar
  1 file changed, 6 insertions(+), 5 deletions(-)
 
 diff --git a/handler.c b/handler.c
-index 6068291..274fedc 100644
+index 91b93af..9852906 100644
 --- a/handler.c
 +++ b/handler.c
 @@ -780,7 +780,7 @@ static void enriched_set_flags (const wchar_t *tag, struct enriched_state *stte)
