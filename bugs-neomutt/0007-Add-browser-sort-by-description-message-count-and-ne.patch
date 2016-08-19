@@ -1,7 +1,7 @@
-From 940e7619f10593b6626912a4c6b3bb90c8e29bab Mon Sep 17 00:00:00 2001
+From 6279862c5de35d6eca9885ee4c8605a8cab17b5e Mon Sep 17 00:00:00 2001
 From: Tim Stoakes <tim@stoakes.net>
 Date: Sun, 16 Sep 2012 09:31:54 +0200
-Subject: [PATCH 06/10] Add browser sort by description, message count and new
+Subject: [PATCH 07/11] Add browser sort by description, message count and new
  message count
 
 Now the browser can sort by mail folder description, (all) message count, and

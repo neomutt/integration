@@ -1,4 +1,4 @@
-From 8ed1eda486832d4a20af32187434d296e8a421e5 Mon Sep 17 00:00:00 2001
+From feee47bb4dc97630a7643aac2cd9a8cd8b3c594a Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 6 May 2016 00:36:57 +0100
 Subject: [PATCH 16/16] feature: multiple-fcc
@@ -76,10 +76,10 @@ index 0000000..e159d0b
 +    * Richard Russon <rich@flatcap.org>
 +
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index 2ef9710..61b06ba 100644
+index 7a5ebe9..24e9d5a 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
-@@ -10725,6 +10725,72 @@ <sect1 id="lmdb">
+@@ -10731,6 +10731,72 @@ <sect1 id="lmdb">
    </sect2>
  </sect1>
  
@@ -153,7 +153,7 @@ index 2ef9710..61b06ba 100644
    <title>Nested If Patch</title>
    <subtitle>Allow complex nested conditions in format strings</subtitle>
 diff --git a/protos.h b/protos.h
-index 87e5001..d63ef65 100644
+index 01c003c..d9c0a17 100644
 --- a/protos.h
 +++ b/protos.h
 @@ -385,6 +385,7 @@ void mutt_update_num_postponed (void);

@@ -1,7 +1,7 @@
-From 3d22559b443918a3b04e06708a73215ac4e859af Mon Sep 17 00:00:00 2001
+From 6bcd35544ef0c9422041a2347421e97b827e7556 Mon Sep 17 00:00:00 2001
 From: Sami Farin <hvtaifwkbgefbaei@gmail.com>
 Date: Wed, 16 Oct 2013 11:34:57 -0700
-Subject: [PATCH 03/10] Bye srandom() and random()
+Subject: [PATCH 03/11] Bye srandom() and random()
 
 Prefer getrandom on Linux, use /dev/urandom otherwise to
 get entropy for MIME boundaries, message-id, Maildir filename,
@@ -212,7 +212,7 @@ index 760851b..5262a0d 100644
    if (n >= slen)
      dprint (1, (debugfile, "%s:%d: ERROR: insufficient buffer space to hold temporary filename! slen=%zu but need %zu\n",
 diff --git a/protos.h b/protos.h
-index a7b2e7b..10c1715 100644
+index 4d593f1..5d54745 100644
 --- a/protos.h
 +++ b/protos.h
 @@ -396,6 +396,11 @@ int mutt_yesorno (const char *, int);

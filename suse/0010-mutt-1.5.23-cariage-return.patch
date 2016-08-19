@@ -1,4 +1,4 @@
-From b9e37e1d807a718d85a3abc1eb4fb4031c199574 Mon Sep 17 00:00:00 2001
+From 131f7ab16b59c224a477e644129a09e103676171 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 03:09:05 +0100
 Subject: [PATCH 10/12] mutt-1.5.23-cariage-return
@@ -46,7 +46,7 @@ index eddfc70..35f3efc 100644
  int mutt_strncmp (const char *, const char *, size_t);
  int mutt_strcoll (const char *, const char *);
 diff --git a/pager.c b/pager.c
-index 1bd1620..fac484d 100644
+index 21dda91..f0e987b 100644
 --- a/pager.c
 +++ b/pager.c
 @@ -774,7 +774,7 @@ resolve_types (char *buf, char *raw, struct line_t *lineInfo, int n, int last,

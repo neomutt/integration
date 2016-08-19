@@ -1,7 +1,7 @@
-From ddf4eba8cdde317173c07f26d30079781ebf3487 Mon Sep 17 00:00:00 2001
+From 01ed7fe2baf0bab712c71b6dd54da5c3099b0104 Mon Sep 17 00:00:00 2001
 From: Mike Frysinger <vapier@gentoo.org>
 Date: Tue, 31 May 2016 21:17:41 +0100
-Subject: [PATCH 10/10] separate key bindings for <return> and <enter>
+Subject: [PATCH 11/11] separate key bindings for <return> and <enter>
 
 ---
  doc/gen-map-doc |  3 ++-
@@ -44,7 +44,7 @@ index 467bccf..851d12b 100644
        if (ch & ~0xff)
  	continue;
 diff --git a/functions.h b/functions.h
-index 5747425..347bcde 100644
+index bbc0291..dad63b6 100644
 --- a/functions.h
 +++ b/functions.h
 @@ -22,9 +22,6 @@
@@ -69,7 +69,7 @@ index 5747425..347bcde 100644
    { "search-opposite",	OP_SEARCH_OPPOSITE,	NULL },
 @@ -169,7 +167,8 @@ const struct binding_t OpMain[] = { /* map: index */
  #ifdef USE_NNTP
-   { "catchup",			OP_CATCHUP,			"y" },
+   { "catchup",			OP_CATCHUP,			NULL },
  #endif
 -  { "display-message",		OP_DISPLAY_MESSAGE,		M_ENTER_S },
 +  { "display-message",		OP_DISPLAY_MESSAGE,		"\n" },

@@ -1,7 +1,7 @@
-From b711446ddf4fdf643cc41f1ff40326f9803a64dc Mon Sep 17 00:00:00 2001
+From 798f53fe06d7fe11b68271ca65dcf703a368ba0c Mon Sep 17 00:00:00 2001
 From: Aaron Schrab <aaron@schrab.com>
 Date: Mon, 1 Feb 2016 01:04:48 +0000
-Subject: [PATCH 5/7] feature: cond-dates
+Subject: [PATCH 5/7] feature: cond-date
 
 Use rules to choose date format
 ---

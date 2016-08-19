@@ -1,4 +1,4 @@
-# NeoMutt 2016-08-07
+# NeoMutt 2016-08-19
 
 ## List of Merged Branches
 
@@ -151,12 +151,14 @@ Since: mutt-1.6.2
 + ed60d77 Fix sidebar "unsorted" order to match Buffy list order.
 + 32e88b2 Add R_SIDEBAR to redraw sidebar when its settings change.
 + 9051e0d Fix the documented sort methods for sidebar_sort_method.
++ 91300f5 Added tag mutt-1-6-2-rel for changeset 7ccd4417bd70
++ 1136287 mutt-1.6.2 signed
 + da60e6d Fix sidebar crash for non-existent mailbox
 + 0585a72 Filter soft hypen from pager and headers.  (closes #3848)
-+ e31d494 Fix the sidebar TopIndex and BotIndex when $sidebar_new_mail_only is set.
+! e31d494 Fix the sidebar TopIndex and BotIndex when $sidebar_new_mail_only is set.
 + c9f52d9 Don't overwrite imap_status->uidnext with a lower value.  (closes #3771)
-+ 7f54e8f Fix sidebar pagedown/up when mailboxes on the end are hidden.
-+ 8dbe637 Change sidebar highlighted mailbox behavior.
+! 7f54e8f Fix sidebar pagedown/up when mailboxes on the end are hidden.
+! 8dbe637 Change sidebar highlighted mailbox behavior.
 + e3654fa Fix conststrings compiler version string generation. (closes #3852)
 + fc8a37b Initialize mutt windows even in batch mode. (closes #3853)
 + 5853c1b Fix BODY->charset memory leaks.
@@ -182,11 +184,26 @@ Since: mutt-1.6.2
 + ddac530 Fix memleak in mh_read_dir() when sequence parsing fails.
 + 5a8c474 Fix memory leak in mutt_choose_charset().
 + eb38636 Remove nonsensical size check in mutt_choose_charset()
+! 9baeae0 Updated French translation.
+! d297356 Clear pager position upon returning to the index menu.
+! 48c13e4 Updated Ukrainian translation.
+! 86e9628 Updated Russian translation.
+! 1f73262 Updated French translation.
+! f53e09c Updated Catalan translation.
+! b49909d Updated Dutch translation.
+! 637ac9e Updated Esperanto translation.
+! e78f3ef Updated Danish translation.
+! 48d2374 Updated Japanese translation.
+! 4effa43 automatic post-release commit for mutt-1.7.0
+! 0bc1f7a Added tag mutt-1-7-rel for changeset a4e83f60e42f
+! aa28c26 mutt-1.7.0 signed
 
 ## bugs/common
 
 Base: mutt-1.6.2
 
+- f1e9319 travis: add config
+- 95e6db0 travis: test slang
 - 2cea9b7 travis: add config
 + 74f97b8 Set COLUMNS to MuttIndexWindow->cols in mutt_create_filter_fd. (closes #3837)
 - ecc0f7d Fix infinite loop when help is bound to a named key combination.
@@ -195,6 +212,8 @@ Base: mutt-1.6.2
 + 705c952 Include ncurses tinfo library if found.
 + fe61d27 Fix cppflags and muttlibs duplication with --with-gss.
 - 4393f27 Check $pgp_autoinline and $pgp_replyinline if oppenc is set. (closes #3846)
+- 91300f5 Added tag mutt-1-6-2-rel for changeset 7ccd4417bd70
+- 1136287 mutt-1.6.2 signed
 + b7ff43a Reset buffy->new for the current mailbox in IMAP.
 
 ## bugs/neomutt
@@ -212,12 +231,18 @@ Base: mutt-1.6.2
 + 90af436 compose mode: make messages respect the TITLE_FMT
 + bc4c351 build tweak to allow testing
 - eb9c4b1 travis: add config
+- f1e9319 travis: add config
 - 02a8509 separate key bindings for <return> and <enter>
+- 95e6db0 travis: test slang
 - 7cad3cb Revert "separate key bindings for <return> and <enter>"
 + 333f8a6 separate key bindings for <return> and <enter>
 - f04aa8d travis: tidy build script
+- 91300f5 Added tag mutt-1-6-2-rel for changeset 7ccd4417bd70
+- 1136287 mutt-1.6.2 signed
 - efcff00 Update travis script
 - 5884d05 We need a deeper git clone for tests
+! 5831e48 Don't whine if getrandom() fails.
+! 1b588b1 add strndup.c strnlen.c (FIX)
 
 ## contrib/keybase
 
@@ -240,6 +265,10 @@ Base:
 + e0c97d0 Update README.md
 + eee7774 minor update to keybase.py
 + 802f361 readme updated. Not finished
+! 0dbddc0 updated readme
+! 44baa84 minor updates
+! 790ea08 modified pictures
+! a55e440 minor update to readme
 
 ## contrib/vim-keybindings
 
@@ -253,6 +282,7 @@ Base:
 
 Base: mutt-1.6.2
 
+- f1e9319 travis: add config
 + 7c5b70a feature: compress
 + ba347f6 fix code to match latest version of mutt
 + 0d49bbc add docs
@@ -265,16 +295,21 @@ Base: mutt-1.6.2
 + 229c96f style - {}s, pointers, etc
 + a7612d8 comments
 + bf3eccc doc: check for installed patches
+- 95e6db0 travis: test slang
 + d81cf55 docs: fix old links
 + 67da3ae fix spurious boolean
 + 53d7c9c compress build
 + a307689 update dependency in readme
 - f84f221 travis: new build script
+- 91300f5 Added tag mutt-1-6-2-rel for changeset 7ccd4417bd70
+- 1136287 mutt-1.6.2 signed
 + b34e0d9 change ident to -git
 + ce858ab docs: big update
 + 0c7a5ca update project link
 + 75dd32f Clean up compressed folders configure
 + 62c3535 Fix crash opening a second compressed mailbox
+! 403de3e fix check_sec.sh warnings
+! 9f06971 Fix data-loss when appending a compressed file
 
 ## feature/cond-date
 
@@ -287,9 +322,13 @@ Base: mutt-1.6.2
 + 88176b4 add ident to PATCHES
 + c2a5c48 change wiki references to website
 - 8e775bf travis: add config
+- f1e9319 travis: add config
 + ff0741d bump dependency to 1.6.1
 + c1e9f15 doc: check for installed patches
+- 95e6db0 travis: test slang
 - 5f5f6a6 travis: new build script
+- 91300f5 Added tag mutt-1-6-2-rel for changeset 7ccd4417bd70
+- 1136287 mutt-1.6.2 signed
 + 8045d8c change ident to -git
 + c180e15 docs: big update
 + b29ddbd docs: fix typo
@@ -304,9 +343,13 @@ Base: mutt-1.6.2
 + 8d1a81c add ident to PATCHES
 + 01c7518 change wiki references to website
 - 01616d1 travis: add config
+- f1e9319 travis: add config
 + 390d3a0 bump dependency to 1.6.1
 + 8da43b2 doc: check for installed patches
+- 95e6db0 travis: test slang
 - b905a0f travis: tidy build script
+- 91300f5 Added tag mutt-1-6-2-rel for changeset 7ccd4417bd70
+- 1136287 mutt-1.6.2 signed
 + 9909106 change ident to -git
 + e8c7147 docs: big update
 + ac65561 add option to disable fmemopen
@@ -329,9 +372,13 @@ Base: mutt-1.6.2
 + c493b9a build fix for slang
 + 359c0c4 change wiki references to website
 - 9155a68 travis: add config
+- f1e9319 travis: add config
 + ca3ff71 bump dependency to 1.6.1
 + 487855f doc: check for installed patches
+- 95e6db0 travis: test slang
 - 32a9929 travis: new build script
+- 91300f5 Added tag mutt-1-6-2-rel for changeset 7ccd4417bd70
+- 1136287 mutt-1.6.2 signed
 + 6ec7ce3 change ident to -git
 + 293f912 docs: big update
 
@@ -348,10 +395,14 @@ Base: mutt-1.6.2
 + 3f50392 add ident to PATCHES
 + 2da906d change wiki references to website
 - 9e8c0e5 travis: add config
+- f1e9319 travis: add config
 + a37fe8a bump dependency to 1.6.1
 + 94cf539 doc: check for installed patches
+- 95e6db0 travis: test slang
 + f289e69 fix index_format truncation problem
 - 58bc287 travis: new build script
+- 91300f5 Added tag mutt-1-6-2-rel for changeset 7ccd4417bd70
+- 1136287 mutt-1.6.2 signed
 + 9375f66 change ident to -git
 + 5f14087 docs: big update
 
@@ -365,9 +416,13 @@ Base: mutt-1.6.2
 + 35e2c79 add ident to PATCHES
 + 1fa0516 change wiki references to website
 - 1290802 travis: add config
+- f1e9319 travis: add config
 + accb351 bump dependency to 1.6.1
 + 2f3aeec doc: check for installed patches
+- 95e6db0 travis: test slang
 - 70a50b8 travis: new build script
+- 91300f5 Added tag mutt-1-6-2-rel for changeset 7ccd4417bd70
+- 1136287 mutt-1.6.2 signed
 + 9bc3ffe change ident to -git
 + 650e14a docs: big update
 
@@ -375,6 +430,7 @@ Base: mutt-1.6.2
 
 Base: mutt-1.6.2
 
+- f1e9319 travis: add config
 + 069f814 Add reentrant hash_walk() function for iterating down a hash table.
 + c6f9dee Adds capability to edit x-labels inside mutt, and to sort by label.
 + 5de3b82 Adds label completion.
@@ -385,14 +441,20 @@ Base: mutt-1.6.2
 - 2d04035 travis: add config
 + 21ea4ad doc: check for installed patches
 + 3ad3e06 fix build warning
+- 95e6db0 travis: test slang
 + 794754c docs: fix old links
 + 7cc2a08 fix crash when the main mailbox doesn't exist
 + fd3a9ac fix another crash in keywords
 + 4b95587 update dependency in readme
 - 822704e travis: new build script
+- 91300f5 Added tag mutt-1-6-2-rel for changeset 7ccd4417bd70
+- 1136287 mutt-1.6.2 signed
 + b2c7786 change ident to -git
 + 8dd3a3e docs: big update
 + 1d98d56 update project link
+! 5c51b09 Don't de-tag emails after labelling them
+! ec2d820 fix check_sec.sh warnings
+! f5ac067 revert to Mutt keybindings
 
 ## feature/limit-current-thread
 
@@ -404,28 +466,42 @@ Base: mutt-1.6.2
 + 6617548 add ident to PATCHES
 + f032e03 change wiki references to website
 - 6b8c7c0 travis: add config
+- f1e9319 travis: add config
 + 0ffe96f bump dependency to 1.6.1
 + 94fcf6a doc: check for installed patches
+- 95e6db0 travis: test slang
 - 09317b6 travis: new build script
+- 91300f5 Added tag mutt-1-6-2-rel for changeset 7ccd4417bd70
+- 1136287 mutt-1.6.2 signed
 + 5353fba change ident to -git
 + e886841 docs: big update
+! 906e11c revert to Mutt keybindings
 
 ## feature/lmdb
 
 Base: mutt-1.6.2
 
+- f1e9319 travis: add config
+- 95e6db0 travis: test slang
 + 22c9151 feature: add ldmb support
 + 36c8a1e docs: add template docs
 + 1126f8d docs: document lmdb feature
 - e9f527f travis: new build script
+- 91300f5 Added tag mutt-1-6-2-rel for changeset 7ccd4417bd70
+- 1136287 mutt-1.6.2 signed
 + d2f8965 change ident to -git
 + 0055523 docs: big update
 + 553c7ee Fix issue with choosing lmdb as hcache
+! a625cfd fix check_sec.sh warnings
 
 ## feature/multiple-fcc
 
 Base: mutt-1.6.2
 
+- f1e9319 travis: add config
+- 95e6db0 travis: test slang
+- 91300f5 Added tag mutt-1-6-2-rel for changeset 7ccd4417bd70
+- 1136287 mutt-1.6.2 signed
 + 64841b7 feature: multiple-fcc
 + 5841371 add ident to PATCHES
 + b9353ec add docs
@@ -442,9 +518,13 @@ Base: mutt-1.6.2
 + 1580acd add ident to PATCHES
 + ca2a4ca change wiki references to website
 - 20ba5ae travis: add config
+- f1e9319 travis: add config
 + ab9a52f bump dependency to 1.6.1
 + ed20705 doc: check for installed patches
+- 95e6db0 travis: test slang
 - d4094e0 travis: new build script
+- 91300f5 Added tag mutt-1-6-2-rel for changeset 7ccd4417bd70
+- 1136287 mutt-1.6.2 signed
 + 6b78f03 change ident to -git
 + 36ff893 docs: big update
 
@@ -452,6 +532,10 @@ Base: mutt-1.6.2
 
 Base: mutt-1.6.2
 
+- f1e9319 travis: add config
+- 95e6db0 travis: test slang
+- 91300f5 Added tag mutt-1-6-2-rel for changeset 7ccd4417bd70
+- 1136287 mutt-1.6.2 signed
 - b820dc4 travis: add config
 + 22ef61e feature: new_mail_command
 + df7472e Add documentation template
@@ -464,17 +548,23 @@ Base: mutt-1.6.2
 
 Base: mutt-1.6.2
 
+- f1e9319 travis: add config
 + 2e01179 feature: nntp
 + 81867d6 add docs
 + 9081e32 add ident to PATCHES
 - 3340ffe travis: add config
 + a614338 doc: check for installed patches
+- 95e6db0 travis: test slang
 + 3aa4455 docs: reorder sections
 + 2fd4668 Fix spelling error
 + 21f2a32 update dependency in readme
 - 0944bc0 travis: new build script
+- 91300f5 Added tag mutt-1-6-2-rel for changeset 7ccd4417bd70
+- 1136287 mutt-1.6.2 signed
 + 7ec076c change ident to -git
 + 3cb2237 docs: big update
+! f646854 fix check_sec.sh warnings
+! 4e57702 revert to Mutt keybindings
 
 ## feature/notmuch
 
@@ -620,6 +710,9 @@ Base: mutt-1.6.2
 + 652c7f3 docs: big update
 + 5de095c Fix typo in comment
 + ae246d3 Clean up Notmuch. More work needed
+! 9a55956 fix check_sec.sh warnings
+! 8c5bb72 revert to Mutt keybindings
+! b7277a5 docs: explain notmuch queries
 
 ## feature/progress
 
@@ -632,11 +725,16 @@ Base: mutt-1.6.2
 + 52d6c15 add missing authors
 + 26c4c0f change wiki references to website
 - aba4bff travis: add config
+- f1e9319 travis: add config
 + 5d08a58 bump dependency to 1.6.1
 - 345e4e0 doc: check for installed patches
+- 95e6db0 travis: test slang
 - 0dd13f2 travis: new build script
+- 91300f5 Added tag mutt-1-6-2-rel for changeset 7ccd4417bd70
+- 1136287 mutt-1.6.2 signed
 + 102f30b change ident to -git
 + 283671a docs: big update
+! 991d306 Don't paint invisible progress bars
 
 ## feature/quasi-delete
 
@@ -648,9 +746,13 @@ Base: mutt-1.6.2
 + 9ae8c71 add ident to PATCHES
 + def9174 change wiki references to website
 - 1badc13 travis: add config
+- f1e9319 travis: add config
 + d877aed bump dependency to 1.6.1
 + 22530e2 doc: check for installed patches
+- 95e6db0 travis: test slang
 - f706fb7 travis: new build script
+- 91300f5 Added tag mutt-1-6-2-rel for changeset 7ccd4417bd70
+- 1136287 mutt-1.6.2 signed
 + b8c67c4 change ident to -git
 + f7ca6c8 docs: big update
 
@@ -722,12 +824,14 @@ Base: mutt-1.6.2
 + f78aa09 drop spurious attribute setting
 + 4f6c5b2 fix typo
 + 6e2a09b allow sidebar functions when sidebar is hidden
+- f1e9319 travis: add config
 + 8a4d50f bump dependency to 1.6.1
 + b1032f7 Set COLUMNS to MuttIndexWindow->cols in mutt_create_filter_fd. (closes #3837)
 + 6d986ca fix format=flowed text when the sidebar is enabled
 + b62d27a doc: css for sidebar intro
 + 6c43ea4 doc: check for installed patches
 + a9c4404 fix missing TITLE_FMTs
+- 95e6db0 travis: test slang
 + bc484cd sync whitespace to mutt/default
 + dead9c2 rename sidebar functions sb_* -> mutt_sb_*
 + 05a8e75 bug-fixes from mutt/default
@@ -764,11 +868,17 @@ Base: mutt-1.6.2
 + 634c2bc Add cols parameter to mutt_FormatString()
 + 75cb59d build fix for mixmaster
 + 2840326 fix Sidebar width problem
+- 91300f5 Added tag mutt-1-6-2-rel for changeset 7ccd4417bd70
+- 1136287 mutt-1.6.2 signed
 + a064e26 Fix sidebar crash for non-existent mailbox
 + 81130f3 change ident to -git
 + bb08244 docs: big update
 + 7ab9c70 clean up sidebar configure
 + ae9aca0 fix broken links
+! 62e5243 Fix the sidebar TopIndex and BotIndex when $sidebar_new_mail_only is set.
+! b84857a Fix sidebar pagedown/up when mailboxes on the end are hidden.
+! a9c55e3 Change sidebar highlighted mailbox behavior.
+! 8fccd99 sync to mutt/default
 
 ## feature/skip-quoted
 
@@ -780,10 +890,14 @@ Base: mutt-1.6.2
 + 3558089 add ident to PATCHES
 + b89d6f0 change wiki references to website
 - df7d8ff travis: add config
+- f1e9319 travis: add config
 + c5e1f89 bump dependency to 1.6.1
 - 83def03 doc: check for installed patches
+- 95e6db0 travis: test slang
 + 49f0397 Single quote at line beginning misinterpreted by groff
 - 784f5ba travis: new build script
+- 91300f5 Added tag mutt-1-6-2-rel for changeset 7ccd4417bd70
+- 1136287 mutt-1.6.2 signed
 + 2ddb1ec change ident to -git
 + 52921ff docs: big update
 
@@ -791,10 +905,15 @@ Base: mutt-1.6.2
 
 Base: mutt-1.6.2
 
+- f1e9319 travis: add config
+- 95e6db0 travis: test slang
+- 91300f5 Added tag mutt-1-6-2-rel for changeset 7ccd4417bd70
+- 1136287 mutt-1.6.2 signed
 + a0c235e smime encrypt to self patch
 - 9a23b19 travis: add config
 + 5d4abc5 default to off
 + c80bc66 docs: big update
+! d676eef fix check_sec.sh warnings
 
 ## feature/status-color
 
@@ -806,18 +925,27 @@ Base: mutt-1.6.2
 + 95c5c62 add ident to PATCHES
 + 1c928f2 change wiki references to website
 - 56b7812 travis: add config
+- f1e9319 travis: add config
 + 6261ee5 bump dependency to 1.6.1
 + 6c65910 doc: check for installed patches
+- 95e6db0 travis: test slang
 + ef65b84 rework mutt_draw_statusline()
 - 61775be travis: new build script
+- 91300f5 Added tag mutt-1-6-2-rel for changeset 7ccd4417bd70
+- 1136287 mutt-1.6.2 signed
 + cf2d8e2 change ident to -git
 + 59a364b docs: big update
 ! 2522b02 fix: status line wrapping
+! b82ac8d fix check_sec.sh warnings
 
 ## feature/timeout
 
 Base: mutt-1.6.2
 
+- f1e9319 travis: add config
+- 95e6db0 travis: test slang
+- 91300f5 Added tag mutt-1-6-2-rel for changeset 7ccd4417bd70
+- 1136287 mutt-1.6.2 signed
 + aa5defe feature: timeout
 + 111d759 add ident to PATCHES
 + b812c30 add docs
@@ -833,9 +961,13 @@ Base: mutt-1.6.2
 + cf619ec add ident to PATCHES
 + 2853dd3 change wiki references to website
 - 2ff6aea travis: add config
+- f1e9319 travis: add config
 + 575e0f8 bump dependency to 1.6.1
 + b065671 doc: check for installed patches
+- 95e6db0 travis: test slang
 - a88d513 travis: new build script
+- 91300f5 Added tag mutt-1-6-2-rel for changeset 7ccd4417bd70
+- 1136287 mutt-1.6.2 signed
 + b86026e change ident to -git
 + cb6a8f2 docs: big update
 
@@ -851,9 +983,13 @@ Base: mutt-1.6.2
 + 033d525 add ident to PATCHES
 + 0389b7f change wiki references to website
 - 0091fab travis: add config
+- f1e9319 travis: add config
 + 73509d8 bump dependency to 1.6.1
 + 5930454 doc: check for installed patches
+- 95e6db0 travis: test slang
 - 3e65a45 travis: new build script
++ 91300f5 Added tag mutt-1-6-2-rel for changeset 7ccd4417bd70
++ 1136287 mutt-1.6.2 signed
 + a32347a change ident to -git
 + dd52e80 docs: big update
 
@@ -923,4 +1059,12 @@ Base: mutt-1.6.2
 + 888e634 docs: fix version string in the manual
 + 2484ba4 drop unused mutt scripts
 + 9e3b31d look for /etc/NeoMuttrc and ~/.neomuttrc
+! 28c05ed document new changes
+! 6946736 fix display when 'from' field is invalid
+! 9c269aa Support for $XDG_CONFIG_HOME and $XDG_CONFIG_DIRS
+! d184900 fix careless merge
+! 443a2b3 docs: fix docbook
+! 037b5ed Allow creating Distribution Tarballs with autogen sources
+! 25dd3f3 Ensure AC_INIT sees a string literal for the version
 
+vim: syn=diff:

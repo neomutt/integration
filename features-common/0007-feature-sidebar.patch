@@ -1,4 +1,4 @@
-From 2a1466d8e48de078b9d6bdf0d36063cb4786bd02 Mon Sep 17 00:00:00 2001
+From 7c42968ccf6e94fb8b7d1568b83d855d2f032337 Mon Sep 17 00:00:00 2001
 From: Terry Chan <tchan@lunar-linux.org>
 Date: Mon, 16 Nov 2015 20:39:28 +0000
 Subject: [PATCH 7/7] feature: sidebar
@@ -24,7 +24,7 @@ http://lunar-linux.org/~tchan/mutt/patch-1.5.24.sidebar.20151111.txt
  crypt-gpgme.c       |    7 +-
  curs_main.c         |   81 +++-
  doc/makedoc-defs.h  |    3 +
- doc/manual.xml.head | 1093 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ doc/manual.xml.head | 1093 ++++++++++++++++++++++++++++++++++++++++++++++++
  doc/mutt.css        |   17 +-
  doc/muttrc.sidebar  |  116 ++++++
  doc/vimrc.sidebar   |   34 ++
@@ -57,13 +57,13 @@ http://lunar-linux.org/~tchan/mutt/patch-1.5.24.sidebar.20151111.txt
  query.c             |    9 +-
  recvattach.c        |    7 +-
  remailer.c          |    7 +-
- sidebar.c           | 1078 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ sidebar.c           | 1155 +++++++++++++++++++++++++++++++++++++++++++++++++++
  sidebar.h           |   34 ++
  smime.c             |    7 +-
  sort.h              |    6 +
  status.c            |   14 +-
  version.c           |    5 +
- 56 files changed, 3420 insertions(+), 226 deletions(-)
+ 56 files changed, 3497 insertions(+), 226 deletions(-)
  create mode 100644 OPS.SIDEBAR
  create mode 100644 README.sidebar
  create mode 100644 doc/muttrc.sidebar
@@ -1028,10 +1028,10 @@ index 6af817f..0098ab8 100644
  	SETCOLOR (MT_COLOR_STATUS);
  	mutt_paddstr (COLS, buf);
 diff --git a/compress.c b/compress.c
-index 632ae98..65f52e4 100644
+index e7b7b0e..0c5375e 100644
 --- a/compress.c
 +++ b/compress.c
-@@ -325,7 +325,7 @@ store_size (const CONTEXT *ctx)
+@@ -308,7 +308,7 @@ store_size (const CONTEXT *ctx)
   * Returns: src (unchanged)
   */
  static const char *
@@ -1040,7 +1040,7 @@ index 632ae98..65f52e4 100644
  	const char *fmt, const char *ifstring, const char *elsestring,
  	unsigned long data, format_flag flags)
  {
-@@ -380,7 +380,7 @@ get_compression_cmd (const CONTEXT *ctx, const char *cmd)
+@@ -363,7 +363,7 @@ get_compression_cmd (const CONTEXT *ctx, const char *cmd)
  
  	char expanded[_POSIX_PATH_MAX];
  
@@ -4176,13 +4176,14 @@ index fe9c7f2..3f665af 100644
  
 diff --git a/sidebar.c b/sidebar.c
 new file mode 100644
-index 0000000..4cb2101
+index 0000000..2dde381
 --- /dev/null
 +++ b/sidebar.c
-@@ -0,0 +1,1078 @@
+@@ -0,0 +1,1155 @@
 +/* Copyright (C) 2004 Justin Hibbits <jrh29@po.cwru.edu>
 + * Copyright (C) 2004 Thomer M. Gil <mutt@thomer.com>
 + * Copyright (C) 2015-2016 Richard Russon <rich@flatcap.org>
++ * Copyright (C) 2016 Kevin J. McCarthy <kevin@8t8.us>
 + *
 + *     This program is free software; you can redistribute it and/or modify
 + *     it under the terms of the GNU General Public License as published by
@@ -4233,6 +4234,9 @@ index 0000000..4cb2101
 +static int OpnIndex = -1;    /* Current (open) mailbox */
 +static int HilIndex = -1;    /* Highlighted mailbox */
 +static int BotIndex = -1;    /* Last mailbox visible in sidebar */
++
++static int select_next (void);
++
 +
 +/**
 + * cb_format_str - Create the string to show in the sidebar
@@ -4486,7 +4490,7 @@ index 0000000..4cb2101
 +      continue;
 +
 +    if ((i == OpnIndex) || (sbe->buffy->msg_unread  > 0) || sbe->buffy->new ||
-+        (i == HilIndex) || (sbe->buffy->msg_flagged > 0))
++        (sbe->buffy->msg_flagged > 0))
 +      continue;
 +
 +    if (Context && (mutt_strcmp (sbe->buffy->realpath, Context->realpath) == 0))
@@ -4572,8 +4576,9 @@ index 0000000..4cb2101
 +{
 +  int i;
 +  SBENTRY *opn_entry = NULL, *hil_entry = NULL;
++  int page_entries;
 +
-+  if (!EntryCount)
++  if (!EntryCount || (page_size <= 0))
 +    return 0;
 +
 +  if (OpnIndex >= 0)
@@ -4592,19 +4597,47 @@ index 0000000..4cb2101
 +      HilIndex = i;
 +  }
 +
-+  if ((HilIndex < 0) || (SidebarSortMethod != PreviousSort))
++  if ((HilIndex < 0) || Entries[HilIndex]->is_hidden ||
++      (SidebarSortMethod != PreviousSort))
 +  {
 +    if (OpnIndex >= 0)
-+      HilIndex  = OpnIndex;
++      HilIndex = OpnIndex;
 +    else
-+      HilIndex  = 0;
++    {
++      HilIndex = 0;
++      if (Entries[HilIndex]->is_hidden)
++        select_next ();
++    }
 +  }
-+  if (TopIndex >= 0)
-+    TopIndex = (HilIndex / page_size) * page_size;
-+  else
-+    TopIndex = HilIndex;
 +
-+  BotIndex = TopIndex + page_size - 1;
++  /* Set the Top and Bottom to frame the HilIndex in groups of page_size */
++
++  /* If OPTSIDEBARNEMAILONLY is set, some entries may be hidden so we
++   * need to scan for the framing interval */
++  if (option (OPTSIDEBARNEWMAILONLY))
++  {
++    TopIndex = BotIndex = -1;
++    while (BotIndex < HilIndex)
++    {
++      TopIndex = BotIndex + 1;
++      page_entries = 0;
++      while (page_entries < page_size)
++      {
++        BotIndex++;
++        if (BotIndex >= EntryCount)
++          break;
++        if (! Entries[BotIndex]->is_hidden)
++          page_entries++;
++      }
++    }
++  }
++  /* Otherwise we can just calculate the interval */
++  else
++  {
++    TopIndex = (HilIndex / page_size) * page_size;
++    BotIndex = TopIndex + page_size - 1;
++  }
++
 +  if (BotIndex > (EntryCount - 1))
 +    BotIndex = EntryCount - 1;
 +
@@ -4617,7 +4650,7 @@ index 0000000..4cb2101
 + * visible - Should we display the sidebar?
 + *
 + * After validating the config options "sidebar_visible" and "sidebar_width",
-+ * determine whether we should should display the sidebar.
++ * determine whether we should display the sidebar.
 + *
 + * When not visible, set the global SidebarWidth to 0.
 + *
@@ -4851,8 +4884,8 @@ index 0000000..4cb2101
 +      {
 +        if (option (OPTSIDEBARSHORTPATH))
 +          tmp_folder_name += lastsep;  /* basename */
-+        sidebar_folder_name = malloc (strlen (tmp_folder_name) + sidebar_folder_depth*strlen (NONULL(SidebarIndentString)) + 1);
-+        int sfn_len = strlen (tmp_folder_name) + sidebar_folder_depth*strlen (NONULL(SidebarIndentString)) + 1;
++        int sfn_len = strlen (tmp_folder_name) +
++                      sidebar_folder_depth*strlen (NONULL(SidebarIndentString)) + 1;
 +        sidebar_folder_name = safe_malloc (sfn_len);
 +        sidebar_folder_name[0]=0;
 +        for (i=0; i < sidebar_folder_depth; i++)
@@ -5064,6 +5097,52 @@ index 0000000..4cb2101
 +}
 +
 +/**
++ * select_page_down - Selects the first entry in the next page of mailboxes
++ *
++ * Returns:
++ *      1: Success
++ *      0: Failure
++ */
++static int select_page_down (void)
++{
++  int orig_hil_index = HilIndex;
++
++  if (!EntryCount || BotIndex < 0)
++    return 0;
++
++  HilIndex = BotIndex;
++  select_next ();
++  /* If the rest of the entries are hidden, go up to the last unhidden one */
++  if (Entries[HilIndex]->is_hidden)
++    select_prev ();
++
++  return (orig_hil_index != HilIndex);
++}
++
++/**
++ * select_page_up - Selects the last entry in the previous page of mailboxes
++ *
++ * Returns:
++ *      1: Success
++ *      0: Failure
++ */
++static int select_page_up (void)
++{
++  int orig_hil_index = HilIndex;
++
++  if (!EntryCount || TopIndex < 0)
++    return 0;
++
++  HilIndex = TopIndex;
++  select_prev ();
++  /* If the rest of the entries are hidden, go down to the last unhidden one */
++  if (Entries[HilIndex]->is_hidden)
++    select_next ();
++
++  return (orig_hil_index != HilIndex);
++}
++
++/**
 + * mutt_sb_change_mailbox - Change the selected mailbox
 + * @op: Operation code
 + *
@@ -5097,12 +5176,12 @@ index 0000000..4cb2101
 +        return;
 +      break;
 +    case OP_SIDEBAR_PAGE_DOWN:
-+      HilIndex = BotIndex;
-+      select_next ();
++      if (! select_page_down ())
++        return;
 +      break;
 +    case OP_SIDEBAR_PAGE_UP:
-+      HilIndex = TopIndex;
-+      select_prev ();
++      if (! select_page_up ())
++        return;
 +      break;
 +    case OP_SIDEBAR_PREV:
 +      if (! select_prev ())
@@ -5221,8 +5300,6 @@ index 0000000..4cb2101
 +
 +    if (TopIndex < 0)
 +      TopIndex = EntryCount;
-+    if (HilIndex < 0)
-+      HilIndex = EntryCount;
 +    if (BotIndex < 0)
 +      BotIndex = EntryCount;
 +    if ((OpnIndex < 0) && Context &&

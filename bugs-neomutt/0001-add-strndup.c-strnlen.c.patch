@@ -1,7 +1,7 @@
-From b638b52122f901df79af944ffd9ce438f4ea02c6 Mon Sep 17 00:00:00 2001
+From aff5232d65d846b566a4828f84e8c29064bbaa63 Mon Sep 17 00:00:00 2001
 From: Karel Zak <kzak@redhat.com>
 Date: Thu, 6 Sep 2012 09:31:54 +0200
-Subject: [PATCH 01/10] add strndup.c strnlen.c
+Subject: [PATCH 01/11] add strndup.c strnlen.c
 
 Reported-by: Vladimir.Marek@oracle.com
 Signed-off-by: Karel Zak <kzak@redhat.com>
@@ -28,7 +28,7 @@ index 5bfc1e1..d029aa3 100644
  
  AC_CHECK_FUNC(getopt)
 diff --git a/protos.h b/protos.h
-index d63ef65..a7b2e7b 100644
+index d9c0a17..4d593f1 100644
 --- a/protos.h
 +++ b/protos.h
 @@ -1,5 +1,6 @@
@@ -52,7 +52,7 @@ index d63ef65..a7b2e7b 100644
 +#endif
 diff --git a/strndup.c b/strndup.c
 new file mode 100644
-index 0000000..67c1a5e
+index 0000000..c560cd5
 --- /dev/null
 +++ b/strndup.c
 @@ -0,0 +1,19 @@
@@ -69,7 +69,7 @@ index 0000000..67c1a5e
 +char *strndup(const char *s, size_t n)
 +{
 +	size_t len = strnlen(s, n);
-+	char *new = (char *) malloc((len + 1) * sizeof(char));
++	char *new = safe_malloc((len + 1) * sizeof(char));
 +	if (!new)
 +		return NULL;
 +	new[len] = '\0';

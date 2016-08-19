@@ -1,4 +1,4 @@
-From 36d2622094cbd95cff74a605eaa510cb65ad0c60 Mon Sep 17 00:00:00 2001
+From 2aa2970c30c8f47d15c433a8695116d1f715ce18 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 15:23:22 +0100
 Subject: [PATCH 18/21] smime-sender

@@ -1,4 +1,4 @@
-From d9cc39f0dfe4a74f87bebaef20f7c335457d5cc8 Mon Sep 17 00:00:00 2001
+From b2dcac6d285042ab0aecc5807376574c12457972 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 15:23:10 +0100
 Subject: [PATCH 17/21] smime-self

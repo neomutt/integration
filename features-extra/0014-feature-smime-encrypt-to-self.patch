@@ -1,4 +1,4 @@
-From aeeb10216578202c96ce232c7070a7daa814849c Mon Sep 17 00:00:00 2001
+From c630b5ee70bddf3bb2de3695289107a46f2c70bc Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 17 Jun 2016 00:31:48 +0100
 Subject: [PATCH 14/16] feature: smime-encrypt-to-self
@@ -83,7 +83,7 @@ index 0000000..8cd9267
 +    * Richard Russon <rich@flatcap.org>
 +
 diff --git a/crypt.c b/crypt.c
-index 570cc36..f6fae83 100644
+index 570cc36..cab5b24 100644
 --- a/crypt.c
 +++ b/crypt.c
 @@ -231,8 +231,21 @@ int mutt_protect (HEADER *msg, char *keylist)
@@ -104,17 +104,17 @@ index 570cc36..f6fae83 100644
 + 		 
 +			  tmp_pbody = crypt_smime_build_smime_entity (tmp_smime_pbody, new_keylist);
 +			  if (new_keylist != keylist)
-+				  safe_free((void **)&new_keylist);
++				  FREE(&new_keylist);
 +			  
 +			  if (!tmp_pbody)
        {
  	/* signed ? free it! */
  	return (-1);
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index 7d9c0c0..3bbd938 100644
+index b5e8b5c..85d1687 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
-@@ -13320,6 +13320,112 @@ <sect1 id="trash-folder">
+@@ -13409,6 +13409,112 @@ <sect1 id="trash-folder">
    </sect2>
  </sect1>
  

@@ -1,4 +1,4 @@
-From 3f574540cad20374ddb86ce11f3275eea75f1daa Mon Sep 17 00:00:00 2001
+From 3d6d94ee9477bdf7834b1331a45220392928a60a Mon Sep 17 00:00:00 2001
 From: David Sterba <dsterba@suse.cz>
 Date: Thu, 24 May 2012 15:34:53 +0200
 Subject: [PATCH 08/16] feature: limit-current-thread
@@ -18,12 +18,12 @@ Signed-off-by: David Sterba <dsterba@suse.cz>
  PATCHES                         |   1 +
  README.limit-current-thread     |  45 +++++++++++++++
  curs_main.c                     |   4 +-
- doc/manual.xml.head             | 119 ++++++++++++++++++++++++++++++++++++++++
+ doc/manual.xml.head             | 122 ++++++++++++++++++++++++++++++++++++++++
  doc/muttrc.limit-current-thread |   6 ++
  functions.h                     |   1 +
  mutt_menu.h                     |   2 +
- pattern.c                       |  68 +++++++++++++++++++++++
- 9 files changed, 246 insertions(+), 1 deletion(-)
+ pattern.c                       |  68 ++++++++++++++++++++++
+ 9 files changed, 249 insertions(+), 1 deletion(-)
  create mode 100644 README.limit-current-thread
  create mode 100644 doc/muttrc.limit-current-thread
 
@@ -100,10 +100,10 @@ index 0000000..6085ba9
 +    * Richard Russon <rich@flatcap.org>
 +
 diff --git a/curs_main.c b/curs_main.c
-index a51d508..81807c6 100644
+index 0062ac4..0407b64 100644
 --- a/curs_main.c
 +++ b/curs_main.c
-@@ -1033,12 +1033,14 @@ int mutt_index_menu (void)
+@@ -1049,12 +1049,14 @@ int mutt_index_menu (void)
  	}
          break;
  
@@ -120,10 +120,10 @@ index a51d508..81807c6 100644
  	  if (menu->oldcurrent >= 0)
  	  {
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index 8b1c371..22b080e 100644
+index 8b1c371..0eafe4b 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
-@@ -10211,6 +10211,125 @@ <sect1 id="initials">
+@@ -10211,6 +10211,128 @@ <sect1 id="initials">
    </sect2>
  </sect1>
  
@@ -154,10 +154,10 @@ index 8b1c371..22b080e 100644
 +    <para>
 +      This patch adds a new way of using the
 +      <link linkend="tuning-search">Limit Command</link>.
-+                        The <literal>&lt;limit-current-thread&gt;</literal>
-+                        function restricts the view to just the current thread.
-+                        Setting the limit (the <literal>l</literal> key) to
-+                        <quote>all</quote> will restore the full email list.
++      The <literal>&lt;limit-current-thread&gt;</literal>
++      function restricts the view to just the current thread.
++      Setting the limit (the <literal>l</literal> key) to
++      <quote>all</quote> will restore the full email list.
 +    </para>
 +
 +  </sect2>
@@ -171,13 +171,17 @@ index 8b1c371..22b080e 100644
 +  <sect2 id="limit-current-thread-functions">
 +    <title>Functions</title>
 +
++    <para>
++      Limit-current-thread adds the following function to Mutt.
++      By default, it is not bound to a key.
++    </para>
++
 +    <table id="table-limit-current-thread-functions">
 +      <title>Limit-Current-Thread Functions</title>
-+      <tgroup cols="4">
++      <tgroup cols="3">
 +        <thead>
 +          <row>
 +            <entry>Menus</entry>
-+            <entry>Default Key</entry>
 +            <entry>Function</entry>
 +            <entry>Description</entry>
 +          </row>
@@ -185,7 +189,6 @@ index 8b1c371..22b080e 100644
 +        <tbody>
 +          <row>
 +            <entry>index</entry>
-+            <entry><literal>&lt;Esc&gt;L</literal></entry>
 +            <entry><literal>&lt;limit-current-thread&gt;</literal></entry>
 +            <entry>Limit view to current thread</entry>
 +          </row>
@@ -262,14 +265,14 @@ index 0000000..5d32cf5
 + 
 +# vim: syntax=muttrc
 diff --git a/functions.h b/functions.h
-index fae2ef5..9b00208 100644
+index fae2ef5..118038c 100644
 --- a/functions.h
 +++ b/functions.h
 @@ -114,6 +114,7 @@ const struct binding_t OpMain[] = { /* map: index */
    { "next-undeleted",		OP_MAIN_NEXT_UNDELETED,		"j" },
    { "previous-undeleted",	OP_MAIN_PREV_UNDELETED,		"k" },
    { "limit",			OP_MAIN_LIMIT,			"l" },
-+  { "limit-current-thread",	OP_LIMIT_CURRENT_THREAD,	"\033L" },
++  { "limit-current-thread",	OP_LIMIT_CURRENT_THREAD,	NULL },
    { "link-threads",		OP_MAIN_LINK_THREADS,		"&" },
    { "list-reply",		OP_LIST_REPLY,			"L" },
    { "mail",			OP_MAIL,			"m" },

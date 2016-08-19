@@ -1,4 +1,4 @@
-From 1eb34cc601ba620a6851c11464c448219c15533b Mon Sep 17 00:00:00 2001
+From bf6d309c821423e8ee7c6b0ba349ac5c7d35a104 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 03:04:29 +0100
 Subject: [PATCH 05/12] mutt-1.6.1-opennfs
@@ -15,7 +15,7 @@ Subject: [PATCH 05/12] mutt-1.6.1-opennfs
  create mode 100644 opennfs.c
 
 diff --git a/Makefile.am b/Makefile.am
-index 8186e8f..090c97e 100644
+index aa190b6..8b8649f 100644
 --- a/Makefile.am
 +++ b/Makefile.am
 @@ -32,7 +32,7 @@ mutt_SOURCES = \
@@ -27,7 +27,7 @@ index 8186e8f..090c97e 100644
  	postpone.c query.c recvattach.c recvcmd.c \
  	rfc822.c rfc1524.c rfc2047.c rfc2231.c rfc3676.c \
  	score.c send.c sendlib.c signal.c sort.c \
-@@ -97,7 +97,7 @@ mutt_dotlock_SOURCES = mutt_dotlock.c
+@@ -98,7 +98,7 @@ mutt_dotlock_SOURCES = mutt_dotlock.c
  mutt_dotlock_LDADD = $(LIBOBJS)
  mutt_dotlock_DEPENDENCIES = $(LIBOBJS)
  

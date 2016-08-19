@@ -1,4 +1,4 @@
-From 2cea3605b9815b38e51625601fd18a26dc9d1c10 Mon Sep 17 00:00:00 2001
+From b82e984d49dfd98ac76d8a3b594b5f9563673a0d Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 15:16:58 +0100
 Subject: [PATCH 03/21] vvv.quote

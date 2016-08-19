@@ -1,4 +1,4 @@
-From de5f9111ad314928f7b11c256af2a55f5272568c Mon Sep 17 00:00:00 2001
+From 86c081f9820aa491dcf5b4d8489d768ae00bbc88 Mon Sep 17 00:00:00 2001
 From: David Champion <dgc@bikeshed.us>
 Date: Fri, 8 Apr 2016 01:01:50 +0100
 Subject: [PATCH 09/16] feature: keywords
@@ -11,7 +11,7 @@ Subject: [PATCH 09/16] feature: keywords
  copy.c              |  67 ++++++++++
  copy.h              |   1 +
  curs_main.c         |  20 +++
- doc/manual.xml.head | 371 +++++++++++++++++++++++++++++++++++++++++++++++++---
+ doc/manual.xml.head | 374 +++++++++++++++++++++++++++++++++++++++++++++++++---
  doc/muttrc.keywords |  23 ++++
  doc/vimrc.keywords  |  10 ++
  enter.c             |  43 ++++++
@@ -21,7 +21,7 @@ Subject: [PATCH 09/16] feature: keywords
  hash.h              |   7 +
  hcache.c            |   4 +-
  hdrline.c           |  72 ++++++----
- headers.c           | 196 +++++++++++++++++++++++++++
+ headers.c           | 194 +++++++++++++++++++++++++++
  imap/imap.c         |   3 +-
  imap/message.c      |   3 +-
  init.c              |  55 ++++++++
@@ -37,7 +37,7 @@ Subject: [PATCH 09/16] feature: keywords
  sendlib.c           |   2 -
  sort.c              |  42 ++++++
  sort.h              |   1 +
- 33 files changed, 1176 insertions(+), 68 deletions(-)
+ 33 files changed, 1177 insertions(+), 68 deletions(-)
  create mode 100644 README.keywords
  create mode 100644 doc/muttrc.keywords
  create mode 100644 doc/vimrc.keywords
@@ -205,7 +205,7 @@ index 554efb6..4970c3a 100644
    if (reverse)
      Sort |= SORT_REVERSE;
 diff --git a/copy.c b/copy.c
-index 3c67260..a09ba57 100644
+index 3c67260..d95df83 100644
 --- a/copy.c
 +++ b/copy.c
 @@ -111,6 +111,15 @@ mutt_copy_hdr (FILE *in, FILE *out, LOFF_T off_start, LOFF_T off_end, int flags,
@@ -242,7 +242,7 @@ index 3c67260..a09ba57 100644
 +          (option(OPTKEYWORDSLEGACY) || option(OPTKEYWORDSSTANDARD) == 0))
 +      {
 +        mutt_labels(buf, sizeof(buf), h->env, XlabelDelim);
-+        tmp = strdup(buf);
++        tmp = safe_strdup(buf);
 +        rfc2047_encode_string(&tmp);
 +        fail = fprintf(out, "X-Label: %s\n", tmp) != 10 + strlen(tmp);
 +        FREE(&tmp);
@@ -252,7 +252,7 @@ index 3c67260..a09ba57 100644
 +          (option(OPTKEYWORDSLEGACY) || option(OPTKEYWORDSSTANDARD) == 0))
 +      {
 +        mutt_labels(buf, sizeof(buf), h->env, " ");
-+        tmp = strdup(buf);
++        tmp = safe_strdup(buf);
 +        rfc2047_encode_string(&tmp);
 +        fail = fprintf(out, "X-Keywords: %s\n", tmp) != 13 + strlen(tmp);
 +        FREE(&tmp);
@@ -262,7 +262,7 @@ index 3c67260..a09ba57 100644
 +          (option(OPTKEYWORDSLEGACY) || option(OPTKEYWORDSSTANDARD) == 0))
 +      {
 +        mutt_labels(buf, sizeof(buf), h->env, " ");
-+        tmp = strdup(buf);
++        tmp = safe_strdup(buf);
 +        rfc2047_encode_string(&tmp);
 +        fail = fprintf(out, "X-Mozilla-Keys: %s\n", tmp) != 17 + strlen(tmp);
 +        FREE(&tmp);
@@ -272,7 +272,7 @@ index 3c67260..a09ba57 100644
 +                        option(OPTKEYWORDSSTANDARD)))
 +      {
 +        mutt_labels(buf, sizeof(buf), h->env, NULL);
-+        tmp = strdup(buf);
++        tmp = safe_strdup(buf);
 +        rfc2047_encode_string(&tmp);
 +        fail = fprintf(out, "Keywords: %s\n", tmp) != 11 + strlen(tmp);
 +        FREE(&tmp);
@@ -309,10 +309,10 @@ index 5f12a3c..9a98d21 100644
  
  int mutt_copy_hdr (FILE *, FILE *, LOFF_T, LOFF_T, int, const char *);
 diff --git a/curs_main.c b/curs_main.c
-index 81807c6..55f37c8 100644
+index 0407b64..2e21f55 100644
 --- a/curs_main.c
 +++ b/curs_main.c
-@@ -1391,6 +1391,9 @@ int mutt_index_menu (void)
+@@ -1407,6 +1407,9 @@ int mutt_index_menu (void)
  	  FREE (&Context);
  	}
  
@@ -322,7 +322,7 @@ index 81807c6..55f37c8 100644
          mutt_sleep (0);
  
  	/* Set CurrentMenu to MENU_MAIN before executing any folder
-@@ -1405,6 +1408,8 @@ int mutt_index_menu (void)
+@@ -1421,6 +1424,8 @@ int mutt_index_menu (void)
  					(option (OPTREADONLY) || op == OP_MAIN_CHANGE_FOLDER_READONLY) ?
  					M_READONLY : 0, NULL)) != NULL)
  	{
@@ -331,7 +331,7 @@ index 81807c6..55f37c8 100644
  	  menu->current = ci_first_message ();
  	}
  	else
-@@ -2215,6 +2220,21 @@ int mutt_index_menu (void)
+@@ -2231,6 +2236,21 @@ int mutt_index_menu (void)
  	menu->redraw = REDRAW_FULL;
  	break;
  
@@ -354,7 +354,7 @@ index 81807c6..55f37c8 100644
  
  	CHECK_ATTACH;
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index 22b080e..6af2f25 100644
+index 0eafe4b..a12ce98 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
 @@ -1135,7 +1135,7 @@ <table id="tab-keys-editor">
@@ -527,7 +527,7 @@ index 22b080e..6af2f25 100644
  <sect1 id="new-mail">
  <title>New Mail Detection</title>
  
-@@ -10211,6 +10314,242 @@ <sect1 id="initials">
+@@ -10211,6 +10314,245 @@ <sect1 id="initials">
    </sect2>
  </sect1>
  
@@ -611,8 +611,8 @@ index 22b080e..6af2f25 100644
 +
 +    <para>
 +    You can change or delete the X-Label: field within
-+    Mutt using the edit-label command, bound to the
-+    y key by default.  This works for tagged messages, too.
++    Mutt using the edit-label command.
++    This works for tagged messages, too.
 +    </para>
 +  </sect2>
 +
@@ -653,13 +653,17 @@ index 22b080e..6af2f25 100644
 +  <sect2 id="keywords-functions">
 +    <title>Functions</title>
 +
++    <para>
++      Keywords adds the following function to Mutt.
++      By default, it is not bound to a key.
++    </para>
++
 +    <table id="table-keywords-funcions">
 +      <title>Keyword Functions</title>
-+      <tgroup cols="4">
++      <tgroup cols="3">
 +        <thead>
 +          <row>
 +            <entry>Menus</entry>
-+            <entry>Default Key</entry>
 +            <entry>Function</entry>
 +            <entry>Description</entry>
 +          </row>
@@ -667,7 +671,6 @@ index 22b080e..6af2f25 100644
 +        <tbody>
 +          <row>
 +            <entry>index,pager</entry>
-+            <entry>y</entry>
 +            <entry><literal>&lt;edit-label&gt;</literal></entry>
 +            <entry>add, change, or delete a message's label</entry>
 +          </row>
@@ -870,14 +873,14 @@ index 23610ae..d1373ea 100644
  	  {
  	    /* invoke the query-menu to get more addresses */
 diff --git a/functions.h b/functions.h
-index 9b00208..73a43c1 100644
+index 118038c..8b426ca 100644
 --- a/functions.h
 +++ b/functions.h
 @@ -99,6 +99,7 @@ const struct binding_t OpMain[] = { /* map: index */
    { "delete-thread",		OP_DELETE_THREAD,		"\004" },
    { "delete-subthread",		OP_DELETE_SUBTHREAD,		"\033d" },
    { "edit",			OP_EDIT_MESSAGE,		"e" },
-+  { "edit-label",		OP_EDIT_LABEL,			"y" },
++  { "edit-label",		OP_EDIT_LABEL,			NULL },
    { "edit-type",		OP_EDIT_TYPE,			"\005" },
    { "forward-message",		OP_FORWARD_MESSAGE,		"f" },
    { "flag-message",		OP_FLAG_MESSAGE,		"F" },
@@ -885,7 +888,7 @@ index 9b00208..73a43c1 100644
    { "set-flag",  	OP_MAIN_SET_FLAG,		"w" },
    { "clear-flag",       OP_MAIN_CLEAR_FLAG,		"W" },
    { "edit",		OP_EDIT_MESSAGE,		"e" },
-+  { "edit-label",	OP_EDIT_LABEL,			"y" },
++  { "edit-label",	OP_EDIT_LABEL,			NULL },
    { "edit-type",	OP_EDIT_TYPE,			"\005" },
    { "forward-message",	OP_FORWARD_MESSAGE,		"f" },
    { "flag-message",	OP_FLAG_MESSAGE,		"F" },
@@ -1094,10 +1097,10 @@ index 5cedd7d..03822ad 100644
  
      default:
 diff --git a/headers.c b/headers.c
-index 0a75998..a7d1036 100644
+index 0a75998..54550b7 100644
 --- a/headers.c
 +++ b/headers.c
-@@ -211,3 +211,199 @@ void mutt_edit_headers (const char *editor,
+@@ -211,3 +211,197 @@ void mutt_edit_headers (const char *editor,
      }
    }
  }
@@ -1239,8 +1242,6 @@ index 0a75998..a7d1036 100644
 +      if (HDR_OF(i)->tagged)
 +        if (label_message(HDR_OF(i), new)) {
 +          ++changed;
-+          mutt_set_flag(Context, HDR_OF(i),
-+            M_TAG, 0);
 +        }
 +    }
 +  }
@@ -1606,7 +1607,7 @@ index 1cd6342..b0aa8bf 100644
    {
      MOVE_ELEM(references);
 diff --git a/pager.c b/pager.c
-index db3c85c..48c7bb6 100644
+index 3f22d72..f0e062b 100644
 --- a/pager.c
 +++ b/pager.c
 @@ -2801,6 +2801,18 @@ search_next:
@@ -1629,7 +1630,7 @@ index db3c85c..48c7bb6 100644
        case OP_MAIL_KEY:
          if (!(WithCrypto & APPLICATION_PGP))
 diff --git a/parse.c b/parse.c
-index 6a802ba..b02a044 100644
+index 6a802ba..a5077d3 100644
 --- a/parse.c
 +++ b/parse.c
 @@ -981,6 +981,7 @@ int mutt_parse_rfc822_line (ENVELOPE *e, HEADER *hdr, char *line, char *p, short
@@ -1690,7 +1691,7 @@ index 6a802ba..b02a044 100644
 +  if (kwtype)
 +  {
 +    char *last, *label;
-+    char *text = strdup(p);
++    char *text = safe_strdup(p);
 +    char *sep;
 +
 +    if (kwtype == M_KEYWORDS)
@@ -1778,7 +1779,7 @@ index 2ce465d..62531d9 100644
        return (pat->not ^ (h->env->spam && h->env->spam->data && patmatch (pat, h->env->spam->data) == 0));
      case M_DUPLICATED:
 diff --git a/protos.h b/protos.h
-index d06c003..61686bc 100644
+index 1efbe79..6bb0515 100644
 --- a/protos.h
 +++ b/protos.h
 @@ -186,6 +186,12 @@ void mutt_edit_content_type (HEADER *, BODY *, FILE *);

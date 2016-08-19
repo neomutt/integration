@@ -1,7 +1,7 @@
-From 37d0763ad39b6a72506bff290da1a6bb83dc21fd Mon Sep 17 00:00:00 2001
+From 94f29ef88934f8797f841a1a6232d11e729342f7 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Mantas=20Mikul=C4=97nas?= <grawity@gmail.com>
 Date: Fri, 18 Oct 2013 11:34:57 -0700
-Subject: [PATCH 04/10] Remove TLS version notification
+Subject: [PATCH 05/11] Remove TLS version notification
 
 The reason for this patch is that the "TLS connection" message adds an
 unnecessary, annoying, unskippable delay to _every_ mutt startup.

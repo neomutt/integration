@@ -1,4 +1,4 @@
-From 4d3d9a0224451367927a74fb909af36fa0f97004 Mon Sep 17 00:00:00 2001
+From 0c716a65fed75e54ed151aba0330f9d91534de7e Mon Sep 17 00:00:00 2001
 From: David Sterba <dsterba@suse.cz>
 Date: Sat, 30 Jan 2016 16:53:57 +0000
 Subject: [PATCH 03/16] feature: status-color
@@ -8,13 +8,13 @@ Custom rules for theming the status bar
  PATCHES                 |   1 +
  README.status-color     |  67 ++++++++++++++++
  color.c                 |  39 ++++++++--
- curs_main.c             | 107 ++++++++++++++++++++++++-
+ curs_main.c             | 123 ++++++++++++++++++++++++++++-
  doc/manual.xml.head     | 203 ++++++++++++++++++++++++++++++++++++++++++++++++
  doc/muttrc.status-color |  49 ++++++++++++
  mutt_curses.h           |   2 +
  pager.c                 |   4 +-
  protos.h                |   1 +
- 9 files changed, 464 insertions(+), 9 deletions(-)
+ 9 files changed, 480 insertions(+), 9 deletions(-)
  create mode 100644 README.status-color
  create mode 100644 doc/muttrc.status-color
 
@@ -189,10 +189,10 @@ index e2ff989..46c927c 100644
    }
    else if (object == MT_COLOR_QUOTED)
 diff --git a/curs_main.c b/curs_main.c
-index 3f40e4d..9114aeb 100644
+index 3f40e4d..b9ebb68 100644
 --- a/curs_main.c
 +++ b/curs_main.c
-@@ -482,6 +482,111 @@ static void resort_index (MUTTMENU *menu)
+@@ -482,6 +482,127 @@ static void resort_index (MUTTMENU *menu)
    menu->redraw = REDRAW_INDEX | REDRAW_STATUS;
  }
  
@@ -208,18 +208,22 @@ index 3f40e4d..9114aeb 100644
 + * If two regexes start at the same place, the longer match will be used.
 + */
 +void
-+mutt_draw_statusline (int cols, const char *buf)
++mutt_draw_statusline (int cols, const char *buf, int buflen)
 +{
 +	int i      = 0;
 +	int offset = 0;
 +	int found  = 0;
 +	int chunks = 0;
++	int len    = 0;
 +
 +	struct syntax_t {
 +		int color;
 +		int first;
 +		int last;
 +	} *syntax = NULL;
++
++	if (!buf)
++		return;
 +
 +	do {
 +		COLOR_LINE *cl;
@@ -260,36 +264,48 @@ index 3f40e4d..9114aeb 100644
 +		}
 +	} while (found);
 +
-+	int len = mutt_strlen (buf);
-+	int base = 0;
++	/* Only 'len' bytes will fit into 'cols' screen columns */
++	len = mutt_wstr_trunc (buf, buflen, cols, NULL);
++
++	offset = 0;
 +
 +	if ((chunks > 0) && (syntax[0].first > 0)) {
 +		/* Text before the first highlight */
-+		addnstr (buf, syntax[0].first);
++		addnstr (buf, MIN(len, syntax[0].first));
 +		attrset (ColorDefs[MT_COLOR_STATUS]);
-+		base = syntax[0].first;
++		if (len <= syntax[0].first)
++			goto dsl_finish;	/* no more room */
++
++		offset = syntax[0].first;
 +	}
 +
 +	for (i = 0; i < chunks; i++) {
 +		/* Highlighted text */
 +		attrset (syntax[i].color);
-+		addnstr (buf + base, syntax[i].last - base);
++		addnstr (buf + offset, MIN(len, syntax[i].last) - offset);
++		if (len <= syntax[i].last)
++			goto dsl_finish;	/* no more room */
++
++		int next;
 +		if ((i + 1) == chunks) {
-+			base = len;
++			next = len;
 +		} else {
-+			base = syntax[i+1].first;
++			next = MIN (len, syntax[i+1].first);
 +		}
-+		if (syntax[i].last < base) {
-+			/* Normal (un-highlighted) text */
-+			attrset (ColorDefs[MT_COLOR_STATUS]);
-+			addnstr (buf + syntax[i].last, base - syntax[i].last);
-+		}
++
++		attrset (ColorDefs[MT_COLOR_STATUS]);
++		offset = syntax[i].last;
++		addnstr (buf + offset, next - offset);
++
++		offset = next;
++		if (offset >= len)
++			goto dsl_finish;	/* no more room */
 +	}
 +
 +	attrset (ColorDefs[MT_COLOR_STATUS]);
-+	if (base < len) {
++	if (offset < len) {
 +		/* Text after the last highlight */
-+		addnstr (buf + base, len - base);
++		addnstr (buf + offset, len - offset);
 +	}
 +
 +	int width = mutt_strwidth (buf);
@@ -297,19 +313,19 @@ index 3f40e4d..9114aeb 100644
 +		/* Pad the rest of the line with whitespace */
 +		mutt_paddstr (cols - width, "");
 +	}
-+
-+	safe_free (&syntax);
++dsl_finish:
++	FREE(&syntax);
 +}
 +
  static const struct mapping_t IndexHelp[] = {
    { N_("Quit"),  OP_QUIT },
    { N_("Del"),   OP_DELETE },
-@@ -657,7 +762,7 @@ int mutt_index_menu (void)
+@@ -657,7 +778,7 @@ int mutt_index_menu (void)
  #endif
  	move (option (OPTSTATUSONTOP) ? 0 : LINES-2, 0);
  	SETCOLOR (MT_COLOR_STATUS);
 -	mutt_paddstr (COLS, buf);
-+	mutt_draw_statusline (COLS, buf);
++	mutt_draw_statusline (COLS, buf, sizeof (buf));
  	NORMAL_COLOR;
  	menu->redraw &= ~REDRAW_STATUS;
  	if (option(OPTTSENABLED) && TSSupported)
@@ -603,7 +619,7 @@ index 6f730a9..aa3a50b 100644
  
  void ci_init_color (void);
 diff --git a/pager.c b/pager.c
-index 226fe15..db3c85c 100644
+index 226fe15..3f22d72 100644
 --- a/pager.c
 +++ b/pager.c
 @@ -1841,13 +1841,13 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
@@ -611,26 +627,26 @@ index 226fe15..db3c85c 100644
  	hfi.hdr = (IsHeader (extra)) ? extra->hdr : extra->bdy->hdr;
  	mutt_make_string_info (buffer, l1 < l2 ? l1 : l2, NONULL (PagerFmt), &hfi, M_FORMAT_MAKEPRINT);
 -	mutt_paddstr (statuswidth, buffer);
-+	mutt_draw_statusline (statuswidth, buffer);
++	mutt_draw_statusline (statuswidth, buffer, l2);
        }
        else
        {
  	char bn[STRING];
  	snprintf (bn, sizeof (bn), "%s (%s)", banner, pager_progress_str);
 -	mutt_paddstr (statuswidth, bn);
-+	mutt_draw_statusline (statuswidth, bn);
++	mutt_draw_statusline (statuswidth, bn, sizeof (bn));
        }
  #ifdef USE_SIDEBAR
        if (!option (OPTSTATUSONTOP) || PagerIndexLines == 0)
 diff --git a/protos.h b/protos.h
-index 686c5d1..d06c003 100644
+index 686c5d1..1efbe79 100644
 --- a/protos.h
 +++ b/protos.h
 @@ -181,6 +181,7 @@ void mutt_decode_base64 (STATE *s, long len, int istext, iconv_t cd);
  void mutt_default_save (char *, size_t, HEADER *);
  void mutt_display_address (ENVELOPE *);
  void mutt_display_sanitize (char *);
-+void mutt_draw_statusline (int cols, const char *buf);
++void mutt_draw_statusline (int cols, const char *buf, int buflen);
  void mutt_edit_content_type (HEADER *, BODY *, FILE *);
  void mutt_edit_file (const char *, const char *);
  void mutt_edit_headers (const char *, const char *, HEADER *, char *, size_t);

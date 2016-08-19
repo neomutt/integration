@@ -1,4 +1,4 @@
-From e76059413435485455352ff32c8ea2ed49e9edd3 Mon Sep 17 00:00:00 2001
+From ddcac02825dd266b6d48593b0bafa9a8f1918375 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 15:21:35 +0100
 Subject: [PATCH 12/21] imap-message.c

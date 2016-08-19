@@ -1,4 +1,4 @@
-From 68d6bddff0f222e29fe52d757b95cf4a4626d844 Mon Sep 17 00:00:00 2001
+From 4c69f687e62670e794aa9bd9d0342b5f965f1ab1 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 6 May 2016 00:24:00 +0100
 Subject: [PATCH 10/19] debian-specific/assumed_charset-compat

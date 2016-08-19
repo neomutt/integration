@@ -1,4 +1,4 @@
-From fe4cf4d65346716a585e61983f0f071c6a3f87e8 Mon Sep 17 00:00:00 2001
+From 0a1f57fe4dea7c183a210114a7976ecf6445243c Mon Sep 17 00:00:00 2001
 From: Cedric Duval <cedricduval@free.fr>
 Date: Tue, 26 Jan 2016 23:00:09 +0000
 Subject: [PATCH 1/7] feature: ifdef

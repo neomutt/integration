@@ -1,4 +1,4 @@
-From e77bcf768a5057c9c00d84dba16a1d099fab3fb9 Mon Sep 17 00:00:00 2001
+From 9a3affe2b5e8b016b8bd387a0369e9e2b234aed7 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 6 May 2016 00:24:10 +0100
 Subject: [PATCH 15/16] feature: timeout
@@ -108,10 +108,10 @@ index 0000000..3b96a1c
 +    * Richard Russon <rich@flatcap.org>
 +
 diff --git a/curs_main.c b/curs_main.c
-index a8e1935..dfbcb4c 100644
+index 369f338..3ca1353 100644
 --- a/curs_main.c
 +++ b/curs_main.c
-@@ -931,8 +931,10 @@ int mutt_index_menu (void)
+@@ -947,8 +947,10 @@ int mutt_index_menu (void)
  
        dprint(4, (debugfile, "mutt_index_menu[%d]: Got op %d\n", __LINE__, op));
  
@@ -124,10 +124,10 @@ index a8e1935..dfbcb4c 100644
        mutt_curs_set (1);
  
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index 3bbd938..2ef9710 100644
+index 85d1687..7a5ebe9 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
-@@ -13040,6 +13040,88 @@ <sect1 id="status-color">
+@@ -13129,6 +13129,88 @@ <sect1 id="status-color">
    </sect2>
  </sect1>
  
@@ -314,7 +314,7 @@ index bc8f041..f3385b5 100644
  /* tree characters for linearize_tree and print_enriched_string */
  #define M_TREE_LLCORNER		1
 diff --git a/protos.h b/protos.h
-index bfe2ad0..87e5001 100644
+index 79d8bf3..01c003c 100644
 --- a/protos.h
 +++ b/protos.h
 @@ -153,6 +153,7 @@ const char *mutt_get_name (ADDRESS *);

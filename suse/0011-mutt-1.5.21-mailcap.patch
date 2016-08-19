@@ -1,4 +1,4 @@
-From 23d641b6a07a75025e9db9633b5a17ebd71e66ff Mon Sep 17 00:00:00 2001
+From dc5f16e8fb93b5f563c42b281d42ce7bb6760008 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 03:09:37 +0100
 Subject: [PATCH 11/12] mutt-1.5.21-mailcap
@@ -8,7 +8,7 @@ Subject: [PATCH 11/12] mutt-1.5.21-mailcap
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/init.c b/init.c
-index e7b0bce..b6f5fc6 100644
+index 37f1eae..53dc919 100644
 --- a/init.c
 +++ b/init.c
 @@ -3330,8 +3330,8 @@ void mutt_init (int skip_sys_rc, LIST *commands)

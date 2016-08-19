@@ -1,4 +1,4 @@
-From 325cc0766a0485b4481787246bc97b4fea7878c7 Mon Sep 17 00:00:00 2001
+From 865aa746b78f25ac11b91b353b6ab556ef8df4c9 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 6 May 2016 00:23:59 +0100
 Subject: [PATCH 08/19] debian-specific/dont_document_not_present_features
@@ -9,7 +9,7 @@ Subject: [PATCH 08/19] debian-specific/dont_document_not_present_features
  2 files changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/functions.h b/functions.h
-index 347bcde..4d9d435 100644
+index dad63b6..52b0179 100644
 --- a/functions.h
 +++ b/functions.h
 @@ -32,7 +32,7 @@

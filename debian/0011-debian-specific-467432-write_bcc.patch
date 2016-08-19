@@ -1,4 +1,4 @@
-From a2df4d4970222bd024fff86fce59a6be10e2a598 Mon Sep 17 00:00:00 2001
+From 4845d41552598646879fb40485a59374132edbbc Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 6 May 2016 00:24:00 +0100
 Subject: [PATCH 11/19] debian-specific/467432-write_bcc
@@ -13,7 +13,7 @@ Subject: [PATCH 11/19] debian-specific/467432-write_bcc
  6 files changed, 11 insertions(+), 16 deletions(-)
 
 diff --git a/headers.c b/headers.c
-index d1343ad..22f851a 100644
+index 1c9b3fd..e1248dd 100644
 --- a/headers.c
 +++ b/headers.c
 @@ -52,7 +52,7 @@ void mutt_edit_headers (const char *editor,
@@ -61,10 +61,10 @@ index 09d6be6..1aa4666 100644
            fprintf (fout, "X-Mutt-Resume-Draft: 1\n");
          fputc ('\n', fout);
 diff --git a/protos.h b/protos.h
-index 10c1715..23d3a52 100644
+index 3f3f13b..a189209 100644
 --- a/protos.h
 +++ b/protos.h
-@@ -390,7 +390,7 @@ int mutt_write_multiple_fcc (const char *path, HEADER *hdr, const char *msgid, i
+@@ -396,7 +396,7 @@ int mutt_write_multiple_fcc (const char *path, HEADER *hdr, const char *msgid, i
  int mutt_write_mime_body (BODY *, FILE *);
  int mutt_write_mime_header (BODY *, FILE *);
  int mutt_write_one_header (FILE *fp, const char *tag, const char *value, const char *pfx, int wraplen, int flags);

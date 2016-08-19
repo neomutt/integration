@@ -1,4 +1,4 @@
-From 07f1f499ef5de88a3339078c269ef4e7db28c207 Mon Sep 17 00:00:00 2001
+From 7c9113f6c53dabc025dd73b522719d01d3a89427 Mon Sep 17 00:00:00 2001
 From: Alain Penders <Alain@Finale-Dev.com>
 Date: Tue, 26 Jan 2016 18:31:05 +0000
 Subject: [PATCH 6/7] feature: compress
@@ -8,13 +8,13 @@ Read from/write to compressed mailboxes
  Makefile.am         |   4 +-
  PATCHES             |   1 +
  README.compress     | 163 +++++++++++
- compress.c          | 826 ++++++++++++++++++++++++++++++++++++++++++++++++++++
- compress.h          |  32 ++
+ compress.c          | 811 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ compress.h          |  32 +++
  configure.ac        |   9 +
  curs_main.c         |   5 +
  doc/Makefile.am     |   3 +-
  doc/Muttrc.head     |   5 +
- doc/manual.xml.head | 433 +++++++++++++++++++++++++++
+ doc/manual.xml.head | 433 ++++++++++++++++++++++++++++
  doc/muttrc.compress |  38 +++
  doc/muttrc.man.head |  19 +-
  doc/vimrc.compress  |   7 +
@@ -28,7 +28,7 @@ Read from/write to compressed mailboxes
  po/de.po            |  42 ++-
  status.c            |   6 +
  version.c           |   5 +
- 23 files changed, 1674 insertions(+), 7 deletions(-)
+ 23 files changed, 1659 insertions(+), 7 deletions(-)
  create mode 100644 README.compress
  create mode 100644 compress.c
  create mode 100644 compress.h
@@ -237,10 +237,10 @@ index 0000000..f14569a
 +
 diff --git a/compress.c b/compress.c
 new file mode 100644
-index 0000000..632ae98
+index 0000000..e7b7b0e
 --- /dev/null
 +++ b/compress.c
-@@ -0,0 +1,826 @@
+@@ -0,0 +1,811 @@
 +/* Copyright (C) 1997 Alain Penders <Alain@Finale-Dev.com>
 + * Copyright (C) 2016 Richard Russon <rich@flatcap.org>
 + *
@@ -391,23 +391,6 @@ index 0000000..632ae98
 +}
 +
 +/**
-+ * file_exists - Does the file exist?
-+ * @path: Pathname to check
-+ *
-+ * Returns:
-+ *	1: File exists
-+ *	0: Non-existant file
-+ */
-+static int
-+file_exists (const char *path)
-+{
-+	if (!path)
-+		return 0;
-+
-+	return (access (path, W_OK) != 0 && errno == ENOENT) ? 1 : 0;
-+}
-+
-+/**
 + * find_hook - Find a hook to match a path
 + * @type: Type of hook, e.g. M_CLOSEHOOK
 + * @path: Filename to test
@@ -455,7 +438,7 @@ index 0000000..632ae98
 +
 +	COMPRESS_INFO *ci = (COMPRESS_INFO *) ctx->compress_info;
 +
-+	return (file_exists (path)) ? ci->append : ci->close;
++	return (access (path, W_OK) == 0) ? ci->append : ci->close;
 +}
 +
 +/**
@@ -670,7 +653,8 @@ index 0000000..632ae98
 +
 +	int magic;
 +
-+	if (!file_exists (path)) {
++	/* The file doesn't exist */
++	if ((access (path, W_OK) != 0) && (errno == ENOENT)) {
 +		char *dir_path = safe_strdup(path);
 +		char *aux = strrchr(dir_path, '/');
 +		int dir_valid = 1;
@@ -800,7 +784,7 @@ index 0000000..632ae98
 +
 +	endwin();
 +	fflush (stdout);
-+	sprintf(echo_cmd,_("echo Decompressing %s..."),ctx->realpath);
++	sprintf(echo_cmd,_("echo Decompressing %s..."),ctx->realpath); /* __SPRINTF_CHECKED__ */
 +	mutt_system(echo_cmd);
 +	rc = mutt_system (cmd);
 +	unlock_mailbox (ctx, fp);
@@ -859,7 +843,8 @@ index 0000000..632ae98
 +
 +	ctx->magic = DefaultMagic;
 +
-+	if (file_exists (ctx->realpath)) {
++	/* The file doesn't exist */
++	if ((access (ctx->realpath, W_OK) != 0) && (errno == ENOENT)) {
 +		if (ctx->magic == M_MBOX || ctx->magic == M_MMDF) {
 +			if ((fh = safe_fopen (ctx->path, "w"))) {
 +				fclose (fh);
@@ -918,7 +903,7 @@ index 0000000..632ae98
 +
 +	endwin();
 +	fflush (stdout);
-+	sprintf(echo_cmd,_("echo Compressing %s..."), ctx->realpath);
++	sprintf(echo_cmd,_("echo Compressing %s..."), ctx->realpath); /* __SPRINTF_CHECKED__ */
 +	mutt_system(echo_cmd);
 +	if (mutt_system (cmd) != 0) {
 +		mutt_any_key_to_continue (NULL);
@@ -1039,9 +1024,9 @@ index 0000000..632ae98
 +	fflush (stdout);
 +
 +	if (append == ci->close) {
-+		sprintf(echo_cmd,_("echo Compressing %s..."), ctx->realpath);
++		sprintf(echo_cmd,_("echo Compressing %s..."), ctx->realpath); /* __SPRINTF_CHECKED__ */
 +	} else {
-+		sprintf(echo_cmd,_("echo Compressed-appending to %s..."), ctx->realpath);
++		sprintf(echo_cmd,_("echo Compressed-appending to %s..."), ctx->realpath); /* __SPRINTF_CHECKED__ */
 +	}
 +	mutt_system(echo_cmd);
 +

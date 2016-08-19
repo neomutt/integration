@@ -1,4 +1,4 @@
-From b2c464d41acc5d339d58f34f07ac73ef3d78aca4 Mon Sep 17 00:00:00 2001
+From 54ff7b31fd512dfc0eb65ff7dab3a1d9a891e14b Mon Sep 17 00:00:00 2001
 From: Vsevolod Volkov <vvv@mutt.org.ua>
 Date: Thu, 7 Apr 2016 23:02:56 +0100
 Subject: [PATCH 10/16] feature: nntp
@@ -20,11 +20,11 @@ Talk to a Usenet news server
  compose.c           |  177 +++-
  configure.ac        |   11 +-
  curs_main.c         |  309 ++++++-
- doc/manual.xml.head |  513 +++++++++++
+ doc/manual.xml.head |  491 +++++++++++
  doc/mutt.man        |    8 +-
  doc/muttrc.nntp     |  115 +++
  doc/vimrc.nntp      |   50 ++
- functions.h         |   59 +-
+ functions.h         |   51 ++
  globals.h           |   18 +-
  hash.c              |   27 +
  hash.h              |    3 +-
@@ -41,8 +41,8 @@ Talk to a Usenet news server
  muttlib.c           |   17 +-
  mx.c                |   79 ++
  mx.h                |    3 +
- newsrc.c            | 1262 ++++++++++++++++++++++++++
- nntp.c              | 2434 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ newsrc.c            | 1263 ++++++++++++++++++++++++++
+ nntp.c              | 2435 +++++++++++++++++++++++++++++++++++++++++++++++++++
  nntp.h              |  168 ++++
  pager.c             |   81 +-
  parse.c             |   48 +-
@@ -58,7 +58,7 @@ Talk to a Usenet news server
  url.c               |    4 +-
  url.h               |    2 +
  version.c           |    5 +
- 53 files changed, 7205 insertions(+), 83 deletions(-)
+ 53 files changed, 7181 insertions(+), 79 deletions(-)
  create mode 100644 ChangeLog.nntp
  create mode 100644 README.nntp
  create mode 100644 doc/muttrc.nntp
@@ -1515,7 +1515,7 @@ index 4ae879e..f1e5d5a 100644
  	      (sb.st_dev != contex_sb.st_dev || sb.st_ino != contex_sb.st_ino)))
      {
 diff --git a/complete.c b/complete.c
-index d0ee4af..8dc48cd 100644
+index d0ee4af..b383786 100644
 --- a/complete.c
 +++ b/complete.c
 @@ -25,6 +25,9 @@
@@ -1590,7 +1590,7 @@ index d0ee4af..8dc48cd 100644
 +      }
 +    }
 +
-+    strcpy (s, filepart);
++    strfcpy (s, filepart, slen);
 +    return (init ? 0 : -1);
 +  }
 +#endif
@@ -1941,7 +1941,7 @@ index 54b1bb7..19a9012 100644
  fi
  
 diff --git a/curs_main.c b/curs_main.c
-index 55f37c8..e123c1e 100644
+index 2e21f55..6aabc8b 100644
 --- a/curs_main.c
 +++ b/curs_main.c
 @@ -22,6 +22,7 @@
@@ -1963,7 +1963,7 @@ index 55f37c8..e123c1e 100644
  
  #include <ctype.h>
  #include <stdlib.h>
-@@ -599,12 +604,27 @@ static const struct mapping_t IndexHelp[] = {
+@@ -615,12 +620,27 @@ static const struct mapping_t IndexHelp[] = {
    { NULL,	 0 }
  };
  
@@ -1991,7 +1991,7 @@ index 55f37c8..e123c1e 100644
    int op = OP_NULL;
    int done = 0;                /* controls when to exit the "event" loop */
    int i = 0, j;
-@@ -625,7 +645,11 @@ int mutt_index_menu (void)
+@@ -641,7 +661,11 @@ int mutt_index_menu (void)
    menu->make_entry = index_make_entry;
    menu->color = index_color;
    menu->current = ci_first_message ();
@@ -2004,7 +2004,7 @@ index 55f37c8..e123c1e 100644
  
    if (!attach_msg)
      mutt_buffy_check(1); /* force the buffy check after we enter the folder */
-@@ -887,6 +911,9 @@ int mutt_index_menu (void)
+@@ -903,6 +927,9 @@ int mutt_index_menu (void)
        mutt_curs_set (1);	/* fallback from the pager */
      }
  
@@ -2014,7 +2014,7 @@ index 55f37c8..e123c1e 100644
      switch (op)
      {
  
-@@ -937,6 +964,161 @@ int mutt_index_menu (void)
+@@ -953,6 +980,161 @@ int mutt_index_menu (void)
  	menu_current_bottom (menu);
  	break;
  
@@ -2176,7 +2176,7 @@ index 55f37c8..e123c1e 100644
        case OP_JUMP:
  
  	CHECK_MSGCOUNT;
-@@ -1035,10 +1217,31 @@ int mutt_index_menu (void)
+@@ -1051,10 +1233,31 @@ int mutt_index_menu (void)
  
        case OP_LIMIT_CURRENT_THREAD:
        case OP_MAIN_LIMIT:
@@ -2208,7 +2208,7 @@ index 55f37c8..e123c1e 100644
  	if (((op == OP_LIMIT_CURRENT_THREAD) && mutt_limit_current_thread(CURHDR))
  	    || ((op == OP_MAIN_LIMIT) && (mutt_pattern_func (M_LIMIT, _("Limit to messages matching: ")) == 0)))
  	{
-@@ -1300,15 +1503,22 @@ int mutt_index_menu (void)
+@@ -1316,15 +1519,22 @@ int mutt_index_menu (void)
  #endif
        case OP_MAIN_CHANGE_FOLDER:
        case OP_MAIN_NEXT_UNREAD_MAILBOX:
@@ -2238,7 +2238,7 @@ index 55f37c8..e123c1e 100644
            cp = _("Open mailbox in read-only mode");
          else
            cp = _("Open mailbox");
-@@ -1336,6 +1546,22 @@ int mutt_index_menu (void)
+@@ -1352,6 +1562,22 @@ int mutt_index_menu (void)
  #endif
  	else
  	{
@@ -2261,7 +2261,7 @@ index 55f37c8..e123c1e 100644
  	  mutt_buffy (buf, sizeof (buf));
  
            if (mutt_enter_fname (cp, buf, sizeof (buf), &menu->redraw, 1) == -1)
-@@ -1355,6 +1581,14 @@ int mutt_index_menu (void)
+@@ -1371,6 +1597,14 @@ int mutt_index_menu (void)
  	  }
  	}
  
@@ -2276,7 +2276,7 @@ index 55f37c8..e123c1e 100644
  	mutt_expand_path (buf, sizeof (buf));
  	if (mx_get_magic (buf) <= 0)
  	{
-@@ -1404,9 +1638,7 @@ int mutt_index_menu (void)
+@@ -1420,9 +1654,7 @@ int mutt_index_menu (void)
  	CurrentMenu = MENU_MAIN;
  	mutt_folder_hook (buf);
  
@@ -2287,7 +2287,7 @@ index 55f37c8..e123c1e 100644
  	{
  	  Labels = hash_create(131, 0);
  	  mutt_scan_labels(Context);
-@@ -1419,6 +1651,11 @@ int mutt_index_menu (void)
+@@ -1435,6 +1667,11 @@ int mutt_index_menu (void)
          mutt_sb_set_open_buffy ();
  #endif
  
@@ -2299,7 +2299,7 @@ index 55f37c8..e123c1e 100644
  	mutt_clear_error ();
  	mutt_buffy_check(1); /* force the buffy check after we have changed
  			      the folder */
-@@ -1487,6 +1724,7 @@ int mutt_index_menu (void)
+@@ -1503,6 +1740,7 @@ int mutt_index_menu (void)
  	CHECK_MSGCOUNT;
          CHECK_VISIBLE;
  	CHECK_READONLY;
@@ -2307,7 +2307,7 @@ index 55f37c8..e123c1e 100644
  
          if ((Sort & SORT_MASK) != SORT_THREADS)
  	  mutt_error _("Threading is not enabled.");
-@@ -1522,7 +1760,7 @@ int mutt_index_menu (void)
+@@ -1538,7 +1776,7 @@ int mutt_index_menu (void)
          CHECK_VISIBLE;
  	CHECK_READONLY;
          /* L10N: CHECK_ACL */
@@ -2316,7 +2316,7 @@ index 55f37c8..e123c1e 100644
  
          if ((Sort & SORT_MASK) != SORT_THREADS)
  	  mutt_error _("Threading is not enabled.");
-@@ -2159,6 +2397,20 @@ int mutt_index_menu (void)
+@@ -2175,6 +2413,20 @@ int mutt_index_menu (void)
  	}
  	break;
  
@@ -2337,7 +2337,7 @@ index 55f37c8..e123c1e 100644
        case OP_DISPLAY_ADDRESS:
  
  	CHECK_MSGCOUNT;
-@@ -2380,6 +2632,39 @@ int mutt_index_menu (void)
+@@ -2396,6 +2648,39 @@ int mutt_index_menu (void)
          menu->redraw = REDRAW_FULL;
          break;
  
@@ -2378,10 +2378,10 @@ index 55f37c8..e123c1e 100644
  
  	CHECK_ATTACH;
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index 6af2f25..bb72e2f 100644
+index a12ce98..d4a0259 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
-@@ -10889,6 +10889,519 @@ <sect1 id="nested-if">
+@@ -10895,6 +10895,497 @@ <sect1 id="nested-if">
    </sect2>
  </sect1>
  
@@ -2563,13 +2563,17 @@ index 6af2f25..bb72e2f 100644
 +  <sect2 id="nntp-functions">
 +    <title>Functions</title>
 +
++    <para>
++      NNTP adds the following functions to Mutt.
++      By default, none of them are bound to keys.
++    </para>
++
 +    <table id="table-nntp-functions">
 +      <title>NNTP Functions</title>
-+      <tgroup cols="4">
++      <tgroup cols="3">
 +        <thead>
 +          <row>
 +            <entry>Menus</entry>
-+            <entry>Default Key</entry>
 +            <entry>Function</entry>
 +            <entry>Description</entry>
 +          </row>
@@ -2577,157 +2581,131 @@ index 6af2f25..bb72e2f 100644
 +        <tbody>
 +          <row>
 +            <entry>browser,index</entry>
-+            <entry>y</entry>
 +            <entry><literal>&lt;catchup&gt;</literal></entry>
 +            <entry>mark all articles in newsgroup as read</entry>
 +          </row>
 +          <row>
 +            <entry>index,pager</entry>
-+            <entry>i</entry>
 +            <entry><literal>&lt;change-newsgroup&gt;</literal></entry>
 +            <entry>open a different newsgroup</entry>
 +          </row>
 +          <row>
 +            <entry>pager</entry>
-+            <entry>X</entry>
 +            <entry><literal>&lt;change-vfolder&gt;</literal></entry>
 +            <entry>open a different virtual folder</entry>
 +          </row>
 +          <row>
 +            <entry>compose</entry>
-+            <entry>o</entry>
 +            <entry><literal>&lt;edit-followup-to&gt;</literal></entry>
 +            <entry>edit the Followup-To field</entry>
 +          </row>
 +          <row>
 +            <entry>compose</entry>
-+            <entry>N</entry>
 +            <entry><literal>&lt;edit-newsgroups&gt;</literal></entry>
 +            <entry>edit the newsgroups list</entry>
 +          </row>
 +          <row>
 +            <entry>compose</entry>
-+            <entry>x</entry>
 +            <entry><literal>&lt;edit-x-comment-to&gt;</literal></entry>
 +            <entry>edit the X-Comment-To field</entry>
 +          </row>
 +          <row>
 +            <entry>pager</entry>
-+            <entry>+</entry>
 +            <entry><literal>&lt;entire-thread&gt;</literal></entry>
 +            <entry>read entire thread of the current message</entry>
 +          </row>
 +          <row>
 +            <entry>attachment,index,pager</entry>
-+            <entry>F</entry>
 +            <entry><literal>&lt;followup-message&gt;</literal></entry>
 +            <entry>followup to newsgroup</entry>
 +          </row>
 +          <row>
 +            <entry>pager</entry>
-+            <entry>`</entry>
 +            <entry><literal>&lt;modify-labels&gt;</literal></entry>
 +            <entry>modify (notmuch) tags</entry>
 +          </row>
 +          <row>
 +            <entry>index,pager</entry>
-+            <entry>P</entry>
 +            <entry><literal>&lt;post-message&gt;</literal></entry>
 +            <entry>post message to newsgroup</entry>
 +          </row>
 +          <row>
 +            <entry>browser</entry>
-+            <entry>g</entry>
 +            <entry><literal>&lt;reload-active&gt;</literal></entry>
 +            <entry>load list of all newsgroups from NNTP server</entry>
 +          </row>
 +          <row>
 +            <entry>browser</entry>
-+            <entry>s</entry>
 +            <entry><literal>&lt;subscribe&gt;</literal></entry>
 +            <entry>subscribe to current mbox (IMAP/NNTP only)</entry>
 +          </row>
 +          <row>
 +            <entry>browser</entry>
-+            <entry>S</entry>
 +            <entry><literal>&lt;subscribe-pattern&gt;</literal></entry>
 +            <entry>subscribe to newsgroups matching a pattern</entry>
 +          </row>
 +          <row>
 +            <entry>browser</entry>
-+            <entry>Y</entry>
 +            <entry><literal>&lt;uncatchup&gt;</literal></entry>
 +            <entry>mark all articles in newsgroup as unread</entry>
 +          </row>
 +          <row>
 +            <entry>browser</entry>
-+            <entry>u</entry>
 +            <entry><literal>&lt;unsubscribe&gt;</literal></entry>
 +            <entry>unsubscribe from current mbox (IMAP/NNTP only)</entry>
 +          </row>
 +          <row>
 +            <entry>browser</entry>
-+            <entry>U</entry>
 +            <entry><literal>&lt;unsubscribe-pattern&gt;</literal></entry>
 +            <entry>unsubscribe from newsgroups matching a pattern</entry>
 +          </row>
 +          <row>
 +            <entry>index,pager</entry>
-+            <entry>Alt-i</entry>
 +            <entry><literal>&lt;change-newsgroup-readonly&gt;</literal></entry>
 +            <entry>open a different newsgroup in read only mode</entry>
 +          </row>
 +          <row>
 +            <entry>attachment,index,pager</entry>
-+            <entry>Alt-F</entry>
 +            <entry><literal>&lt;forward-to-group&gt;</literal></entry>
 +            <entry>forward to newsgroup</entry>
 +          </row>
 +          <row>
 +            <entry>index</entry>
-+            <entry>(none)</entry>
 +            <entry><literal>&lt;get-children&gt;</literal></entry>
 +            <entry>get all children of the current message</entry>
 +          </row>
 +          <row>
 +            <entry>index</entry>
-+            <entry>Alt-G</entry>
 +            <entry><literal>&lt;get-parent&gt;</literal></entry>
 +            <entry>get parent of the current message</entry>
 +          </row>
 +          <row>
 +            <entry>index,pager</entry>
-+            <entry>(none)</entry>
 +            <entry><literal>&lt;imap-fetch-mail&gt;</literal></entry>
 +            <entry>force retrieval of mail from IMAP server</entry>
 +          </row>
 +          <row>
 +            <entry>index,pager</entry>
-+            <entry>(none)</entry>
 +            <entry><literal>&lt;imap-logout-all&gt;</literal></entry>
 +            <entry>logout from all IMAP servers</entry>
 +          </row>
 +          <row>
 +            <entry>pager</entry>
-+            <entry>(none)</entry>
 +            <entry><literal>&lt;modify-labels-then-hide&gt;</literal></entry>
 +            <entry>modify labeld and then hide message</entry>
 +          </row>
 +          <row>
 +            <entry>index</entry>
-+            <entry>(none)</entry>
 +            <entry><literal>&lt;reconstruct-thread&gt;</literal></entry>
 +            <entry>reconstruct thread containing current message</entry>
 +          </row>
 +          <row>
 +            <entry>pager</entry>
-+            <entry>Alt-X</entry>
 +            <entry><literal>&lt;vfolder-from-query&gt;</literal></entry>
 +            <entry>generate virtual folder from query</entry>
 +          </row>
 +          <row>
 +            <entry>index</entry>
-+            <entry>Ctrl-G</entry>
 +            <entry><literal>&lt;get-message&gt;</literal></entry>
 +            <entry>get message with Message-Id</entry>
 +          </row>
@@ -3105,7 +3083,7 @@ index 0000000..58a5d38
 +
 +" vim: syntax=vim
 diff --git a/functions.h b/functions.h
-index 73a43c1..dd1ac3e 100644
+index 8b426ca..d8a7f21 100644
 --- a/functions.h
 +++ b/functions.h
 @@ -88,6 +88,10 @@ const struct binding_t OpMain[] = { /* map: index */
@@ -3113,35 +3091,33 @@ index 73a43c1..dd1ac3e 100644
    { "change-folder",		OP_MAIN_CHANGE_FOLDER,		"c" },
    { "change-folder-readonly",	OP_MAIN_CHANGE_FOLDER_READONLY,	"\033c" },
 +#ifdef USE_NNTP
-+  { "change-newsgroup",		OP_MAIN_CHANGE_GROUP,		"i" },
-+  { "change-newsgroup-readonly",OP_MAIN_CHANGE_GROUP_READONLY,	"\033i" },
++  { "change-newsgroup",		OP_MAIN_CHANGE_GROUP,		NULL },
++  { "change-newsgroup-readonly",OP_MAIN_CHANGE_GROUP_READONLY,	NULL },
 +#endif
    { "next-unread-mailbox",	OP_MAIN_NEXT_UNREAD_MAILBOX,    NULL },
    { "collapse-thread",		OP_MAIN_COLLAPSE_THREAD,	"\033v" },
    { "collapse-all",		OP_MAIN_COLLAPSE_ALL,		"\033V" },
-@@ -102,7 +106,15 @@ const struct binding_t OpMain[] = { /* map: index */
-   { "edit-label",		OP_EDIT_LABEL,			"y" },
+@@ -102,6 +106,14 @@ const struct binding_t OpMain[] = { /* map: index */
+   { "edit-label",		OP_EDIT_LABEL,			NULL },
    { "edit-type",		OP_EDIT_TYPE,			"\005" },
    { "forward-message",		OP_FORWARD_MESSAGE,		"f" },
--  { "flag-message",		OP_FLAG_MESSAGE,		"F" },
 +#ifdef USE_NNTP
-+  { "forward-to-group",		OP_FORWARD_TO_GROUP,		"\033F" },
-+  { "followup-message",		OP_FOLLOWUP,			"F" },
++  { "forward-to-group",		OP_FORWARD_TO_GROUP,		NULL },
++  { "followup-message",		OP_FOLLOWUP,			NULL },
 +  { "get-children",		OP_GET_CHILDREN,		NULL },
-+  { "get-message",		OP_GET_MESSAGE,			"\007" },
-+  { "get-parent",		OP_GET_PARENT,			"\033G" },
++  { "get-message",		OP_GET_MESSAGE,			NULL },
++  { "get-parent",		OP_GET_PARENT,			NULL },
 +  { "reconstruct-thread",	OP_RECONSTRUCT_THREAD,		NULL },
 +#endif
-+  { "flag-message",		OP_FLAG_MESSAGE,		"\033f" },
+   { "flag-message",		OP_FLAG_MESSAGE,		"F" },
    { "group-reply",		OP_GROUP_REPLY,			"g" },
  #ifdef USE_POP
-   { "fetch-mail",		OP_MAIN_FETCH_MAIL,		"G" },
 @@ -131,6 +143,9 @@ const struct binding_t OpMain[] = { /* map: index */
    { "sort-mailbox",		OP_SORT,			"o" },
    { "sort-reverse",		OP_SORT_REVERSE,		"O" },
    { "print-message",		OP_PRINT,			"p" },
 +#ifdef USE_NNTP
-+  { "post-message",		OP_POST,			"P" },
++  { "post-message",		OP_POST,			NULL },
 +#endif
    { "previous-thread",		OP_MAIN_PREV_THREAD,		"\020" },
    { "previous-subthread",	OP_MAIN_PREV_SUBTHREAD,		"\033p" },
@@ -3150,73 +3126,52 @@ index 73a43c1..dd1ac3e 100644
    { "show-version",		OP_VERSION,			"V" },
    { "set-flag",			OP_MAIN_SET_FLAG,		"w" },
    { "clear-flag",		OP_MAIN_CLEAR_FLAG,		"W" },
-+  { "toggle-read",		OP_TOGGLE_READ,			"X" },
++  { "toggle-read",		OP_TOGGLE_READ,			NULL },
 +#ifdef USE_NNTP
-+  { "catchup",			OP_CATCHUP,			"y" },
++  { "catchup",			OP_CATCHUP,			NULL },
 +#endif
    { "display-message",		OP_DISPLAY_MESSAGE,		M_ENTER_S },
    { "buffy-list",		OP_BUFFY_LIST,			"." },
    { "sync-mailbox",		OP_MAIN_SYNC_FOLDER,		"$" },
-@@ -161,7 +180,7 @@ const struct binding_t OpMain[] = { /* map: index */
-   { "previous-new-then-unread",	OP_MAIN_PREV_NEW_THEN_UNREAD,	"\033\t" },
-   { "next-unread",		OP_MAIN_NEXT_UNREAD,		NULL },
-   { "previous-unread",		OP_MAIN_PREV_UNREAD,		NULL },
--  { "parent-message",		OP_MAIN_PARENT_MESSAGE,		"P" },
-+  { "parent-message",		OP_MAIN_PARENT_MESSAGE,		NULL },
- 
- 
-   { "extract-keys",		OP_EXTRACT_KEYS,		"\013" },
 @@ -192,6 +211,10 @@ const struct binding_t OpPager[] = { /* map: pager */
    { "bounce-message",	OP_BOUNCE_MESSAGE,		"b" },
    { "change-folder",	OP_MAIN_CHANGE_FOLDER,		"c" },
    { "change-folder-readonly",	OP_MAIN_CHANGE_FOLDER_READONLY,	"\033c" },
 +#ifdef USE_NNTP
-+  { "change-newsgroup",		OP_MAIN_CHANGE_GROUP,		"i" },
-+  { "change-newsgroup-readonly",OP_MAIN_CHANGE_GROUP_READONLY,	"\033i" },
++  { "change-newsgroup",		OP_MAIN_CHANGE_GROUP,		NULL },
++  { "change-newsgroup-readonly",OP_MAIN_CHANGE_GROUP_READONLY,	NULL },
 +#endif
    { "next-unread-mailbox",	OP_MAIN_NEXT_UNREAD_MAILBOX, NULL },
    { "copy-message",	OP_COPY_MESSAGE,		"C" },
    { "decode-copy",	OP_DECODE_COPY,			"\033C" },
-@@ -203,8 +226,12 @@ const struct binding_t OpPager[] = { /* map: pager */
+@@ -203,6 +226,10 @@ const struct binding_t OpPager[] = { /* map: pager */
    { "edit",		OP_EDIT_MESSAGE,		"e" },
-   { "edit-label",	OP_EDIT_LABEL,			"y" },
+   { "edit-label",	OP_EDIT_LABEL,			NULL },
    { "edit-type",	OP_EDIT_TYPE,			"\005" },
 +#ifdef USE_NNTP
-+  { "followup-message",	OP_FOLLOWUP,			"F" },
-+  { "forward-to-group",	OP_FORWARD_TO_GROUP,		"\033F" },
++  { "followup-message",	OP_FOLLOWUP,			NULL },
++  { "forward-to-group",	OP_FORWARD_TO_GROUP,		NULL },
 +#endif
    { "forward-message",	OP_FORWARD_MESSAGE,		"f" },
--  { "flag-message",	OP_FLAG_MESSAGE,		"F" },
-+  { "flag-message",	OP_FLAG_MESSAGE,		"\033f" },
+   { "flag-message",	OP_FLAG_MESSAGE,		"F" },
    { "group-reply",	OP_GROUP_REPLY,			"g" },
- #ifdef USE_IMAP
-   { "imap-fetch-mail",  OP_MAIN_IMAP_FETCH,		NULL },
 @@ -226,6 +253,9 @@ const struct binding_t OpPager[] = { /* map: pager */
    { "sort-mailbox",	OP_SORT,			"o" },
    { "sort-reverse",	OP_SORT_REVERSE,		"O" },
    { "print-message",	OP_PRINT,			"p" },
 +#ifdef USE_NNTP
-+  { "post-message",	OP_POST,			"P" },
++  { "post-message",	OP_POST,			NULL },
 +#endif
    { "previous-thread",	OP_MAIN_PREV_THREAD,		"\020" },
    { "previous-subthread",OP_MAIN_PREV_SUBTHREAD,	"\033p" },
    { "purge-message",	OP_PURGE_MESSAGE,		NULL },
-@@ -274,7 +304,7 @@ const struct binding_t OpPager[] = { /* map: pager */
-   { "half-down",	OP_HALF_DOWN,			NULL },
-   { "previous-line",	OP_PREV_LINE,			NULL },
-   { "bottom",		OP_PAGER_BOTTOM,		NULL },
--  { "parent-message",	OP_MAIN_PARENT_MESSAGE,		"P" },
-+  { "parent-message",	OP_MAIN_PARENT_MESSAGE,		NULL },
- 
- 
- 
 @@ -307,6 +337,10 @@ const struct binding_t OpAttach[] = { /* map: attachment */
    { "bounce-message",	OP_BOUNCE_MESSAGE,		"b" },
    { "display-toggle-weed",	OP_DISPLAY_HEADERS,	"h" },
    { "edit-type",	OP_EDIT_TYPE,			"\005" },
 +#ifdef USE_NNTP
-+  { "followup-message",	OP_FOLLOWUP,			"F" },
-+  { "forward-to-group",	OP_FORWARD_TO_GROUP,		"\033F" },
++  { "followup-message",	OP_FOLLOWUP,			NULL },
++  { "forward-to-group",	OP_FORWARD_TO_GROUP,		NULL },
 +#endif
    { "print-entry",	OP_PRINT,			"p" },
    { "save-entry",	OP_SAVE,			"s" },
@@ -3225,7 +3180,7 @@ index 73a43c1..dd1ac3e 100644
  const struct binding_t OpCompose[] = { /* map: compose */
    { "attach-file",	OP_COMPOSE_ATTACH_FILE,		"a" },
    { "attach-message",	OP_COMPOSE_ATTACH_MESSAGE,	"A" },
-+  { "attach-news-message",OP_COMPOSE_ATTACH_NEWS_MESSAGE,"\033a" },
++  { "attach-news-message",OP_COMPOSE_ATTACH_NEWS_MESSAGE,NULL },
    { "edit-bcc",		OP_COMPOSE_EDIT_BCC,		"b" },
    { "edit-cc",		OP_COMPOSE_EDIT_CC,		"c" },
    { "copy-file",	OP_SAVE,			"C" },
@@ -3234,9 +3189,9 @@ index 73a43c1..dd1ac3e 100644
    { "edit-mime",	OP_COMPOSE_EDIT_MIME,		"m" },
    { "new-mime",		OP_COMPOSE_NEW_MIME,		"n" },
 +#ifdef USE_NNTP
-+  { "edit-newsgroups",	OP_COMPOSE_EDIT_NEWSGROUPS,	"N" },
-+  { "edit-followup-to",	OP_COMPOSE_EDIT_FOLLOWUP_TO,	"o" },
-+  { "edit-x-comment-to",OP_COMPOSE_EDIT_X_COMMENT_TO,	"x" },
++  { "edit-newsgroups",	OP_COMPOSE_EDIT_NEWSGROUPS,	NULL },
++  { "edit-followup-to",	OP_COMPOSE_EDIT_FOLLOWUP_TO,	NULL },
++  { "edit-x-comment-to",OP_COMPOSE_EDIT_X_COMMENT_TO,	NULL },
 +#endif
    { "postpone-message",	OP_COMPOSE_POSTPONE_MESSAGE,	"P" },
    { "edit-reply-to",	OP_COMPOSE_EDIT_REPLY_TO,	"r" },
@@ -3246,11 +3201,11 @@ index 73a43c1..dd1ac3e 100644
    { "check-new",	OP_CHECK_NEW,		NULL },
    { "toggle-mailboxes", OP_TOGGLE_MAILBOXES, 	"\t" },
 +#ifdef USE_NNTP
-+  { "reload-active",	OP_LOAD_ACTIVE,		"g" },
-+  { "subscribe-pattern", OP_SUBSCRIBE_PATTERN,	"S" },
-+  { "unsubscribe-pattern", OP_UNSUBSCRIBE_PATTERN, "U" },
-+  { "catchup",		OP_CATCHUP,		"y" },
-+  { "uncatchup",	OP_UNCATCHUP,		"Y" },
++  { "reload-active",	OP_LOAD_ACTIVE,		NULL },
++  { "subscribe-pattern", OP_SUBSCRIBE_PATTERN,	NULL },
++  { "unsubscribe-pattern", OP_UNSUBSCRIBE_PATTERN, NULL },
++  { "catchup",		OP_CATCHUP,		NULL },
++  { "uncatchup",	OP_UNCATCHUP,		NULL },
 +#endif
    { "view-file",	OP_BROWSER_VIEW_FILE,	" " },
    { "buffy-list",	OP_BUFFY_LIST,		"." },
@@ -3485,7 +3440,7 @@ index 03822ad..c29107b 100644
      
        ch = ' ';
 diff --git a/headers.c b/headers.c
-index a7d1036..d1343ad 100644
+index 54550b7..1c9b3fd 100644
 --- a/headers.c
 +++ b/headers.c
 @@ -114,6 +114,9 @@ void mutt_edit_headers (const char *editor,
@@ -4311,10 +4266,10 @@ index 648f131..dceacc7 100644
  #ifdef USE_COMPRESSED
 diff --git a/newsrc.c b/newsrc.c
 new file mode 100644
-index 0000000..e0fbdce
+index 0000000..0d4fb74
 --- /dev/null
 +++ b/newsrc.c
-@@ -0,0 +1,1262 @@
+@@ -0,0 +1,1263 @@
 +/*
 + * Copyright (C) 1998 Brandon Long <blong@fiction.net>
 + * Copyright (C) 1999 Andrej Gritsenko <andrej@lucky.net>
@@ -4371,10 +4326,11 @@ index 0000000..e0fbdce
 +
 +  if (!nntp_data)
 +  {
++    int len = strlen (group) + 1;
 +    /* create NNTP_DATA structure and add it to hash */
-+    nntp_data = safe_calloc (1, sizeof (NNTP_DATA) + strlen (group) + 1);
++    nntp_data = safe_calloc (1, sizeof (NNTP_DATA) + len);
 +    nntp_data->group = (char *)nntp_data + sizeof (NNTP_DATA);
-+    strcpy (nntp_data->group, group);
++    strfcpy (nntp_data->group, group, len);
 +    nntp_data->nserv = nserv;
 +    nntp_data->deleted = 1;
 +    if (nserv->groups_hash->nelem < nserv->groups_hash->curnelem * 2)
@@ -4655,7 +4611,7 @@ index 0000000..e0fbdce
 +  while (1)
 +  {
 +    snprintf (tmpfile, sizeof (tmpfile), "%s.tmp", filename);
-+    fp = fopen (tmpfile, "w");
++    fp = safe_fopen (tmpfile, "w");
 +    if (!fp)
 +    {
 +      mutt_perror (tmpfile);
@@ -5579,10 +5535,10 @@ index 0000000..e0fbdce
 +}
 diff --git a/nntp.c b/nntp.c
 new file mode 100644
-index 0000000..9ec5ced
+index 0000000..6bc592b
 --- /dev/null
 +++ b/nntp.c
-@@ -0,0 +1,2434 @@
+@@ -0,0 +1,2435 @@
 +/*
 + * Copyright (C) 1998 Brandon Long <blong@fiction.net>
 + * Copyright (C) 1999 Andrej Gritsenko <andrej@lucky.net>
@@ -5874,8 +5830,9 @@ index 0000000..9ec5ced
 +	    off = colon + 1 - nserv->overview_fmt;
 +	  if (!strcasecmp (nserv->overview_fmt + b, "Bytes:"))
 +	  {
-+	    strcpy (nserv->overview_fmt + b, "Content-Length:");
-+	    off = b + strlen (nserv->overview_fmt + b);
++            int len = strlen (nserv->overview_fmt + b);
++	    strfcpy (nserv->overview_fmt + b, "Content-Length:", len + 1);
++	    off = b + len;
 +	  }
 +	  nserv->overview_fmt[off++] = '\0';
 +	  b = off;
@@ -8192,7 +8149,7 @@ index 0000000..2f37793
 +
 +#endif /* _NNTP_H_ */
 diff --git a/pager.c b/pager.c
-index 48c7bb6..1bd1620 100644
+index f0e062b..21dda91 100644
 --- a/pager.c
 +++ b/pager.c
 @@ -1088,6 +1088,11 @@ fill_buffer (FILE *f, LOFF_T *last_pos, LOFF_T offset, unsigned char **buf,
@@ -8319,7 +8276,7 @@ index 48c7bb6..1bd1620 100644
  	  ci_send_message (SENDFORWARD, NULL, NULL, extra->ctx, extra->hdr);
  	redraw = REDRAW_FULL;
 diff --git a/parse.c b/parse.c
-index b02a044..afee665 100644
+index a5077d3..b495ea0 100644
 --- a/parse.c
 +++ b/parse.c
 @@ -94,7 +94,7 @@ char *mutt_read_rfc822_line (FILE *f, char *line, size_t *linelen)
@@ -8476,7 +8433,7 @@ index fdeb172..7c62c96 100644
  
    return (PostCount);
 diff --git a/protos.h b/protos.h
-index 61686bc..9794760 100644
+index 6bb0515..38fce6b 100644
 --- a/protos.h
 +++ b/protos.h
 @@ -111,6 +111,7 @@ HASH *mutt_make_id_hash (CONTEXT *);

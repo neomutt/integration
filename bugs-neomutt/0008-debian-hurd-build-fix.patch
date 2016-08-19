@@ -1,7 +1,7 @@
-From e221975c63ece6d3141d6e19181931312aaf263c Mon Sep 17 00:00:00 2001
+From 47d10b19c40e284d27228f64c3daf87d6ff58844 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Sat, 19 Mar 2016 15:12:21 +0000
-Subject: [PATCH 07/10] debian: hurd build fix
+Subject: [PATCH 08/11] debian: hurd build fix
 
 Hurd is missing a definition for PATH_MAX.
 ---

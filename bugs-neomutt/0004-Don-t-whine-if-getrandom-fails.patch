@@ -1,0 +1,47 @@
+From a00dfb857d39d95cefb835c5927a1499482f05cd Mon Sep 17 00:00:00 2001
+From: Adam Borowski <kilobyte@angband.pl>
+Date: Sun, 7 Aug 2016 05:48:14 +0200
+Subject: [PATCH 04/11] Don't whine if getrandom() fails.
+
+Debian for example supports kernels down to 3.2, and getrandom() appeared
+only on 3.16 on x86 or later on other archs.  Current stable has only 3.16
+(ie, no getrandom() outside of x86), and ARM vendor kernels are for most
+machines even older.
+
+There is no security risk in falling back to /dev/urandom, as mutt quits
+if that fails instead of using unsecure randomness.
+
+This is a fix to commit "Bye srandom() and random()"
+---
+ muttlib.c | 10 ++--------
+ 1 file changed, 2 insertions(+), 8 deletions(-)
+
+diff --git a/muttlib.c b/muttlib.c
+index 5262a0d..f8e2537 100644
+--- a/muttlib.c
++++ b/muttlib.c
+@@ -803,19 +803,13 @@ void mutt_randbuf(void *out, size_t len)
+   }
+   /* XXX switch to HAVE_GETRANDOM and getrandom() in about 2017 */
+ #if defined(SYS_getrandom) && defined(__linux__)
+-  static int whined;
+   long ret;
+   do {
+     ret = syscall(SYS_getrandom, out, len, 0, 0, 0, 0);
+   } while ((ret == -1) && (errno == EINTR));
+   if (ret == len) return;
+-  if (!whined) {
+-    mutt_error (_("getrandom failed: %s"), strerror(errno));
+-    mutt_sleep (1);
+-    whined = 1;
+-  }
+-  /* let's try urandom in case user has configured selinux or something
+-   * to not allow getrandom */
++  /* let's try urandom in case we're on an old kernel, or the user has
++   * configured selinux, seccomp or something to not allow getrandom */
+ #endif
+   if (frandom == NULL) {
+     frandom = fopen("/dev/urandom", "rb");
+-- 
+2.7.4
+

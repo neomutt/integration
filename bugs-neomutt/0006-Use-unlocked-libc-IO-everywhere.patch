@@ -1,7 +1,7 @@
-From 1384385e3d6d7e5d4091eba0a45824fc271973b2 Mon Sep 17 00:00:00 2001
+From 5d91d82f522e524c06a24a4c866735d010fda7cf Mon Sep 17 00:00:00 2001
 From: David Wilson <dw@botanicus.net>
 Date: Tue, 22 Oct 2013 11:34:57 -0700
-Subject: [PATCH 05/10] Use unlocked libc IO everywhere.
+Subject: [PATCH 06/11] Use unlocked libc IO everywhere.
 
 Since mutt does not use threads, there is no reason it should use the
 locked variants of the FILE* IO functions. This checks if the unlocked

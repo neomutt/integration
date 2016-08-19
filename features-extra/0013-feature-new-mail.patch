@@ -1,4 +1,4 @@
-From 5b432112763442bd2ca9799662f0a0510ead0fe3 Mon Sep 17 00:00:00 2001
+From 57f67c8ce35cf85a55494501d28681364e9de3d4 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Yoshiki=20V=C3=A1zquez=20Baeza?= <yoshiki89@gmail.com>
 Date: Sat, 23 Apr 2016 13:33:50 -0700
 Subject: [PATCH 13/16] feature: new-mail
@@ -96,10 +96,10 @@ index 0000000..07dc80e
 +    * Richard Russon <rich@flatcap.org>
 +
 diff --git a/curs_main.c b/curs_main.c
-index 5631e8a..a8e1935 100644
+index 627b428..369f338 100644
 --- a/curs_main.c
 +++ b/curs_main.c
-@@ -793,6 +793,12 @@ int mutt_index_menu (void)
+@@ -809,6 +809,12 @@ int mutt_index_menu (void)
  	  mutt_message _("New mail in this mailbox.");
  	  if (option (OPTBEEPNEW))
  	    beep ();
@@ -112,7 +112,7 @@ index 5631e8a..a8e1935 100644
  	} else if (check == M_FLAGS)
  	  mutt_message _("Mailbox was externally modified.");
  
-@@ -819,6 +825,12 @@ int mutt_index_menu (void)
+@@ -835,6 +841,12 @@ int mutt_index_menu (void)
           menu->redraw |= REDRAW_STATUS;
           if (option (OPTBEEPNEW))
             beep();
@@ -126,7 +126,7 @@ index 5631e8a..a8e1935 100644
       }
       else
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index aff1f30..7d9c0c0 100644
+index ac9f1e8..b5e8b5c 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
 @@ -6824,7 +6824,10 @@ <sect2 id="new-mail-formats">
@@ -141,7 +141,7 @@ index aff1f30..7d9c0c0 100644
  </para>
  
  <para>
-@@ -10942,6 +10945,148 @@ <sect1 id="nested-if">
+@@ -10948,6 +10951,148 @@ <sect1 id="nested-if">
    </sect2>
  </sect1>
  

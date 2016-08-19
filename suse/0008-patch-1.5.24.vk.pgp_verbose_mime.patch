@@ -1,4 +1,4 @@
-From 1660aeb272715f3ae910d71648ccf750e43e6d93 Mon Sep 17 00:00:00 2001
+From 67ccf7ef98cfdb585e055529c40c9756815f577d Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 03:08:08 +0100
 Subject: [PATCH 08/12] patch-1.5.24.vk.pgp_verbose_mime

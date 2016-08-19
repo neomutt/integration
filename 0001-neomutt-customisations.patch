@@ -1,32 +1,36 @@
-From b70ea066e5576a7b3db0cc3e92cd33c07a9e8ff0 Mon Sep 17 00:00:00 2001
+From 5af46e5b43e31064af24ca8ec412e852109b3123 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 25 Mar 2016 18:30:01 +0000
 Subject: [PATCH] neomutt customisations
 
 ---
- .gitignore                |  55 ++++++++
- ChangeLog.neomutt         | 162 ++++++++++++++++++++++
+ .gitignore                |  56 ++++++++
+ ChangeLog.neomutt         | 186 ++++++++++++++++++++++++++
  GPL                       | 194 +++++++++++++--------------
- Makefile.am               |  32 ++---
+ Makefile.am               |  49 ++++---
  README                    |  28 ----
  README.mutt               |  28 ++++
  README.neomutt            |  94 +++++++++++++
  VERSION.neo               |   1 +
  configure.ac              | 139 +++++++++++--------
- contrib/Makefile.am       |   8 ++
+ contrib/Makefile.am       |  19 ++-
  contrib/keybase/README.md |   2 +-
- doc/Makefile.am           |  22 +--
- doc/manual.xml.head       |  89 ++++++++-----
+ doc/Makefile.am           |  28 ++--
+ doc/manual.xml.head       |  99 +++++++++-----
  doc/muttbug.man           | 200 ----------------------------
+ git-version-gen           | 226 +++++++++++++++++++++++++++++++
+ hdrline.c                 |   8 +-
  imap/command.c            |   7 +-
- init.c                    |  23 ++--
+ init.c                    | 101 ++++++++------
  mkchangelog.sh            |   5 -
  muttbug                   |   3 -
  muttbug.sh.in             | 332 ----------------------------------------------
+ muttlib.c                 |  40 ++++++
  patchlist.sh              |  18 +--
+ protos.h                  |   6 +
  version.c                 |  12 +-
  version.sh                |  61 +--------
- 22 files changed, 630 insertions(+), 885 deletions(-)
+ 26 files changed, 1017 insertions(+), 925 deletions(-)
  create mode 100644 .gitignore
  create mode 100644 ChangeLog.neomutt
  delete mode 100644 README
@@ -34,6 +38,7 @@ Subject: [PATCH] neomutt customisations
  create mode 100644 README.neomutt
  create mode 100644 VERSION.neo
  delete mode 100644 doc/muttbug.man
+ create mode 100755 git-version-gen
  delete mode 100755 mkchangelog.sh
  delete mode 100755 muttbug
  delete mode 100644 muttbug.sh.in
@@ -41,10 +46,10 @@ Subject: [PATCH] neomutt customisations
 
 diff --git a/.gitignore b/.gitignore
 new file mode 100644
-index 0000000..ecd16d1
+index 0000000..80d5ffc
 --- /dev/null
 +++ b/.gitignore
-@@ -0,0 +1,55 @@
+@@ -0,0 +1,56 @@
 +# Wildcard ignores
 +*.o
 +*.a
@@ -74,6 +79,7 @@ index 0000000..ecd16d1
 +
 +po/POTFILES
 +
++.version
 +aclocal.m4
 +compile
 +config.guess
@@ -102,10 +108,34 @@ index 0000000..ecd16d1
 +txt2c
 diff --git a/ChangeLog.neomutt b/ChangeLog.neomutt
 new file mode 100644
-index 0000000..b2b16f6
+index 0000000..c800ddc
 --- /dev/null
 +++ b/ChangeLog.neomutt
-@@ -0,0 +1,162 @@
+@@ -0,0 +1,186 @@
++2016-08-19  Richard Russon  <rich@flatcap.org>
++* Contrib
++  - Updates to Keybase Support
++    Joshua Jordi (JakkinStewart)
++* Bug Fixes
++  - Fix data-loss when appending a compressed file
++  - Don't paint invisible progress bars
++  - Revert to Mutt keybindings
++  - Don't de-tag emails after labelling them
++  - Don't whine if getrandom() fails
++    Adam Borowski (kilobyte)
++  - Fix display when 'from' field is invalid
++* Config
++  - Support for $XDG_CONFIG_HOME and $XDG_CONFIG_DIRS
++    Marco Hinz (mhinz)
++* Docs
++  - Fix DocBook validation
++  - Document NotMuch queries
++* Build
++  - More Autoconf improvements
++    Darshit Shah (darnir)
++  - Create Distribution Tarballs with autogen sources
++    Darshit Shah (darnir)
++
 +2016-08-08  Richard Russon  <rich@flatcap.org>
 +* New Features
 +  - Timeout Hook - Run a command periodically
@@ -652,10 +682,10 @@ index b6f92f3..0daa041 100644
 +library.  If this is what you want to do, use the GNU Lesser General
  Public License instead of this License.
 diff --git a/Makefile.am b/Makefile.am
-index cfdb258..8186e8f 100644
+index cfdb258..aa190b6 100644
 --- a/Makefile.am
 +++ b/Makefile.am
-@@ -10,9 +10,13 @@ IMAP_SUBDIR = imap
+@@ -10,15 +10,19 @@ IMAP_SUBDIR = imap
  IMAP_INCLUDES = -I$(top_srcdir)/imap
  endif
  
@@ -670,18 +700,52 @@ index cfdb258..8186e8f 100644
  
  if BUILD_HCACHE
  HCVERSION = hcversion.h
-@@ -72,8 +76,8 @@ EXTRA_DIST = COPYRIGHT GPL OPS OPS.PGP OPS.CRYPT OPS.SMIME TODO UPDATING \
+ endif
+ 
+-BUILT_SOURCES = keymap_defs.h patchlist.c reldate.h conststrings.c $(HCVERSION)
++BUILT_SOURCES = keymap_defs.h patchlist.c reldate.h conststrings.c hcachever.sh $(HCVERSION) $(top_srcdir)/.version
+ 
+ bin_PROGRAMS = mutt $(DOTLOCK_TARGET) $(PGPAUX_TARGET)
+ mutt_SOURCES = \
+@@ -61,21 +65,22 @@ EXTRA_mutt_SOURCES = account.c bcache.c compress.c crypt-gpgme.c crypt-mod-pgp-c
+ 	bcache.h browser.h hcache.h mbyte.h mutt_idna.h remailer.h url.h
+ 
+ EXTRA_DIST = COPYRIGHT GPL OPS OPS.PGP OPS.CRYPT OPS.SMIME TODO UPDATING \
+-	configure account.h \
++	account.h \
+ 	attach.h buffy.h charset.h compress.h copy.h crypthash.h dotlock.h functions.h gen_defs \
+ 	globals.h hash.h history.h init.h keymap.h mutt_crypt.h \
+ 	mailbox.h mapping.h md5.h mime.h mutt.h mutt_curses.h mutt_menu.h \
+ 	mutt_regex.h mutt_sasl.h mutt_socket.h mutt_ssl.h mutt_tunnel.h \
+ 	mx.h pager.h pgp.h pop.h protos.h rfc1524.h rfc2047.h \
+-	rfc2231.h rfc822.h rfc3676.h sha1.h sort.h mime.types VERSION prepare \
++	rfc2231.h rfc822.h rfc3676.h sha1.h sort.h mime.types VERSION \
+ 	nntp.h ChangeLog.nntp \
  	_regex.h OPS.MIX README.SECURITY remailer.c remailer.h browser.h \
  	mbyte.h lib.h extlib.c pgpewrap.c smime_keys.pl pgplib.h \
- 	README.SSL smime.h group.h \
+-	README.SSL smime.h group.h \
 -	muttbug pgppacket.h depcomp ascii.h BEWARE PATCHES patchlist.sh \
 -	ChangeLog mkchangelog.sh mutt_idna.h sidebar.h OPS.SIDEBAR \
-+	pgppacket.h depcomp ascii.h BEWARE PATCHES patchlist.sh \
-+	ChangeLog mutt_idna.h sidebar.h OPS.SIDEBAR \
++	README.SSL README.md README.neomutt smime.h group.h \
++	pgppacket.h depcomp ascii.h PATCHES patchlist.sh \
++	ChangeLog ChangeLog.neomutt mutt_idna.h sidebar.h OPS.SIDEBAR \
  	snprintf.c regex.c crypt-gpgme.h hcachever.sh.in sys_socket.h \
- 	txt2c.c txt2c.sh version.sh check_sec.sh version.h
+-	txt2c.c txt2c.sh version.sh check_sec.sh version.h
++	txt2c.c txt2c.sh version.sh version.h \
++	$(top_srcdir)/.version git-version-gen
  
-@@ -124,16 +128,12 @@ conststrings.c: txt2c config.status
+ EXTRA_SCRIPTS = smime_keys
+ 
+@@ -85,7 +90,7 @@ mutt_LDADD += $(NOTMUCH_LIBS)
+ endif
+ 
+ # kz
+-EXTRA_DIST += UPDATING.kz README.notmuch OPS.NOTMUCH
++EXTRA_DIST += UPDATING.kz OPS.NOTMUCH
+ 
+ 
+ 
+@@ -124,15 +129,17 @@ conststrings.c: txt2c config.status
  
  CLEANFILES = mutt_dotlock.c keymap_alldefs.h $(BUILT_SOURCES)
  
@@ -695,23 +759,27 @@ index cfdb258..8186e8f 100644
 -flea:	muttbug.sh
 -	cp muttbug.sh flea
 -	chmod +x flea
--
++$(top_srcdir)/.version:
++	echo $(VERSION) > $@-t && mv $@-t $@
++
++dist-hook:
++	echo $(VERSION) > $(distdir)/.tarball-version
+ 
  smime_keys: $(srcdir)/smime_keys.pl
  	cp $(srcdir)/smime_keys.pl smime_keys
- 	chmod +x smime_keys
-@@ -147,8 +147,9 @@ keymap_alldefs.h: $(srcdir)/OPS $(srcdir)/OPS.SIDEBAR $(srcdir)/OPS.NOTMUCH $(sr
+@@ -147,8 +154,9 @@ keymap_alldefs.h: $(srcdir)/OPS $(srcdir)/OPS.SIDEBAR $(srcdir)/OPS.NOTMUCH $(sr
  		$(srcdir)/OPS.MIX $(srcdir)/OPS.CRYPT $(srcdir)/OPS.SMIME \
  			> keymap_alldefs.h
  
 -reldate.h: $(srcdir)/ChangeLog
 -	echo 'const char *ReleaseDate = "'`head -n 1 $(srcdir)/ChangeLog | LC_ALL=C cut -d ' ' -f 1`'";' > reldate.h.tmp; \
-+reldate.h: $(top_srcdir)/ChangeLog.neomutt
++reldate.h:
 +	date=`head -n 1 $(top_srcdir)/ChangeLog.neomutt | LC_ALL=C cut -b 1-10` && \
 +	echo 'const char *ReleaseDate = "'$$date'";' > reldate.h.tmp; \
  	cmp -s reldate.h.tmp reldate.h || cp reldate.h.tmp reldate.h; \
  	rm reldate.h.tmp
  
-@@ -196,17 +197,6 @@ pclean:
+@@ -196,17 +204,6 @@ pclean:
  check-security:
  	(cd $(top_srcdir) && ./check_sec.sh)
  
@@ -905,7 +973,7 @@ index 0000000..9fcb455
 @@ -0,0 +1 @@
 +-neo
 diff --git a/configure.ac b/configure.ac
-index a97cfd8..3573d91 100644
+index a97cfd8..3e3f4f5 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -3,7 +3,10 @@ dnl Process this file with autoconf to produce a configure script.
@@ -916,7 +984,7 @@ index a97cfd8..3573d91 100644
 +CFLAGS=$CFLAGS
 +LDFLAGS=$LDFLAGS
 +
-+AC_INIT([NeoMutt], [m4_esyscmd(tr -d \\n <VERSION)], [https://github.com/neomutt/neomutt/issues], [mutt], [http://www.neomutt.org])
++AC_INIT([NeoMutt], m4_esyscmd(./git-version-gen --prefix "neomutt-" .tarball-version), [https://github.com/neomutt/neomutt/issues], [neomutt], [http://www.neomutt.org])
  AC_CONFIG_SRCDIR(mutt.h)
  AM_INIT_AUTOMAKE
  AC_CONFIG_HEADERS([config.h])
@@ -1232,24 +1300,36 @@ index a97cfd8..3573d91 100644
 +  Header Cache:      $hcache_db_used
 +])
 diff --git a/contrib/Makefile.am b/contrib/Makefile.am
-index 4abd2c7..b5aaa69 100644
+index 4abd2c7..45697bc 100644
 --- a/contrib/Makefile.am
 +++ b/contrib/Makefile.am
-@@ -13,6 +13,8 @@ EXTRA_DIST = language.txt language50.txt  \
+@@ -11,21 +11,36 @@ EXTRA_DIST = language.txt language50.txt  \
+ 	patch.slang-1.2.2.keypad.1	\
+ 	$(SAMPLES) \
  	iconv/README \
- 	iconv/make.sh
- 
-+CONTRIB_DIRS = vim-keybindings keybase
+-	iconv/make.sh
++	iconv/make.sh \
++	vim-keybindings \
++	keybase
 +
++CONTRIB_DIRS = vim-keybindings keybase
+ 
  install-data-local:
- 	$(MKDIR_P) $(DESTDIR)$(docdir)/samples $(DESTDIR)$(docdir)/samples/iconv
+-	$(MKDIR_P) $(DESTDIR)$(docdir)/samples $(DESTDIR)$(docdir)/samples/iconv
++	$(INSTALL) -d -m 755 $(DESTDIR)$(docdir)/samples $(DESTDIR)$(docdir)/samples/iconv
  	for f in $(SAMPLES) ; do \
-@@ -21,11 +23,17 @@ install-data-local:
+ 		$(INSTALL) -m 644 $(srcdir)/$$f $(DESTDIR)$(docdir)/samples ;	\
+ 	done
  	for f in $(srcdir)/iconv/*.rc ; do					\
  		$(INSTALL) -m 644 $$f $(DESTDIR)$(docdir)/samples/iconv	  ;	\
  	done
 +	for d in $(CONTRIB_DIRS); do						\
-+		cp -r $(srcdir)/$$d $(DESTDIR)$(docdir);			\
++		echo "Installing $$d" ;	\
++		$(INSTALL) -d -m 755 $(DESTDIR)$(docdir)/$$d ;\
++		for f in $(srcdir)/$$d/*; do	\
++			echo "Installing $$f" ;	\
++			$(INSTALL) -m 644 $$f $(DESTDIR)$(docdir)/$$d ; \
++		done \
 +	done
  
  uninstall-local:
@@ -1263,20 +1343,20 @@ index 4abd2c7..b5aaa69 100644
  	-rmdir $(DESTDIR)$(docdir)/samples
  	-rmdir $(DESTDIR)$(docdir)
 diff --git a/contrib/keybase/README.md b/contrib/keybase/README.md
-index c121cab..e2a53c6 100644
+index 6abb839..60f301b 100644
 --- a/contrib/keybase/README.md
 +++ b/contrib/keybase/README.md
 @@ -18,7 +18,7 @@ ## How to use KeybaseMutt
  
  Write an email. In the screen right before you send your email (called the pager mode), press "K".
  
--![](/pagerMode.png)
-+![](pagerMode.png)
+-![](/images/pagerMode.png)
++![](images/pagerMode.png)
  (Press 'K' when you're here)
  
  You can now use four Keybase commands in this "shell". (I thought it best to limit the user to four commands for security reasons. Running unusual commands would overwrite the email, forcing the user to rewrite the email again.)
 diff --git a/doc/Makefile.am b/doc/Makefile.am
-index 6021626..68bc384 100644
+index 6021626..606c0c7 100644
 --- a/doc/Makefile.am
 +++ b/doc/Makefile.am
 @@ -14,7 +14,6 @@ noinst_PROGRAMS = makedoc
@@ -1287,7 +1367,17 @@ index 6021626..68bc384 100644
  	mutt.man			\
  	pgpewrap.man			\
  	pgpring.man			\
-@@ -47,8 +46,15 @@ BUILT_DISTFILES = stamp-doc-xml stamp-doc-chunked manual.txt $(HTML_DOCFILES)
+@@ -37,8 +36,7 @@ EXTRA_DIST = dotlock.man		\
+ 
+ CHUNKED_DOCFILES = index.html intro.html gettingstarted.html \
+ 	configuration.html mimesupport.html advancedusage.html \
+-	optionalfeatures.html security.html tuning.html reference.html miscellany.html \
+-	compressed-folders.html
++	optionalfeatures.html security.html tuning.html reference.html miscellany.html
+ 
+ HTML_DOCFILES = manual.html $(CHUNKED_DOCFILES)
+ 
+@@ -47,8 +45,15 @@ BUILT_DISTFILES = stamp-doc-xml stamp-doc-chunked manual.txt $(HTML_DOCFILES)
  srcdir_DOCFILES = PGP-Notes.txt applying-patches.txt	\
  	devel-notes.txt patch-notes.txt smime-notes.txt
  
@@ -1305,7 +1395,7 @@ index 6021626..68bc384 100644
  
  all: makedoc-all
  
-@@ -62,8 +68,6 @@ install-data-local: makedoc-all instdoc
+@@ -62,17 +67,12 @@ install-data-local: makedoc-all instdoc
  	./instdoc smime_keys.1 $(DESTDIR)$(mandir)/man1/smime_keys.1
  	./instdoc pgpewrap.1 $(DESTDIR)$(mandir)/man1/pgpewrap.1
  	./instdoc pgpring.1 $(DESTDIR)$(mandir)/man1/pgpring.1
@@ -1314,7 +1404,16 @@ index 6021626..68bc384 100644
  	test x$(DOTLOCK_TARGET) = x || ./instdoc $(srcdir)/dotlock.man \
  		$(DESTDIR)$(mandir)/man1/mutt_dotlock.1
  	./instdoc muttrc.man $(DESTDIR)$(mandir)/man5/muttrc.5
-@@ -90,7 +94,7 @@ install-data-local: makedoc-all instdoc
+ 	./instdoc $(srcdir)/mbox.man $(DESTDIR)$(mandir)/man5/mbox.5
+ 	./instdoc $(srcdir)/mmdf.man $(DESTDIR)$(mandir)/man5/mmdf.5
+ 	$(MKDIR_P) $(DESTDIR)$(docdir)
+-	for f in $(topsrcdir_DOCFILES) ; do \
+-		$(INSTALL) -m 644 $(top_srcdir)/$$f $(DESTDIR)$(docdir) ; \
+-	done
+ 	for f in $(srcdir_DOCFILES) ; do \
+ 		$(INSTALL) -m 644 $(srcdir)/$$f $(DESTDIR)$(docdir) ; \
+ 	done
+@@ -90,7 +90,7 @@ install-data-local: makedoc-all instdoc
  	fi
  
  uninstall-local:
@@ -1323,24 +1422,24 @@ index 6021626..68bc384 100644
  		rm -f $(DESTDIR)$(mandir)/man1/$$f ; \
  	done
  	for f in muttrc.5 mbox.5 mmdf.5 ; do \
-@@ -190,9 +194,9 @@ smime_keys.1: $(srcdir)/smime_keys.man
+@@ -190,9 +190,9 @@ smime_keys.1: $(srcdir)/smime_keys.man
  
  stamp-doc-xml: makedoc$(EXEEXT) $(top_srcdir)/init.h \
                 manual.xml.head $(top_srcdir)/functions.h $(top_srcdir)/OPS* manual.xml.tail \
 -               $(srcdir)/gen-map-doc $(top_srcdir)/VERSION $(top_srcdir)/ChangeLog
 -	( date=`head -n 1 $(top_srcdir)/ChangeLog | LC_ALL=C cut -d ' ' -f 1` && \
 -	  sed -e "s/@VERSION\@/`cat $(top_srcdir)/VERSION` ($$date)/" $(srcdir)/manual.xml.head && \
-+               $(srcdir)/gen-map-doc $(top_srcdir)/VERSION $(top_srcdir)/ChangeLog.neomutt
++               $(srcdir)/gen-map-doc $(top_srcdir)/VERSION
 +	( date=`head -n 1 $(top_srcdir)/ChangeLog.neomutt | LC_ALL=C cut -b 1-10` && \
 +	  sed -e "s/@VERSION\@/`$(top_srcdir)/version.sh` ($$date)/" $(srcdir)/manual.xml.head && \
  	  $(MAKEDOC_CPP) $(top_srcdir)/init.h | ./makedoc$(EXEEXT) -s && \
  	  $(MAKEDOC_CPP) $(top_srcdir)/functions.h | \
  	    perl $(srcdir)/gen-map-doc $(srcdir)/manual.xml.tail $(top_srcdir)/OPS* \
 diff --git a/doc/manual.xml.head b/doc/manual.xml.head
-index 61b06ba..2fbe7fa 100644
+index 24e9d5a..b2ca48e 100644
 --- a/doc/manual.xml.head
 +++ b/doc/manual.xml.head
-@@ -2339,40 +2339,65 @@ <sect1 id="configuration-files">
+@@ -2339,38 +2339,73 @@ <sect1 id="configuration-files">
  <title>Location of Initialization Files</title>
  
  <para>
@@ -1378,8 +1477,8 @@ index 61b06ba..2fbe7fa 100644
 -<literal>show-version</literal> key (default: V) from the index menu.
 +  When Mutt starts up it looks for two configuration files -- a
 +  <quote>system</quote> file and a <quote>user</quote> file.
- </para>
- 
++</para>
++
 +<para>
 +  Mutt will search for a system config file in several places.  The filenames
 +  may depend on the version number of Mutt.  Mutt will read just one file, the
@@ -1398,6 +1497,7 @@ index 61b06ba..2fbe7fa 100644
 +      <row><entry>File Location</entry></row>
 +    </thead>
 +    <tbody>
++      <row><entry>$XDG_CONFIG_DIRS/neomutt/config</entry></row>
 +      <row><entry>/etc/NeoMuttrc</entry></row>
 +      <row><entry>/etc/Muttrc-1.6.2-neo</entry></row>
 +      <row><entry>/etc/Muttrc</entry></row>
@@ -1406,6 +1506,10 @@ index 61b06ba..2fbe7fa 100644
 +    </tbody>
 +  </tgroup>
 +</table>
++
++<para>
++  <emphasis>($XDG_CONFIG_DIRS defaults to "/etc/xdg".)</emphasis>
++</para>
 +
 +<para>
 +  Mutt will search for a user config file in several places in your home
@@ -1425,6 +1529,7 @@ index 61b06ba..2fbe7fa 100644
 +      <row><entry>File Location</entry></row>
 +    </thead>
 +    <tbody>
++      <row><entry>$XDG_CONFIG_HOME/neomutt/config</entry></row>
 +      <row><entry>~/.neomuttrc</entry></row>
 +      <row><entry>~/.mutt/neomuttrc</entry></row>
 +      <row><entry>~/.muttrc-1.6.2-neo</entry></row>
@@ -1435,9 +1540,11 @@ index 61b06ba..2fbe7fa 100644
 +  </tgroup>
 +</table>
 +
- </sect1>
++<para>
++  <emphasis>($XDG_CONFIG_HOME defaults to "$HOME/.config".)</emphasis>
+ </para>
  
- <sect1 id="muttrc-syntax" xreflabel="Syntax of Initialization Files">
+ </sect1>
 diff --git a/doc/muttbug.man b/doc/muttbug.man
 deleted file mode 100644
 index 6b71c99..0000000
@@ -1644,6 +1751,260 @@ index 6b71c99..0000000
 -.B flea
 -and this manual page were written by Thomas Roessler
 -<roessler@does-not-exist.org>.
+diff --git a/git-version-gen b/git-version-gen
+new file mode 100755
+index 0000000..bd2c4b6
+--- /dev/null
++++ b/git-version-gen
+@@ -0,0 +1,226 @@
++#!/bin/sh
++# Print a version string.
++scriptversion=2016-05-08.18; # UTC
++
++# Copyright (C) 2007-2016 Free Software Foundation, Inc.
++#
++# This program is free software: you can redistribute it and/or modify
++# it under the terms of the GNU General Public License as published by
++# the Free Software Foundation; either version 3 of the License, or
++# (at your option) any later version.
++#
++# This program is distributed in the hope that it will be useful,
++# but WITHOUT ANY WARRANTY; without even the implied warranty of
++# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++# GNU General Public License for more details.
++#
++# You should have received a copy of the GNU General Public License
++# along with this program.  If not, see <http://www.gnu.org/licenses/>.
++
++# This script is derived from GIT-VERSION-GEN from GIT: http://git.or.cz/.
++# It may be run two ways:
++# - from a git repository in which the "git describe" command below
++#   produces useful output (thus requiring at least one signed tag)
++# - from a non-git-repo directory containing a .tarball-version file, which
++#   presumes this script is invoked like "./git-version-gen .tarball-version".
++
++# In order to use intra-version strings in your project, you will need two
++# separate generated version string files:
++#
++# .tarball-version - present only in a distribution tarball, and not in
++#   a checked-out repository.  Created with contents that were learned at
++#   the last time autoconf was run, and used by git-version-gen.  Must not
++#   be present in either $(srcdir) or $(builddir) for git-version-gen to
++#   give accurate answers during normal development with a checked out tree,
++#   but must be present in a tarball when there is no version control system.
++#   Therefore, it cannot be used in any dependencies.  GNUmakefile has
++#   hooks to force a reconfigure at distribution time to get the value
++#   correct, without penalizing normal development with extra reconfigures.
++#
++# .version - present in a checked-out repository and in a distribution
++#   tarball.  Usable in dependencies, particularly for files that don't
++#   want to depend on config.h but do want to track version changes.
++#   Delete this file prior to any autoconf run where you want to rebuild
++#   files to pick up a version string change; and leave it stale to
++#   minimize rebuild time after unrelated changes to configure sources.
++#
++# As with any generated file in a VC'd directory, you should add
++# /.version to .gitignore, so that you don't accidentally commit it.
++# .tarball-version is never generated in a VC'd directory, so needn't
++# be listed there.
++#
++# Use the following line in your configure.ac, so that $(VERSION) will
++# automatically be up-to-date each time configure is run (and note that
++# since configure.ac no longer includes a version string, Makefile rules
++# should not depend on configure.ac for version updates).
++#
++# AC_INIT([GNU project],
++#         m4_esyscmd([build-aux/git-version-gen .tarball-version]),
++#         [bug-project@example])
++#
++# Then use the following lines in your Makefile.am, so that .version
++# will be present for dependencies, and so that .version and
++# .tarball-version will exist in distribution tarballs.
++#
++# EXTRA_DIST = $(top_srcdir)/.version
++# BUILT_SOURCES = $(top_srcdir)/.version
++# $(top_srcdir)/.version:
++#	echo $(VERSION) > $@-t && mv $@-t $@
++# dist-hook:
++#	echo $(VERSION) > $(distdir)/.tarball-version
++
++
++me=$0
++
++version="git-version-gen $scriptversion
++
++Copyright 2011 Free Software Foundation, Inc.
++There is NO warranty.  You may redistribute this software
++under the terms of the GNU General Public License.
++For more information about these matters, see the files named COPYING."
++
++usage="\
++Usage: $me [OPTION]... \$srcdir/.tarball-version [TAG-NORMALIZATION-SED-SCRIPT]
++Print a version string.
++
++Options:
++
++   --prefix PREFIX    prefix of git tags (default 'v')
++   --fallback VERSION
++                      fallback version to use if \"git --version\" fails
++
++   --help             display this help and exit
++   --version          output version information and exit
++
++Running without arguments will suffice in most cases."
++
++prefix=v
++fallback=
++
++while test $# -gt 0; do
++  case $1 in
++    --help) echo "$usage"; exit 0;;
++    --version) echo "$version"; exit 0;;
++    --prefix) shift; prefix=${1?};;
++    --fallback) shift; fallback=${1?};;
++    -*)
++      echo "$0: Unknown option '$1'." >&2
++      echo "$0: Try '--help' for more information." >&2
++      exit 1;;
++    *)
++      if test "x$tarball_version_file" = x; then
++        tarball_version_file="$1"
++      elif test "x$tag_sed_script" = x; then
++        tag_sed_script="$1"
++      else
++        echo "$0: extra non-option argument '$1'." >&2
++        exit 1
++      fi;;
++  esac
++  shift
++done
++
++if test "x$tarball_version_file" = x; then
++    echo "$usage"
++    exit 1
++fi
++
++tag_sed_script="${tag_sed_script:-s/x/x/}"
++
++nl='
++'
++
++# Avoid meddling by environment variable of the same name.
++v=
++v_from_git=
++
++# First see if there is a tarball-only version file.
++# then try "git describe", then default.
++if test -f $tarball_version_file
++then
++    v=`cat $tarball_version_file` || v=
++    case $v in
++        *$nl*) v= ;; # reject multi-line output
++        [0-9]*) ;;
++        *) v= ;;
++    esac
++    test "x$v" = x \
++        && echo "$0: WARNING: $tarball_version_file is missing or damaged" 1>&2
++fi
++
++if test "x$v" != x
++then
++    : # use $v
++# Otherwise, if there is at least one git commit involving the working
++# directory, and "git describe" output looks sensible, use that to
++# derive a version string.
++elif test "`git log -1 --pretty=format:x . 2>&1`" = x \
++    && v=`git describe --abbrev=4 --match="$prefix*" HEAD 2>/dev/null \
++          || git describe --abbrev=4 HEAD 2>/dev/null` \
++    && v=`printf '%s\n' "$v" | sed "$tag_sed_script"` \
++    && case $v in
++         $prefix[0-9]*) ;;
++         *) (exit 1) ;;
++       esac
++then
++    # Is this a new git that lists number of commits since the last
++    # tag or the previous older version that did not?
++    #   Newer: v6.10-77-g0f8faeb
++    #   Older: v6.10-g0f8faeb
++    case $v in
++        *-*-*) : git describe is okay three part flavor ;;
++        *-*)
++            : git describe is older two part flavor
++            # Recreate the number of commits and rewrite such that the
++            # result is the same as if we were using the newer version
++            # of git describe.
++            vtag=`echo "$v" | sed 's/-.*//'`
++            commit_list=`git rev-list "$vtag"..HEAD 2>/dev/null` \
++                || { commit_list=failed;
++                     echo "$0: WARNING: git rev-list failed" 1>&2; }
++            numcommits=`echo "$commit_list" | wc -l`
++            v=`echo "$v" | sed "s/\(.*\)-\(.*\)/\1-$numcommits-\2/"`;
++            test "$commit_list" = failed && v=UNKNOWN
++            ;;
++    esac
++
++    # Change the first '-' to a '.', so version-comparing tools work properly.
++    # Remove the "g" in git describe's output string, to save a byte.
++    v=`echo "$v" | sed 's/-/./;s/\(.*\)-g/\1-/'`;
++    v_from_git=1
++elif test "x$fallback" = x || git --version >/dev/null 2>&1; then
++    v=UNKNOWN
++else
++    v=$fallback
++fi
++
++v=`echo "$v" |sed "s/^$prefix//"`
++
++# Test whether to append the "-dirty" suffix only if the version
++# string we're using came from git.  I.e., skip the test if it's "UNKNOWN"
++# or if it came from .tarball-version.
++if test "x$v_from_git" != x; then
++  # Don't declare a version "dirty" merely because a time stamp has changed.
++  git update-index --refresh > /dev/null 2>&1
++
++  dirty=`exec 2>/dev/null;git diff-index --name-only HEAD` || dirty=
++  case "$dirty" in
++      '') ;;
++      *) # Append the suffix only if there isn't one already.
++          case $v in
++            *-dirty) ;;
++            *) v="$v-dirty" ;;
++          esac ;;
++  esac
++fi
++
++# Omit the trailing newline, so that m4_esyscmd can use the result directly.
++printf %s "$v"
++
++# Local variables:
++# eval: (add-hook 'write-file-hooks 'time-stamp)
++# time-stamp-start: "scriptversion="
++# time-stamp-format: "%:y-%02m-%02d.%02H"
++# time-stamp-time-zone: "UTC0"
++# time-stamp-end: "; # UTC"
++# End:
+diff --git a/hdrline.c b/hdrline.c
+index ccddd05..769cae3 100644
+--- a/hdrline.c
++++ b/hdrline.c
+@@ -316,14 +316,12 @@ hdr_format_str (char *dest,
+       /* fall through if 'A' returns nothing */
+ 
+     case 'a':
++      colorlen = add_index_color (dest, destlen, flags, MT_COLOR_INDEX_AUTHOR);
+       if(hdr->env->from && hdr->env->from->mailbox)
+-      {
+-        colorlen = add_index_color (dest, destlen, flags, MT_COLOR_INDEX_AUTHOR);
+         mutt_format_s (dest + colorlen, destlen - colorlen, prefix, mutt_addr_for_display (hdr->env->from));
+-        add_index_color (dest + colorlen, destlen - colorlen, flags, MT_COLOR_INDEX);
+-      }
+       else
+-        dest[0] = '\0';
++        mutt_format_s (dest + colorlen, destlen - colorlen, prefix, "");
++      add_index_color (dest + colorlen, destlen - colorlen, flags, MT_COLOR_INDEX);
+       break;
+ 
+     case 'B':
 diff --git a/imap/command.c b/imap/command.c
 index b5c896d..235e71a 100644
 --- a/imap/command.c
@@ -1678,13 +2039,16 @@ index b5c896d..235e71a 100644
  
  	if (inc->new)
 diff --git a/init.c b/init.c
-index b22e8e9..e7b0bce 100644
+index b22e8e9..37f1eae 100644
 --- a/init.c
 +++ b/init.c
-@@ -3407,22 +3407,13 @@ void mutt_init (int skip_sys_rc, LIST *commands)
-   
-   
-   
+@@ -3404,33 +3404,42 @@ void mutt_init (int skip_sys_rc, LIST *commands)
+    */
+   add_to_list(&MailtoAllow, "body");
+   add_to_list(&MailtoAllow, "subject");
+-  
+-  
+-  
 -  /*
 -   * 
 -   *			   BIG FAT WARNING
@@ -1698,28 +2062,106 @@ index b22e8e9..e7b0bce 100644
 -  
 -  
 -  
++
    if (!Muttrc)
    {
 -    snprintf (buffer, sizeof(buffer), "%s/.muttrc-%s", NONULL(Homedir), MUTT_VERSION);
-+    snprintf (buffer, sizeof(buffer), "%s/.neomuttrc", NONULL(Homedir));
-+    if (access(buffer, F_OK) == -1)
-+      snprintf (buffer, sizeof (buffer), "%s/.mutt/neomuttrc", NONULL(Homedir));
-+    if (access(buffer, F_OK) == -1)
-+      snprintf (buffer, sizeof(buffer), "%s/.muttrc-%s", NONULL(Homedir), MUTT_VERSION);
-     if (access(buffer, F_OK) == -1)
-       snprintf (buffer, sizeof(buffer), "%s/.muttrc", NONULL(Homedir));
-     if (access(buffer, F_OK) == -1)
-@@ -3449,7 +3440,9 @@ void mutt_init (int skip_sys_rc, LIST *commands)
+-    if (access(buffer, F_OK) == -1)
+-      snprintf (buffer, sizeof(buffer), "%s/.muttrc", NONULL(Homedir));
+-    if (access(buffer, F_OK) == -1)
+-      snprintf (buffer, sizeof (buffer), "%s/.mutt/muttrc-%s", NONULL(Homedir), MUTT_VERSION);
+-    if (access(buffer, F_OK) == -1)
+-      snprintf (buffer, sizeof (buffer), "%s/.mutt/muttrc", NONULL(Homedir));
+-    if (access(buffer, F_OK) == -1) /* default to .muttrc for alias_file */
+-      snprintf (buffer, sizeof(buffer), "%s/.muttrc", NONULL(Homedir));
++    do
++    {
++      if (mutt_set_xdg_path (kXDGConfigHome, buffer, sizeof buffer))
++        break;
++
++      snprintf (buffer, sizeof buffer, "%s/.neomuttrc", NONULL(Homedir));
++      if (access (buffer, F_OK) == 0)
++        break;
++
++      snprintf (buffer, sizeof buffer, "%s/.mutt/neomuttrc", NONULL(Homedir));
++      if (access (buffer, F_OK) == 0)
++        break;
++
++      snprintf (buffer, sizeof buffer, "%s/.muttrc-%s", NONULL(Homedir), MUTT_VERSION);
++      if (access (buffer, F_OK) == 0)
++        break;
++
++      snprintf (buffer, sizeof buffer, "%s/.muttrc", NONULL(Homedir));
++      if (access (buffer, F_OK) == 0)
++        break;
++
++      snprintf (buffer, sizeof buffer, "%s/.mutt/muttrc-%s", NONULL(Homedir), MUTT_VERSION);
++      if (access (buffer, F_OK) == 0)
++        break;
++
++      snprintf (buffer, sizeof buffer, "%s/.mutt/muttrc", NONULL(Homedir));
++      if (access (buffer, F_OK) == 0)
++        break;
++
++      /* default to .muttrc for alias_file */
++      snprintf (buffer, sizeof buffer, "%s/.muttrc", NONULL(Homedir));
++    }
++    while (0);
+ 
+     default_rc = 1;
+     Muttrc = safe_strdup (buffer);
+@@ -3449,22 +3458,38 @@ void mutt_init (int skip_sys_rc, LIST *commands)
       requested not to via "-n".  */
    if (!skip_sys_rc)
    {
 -    snprintf (buffer, sizeof(buffer), "%s/Muttrc-%s", SYSCONFDIR, MUTT_VERSION);
-+    snprintf (buffer, sizeof(buffer), "%s/NeoMuttrc", SYSCONFDIR);
-+    if (access (buffer, F_OK) == -1)
-+      snprintf (buffer, sizeof(buffer), "%s/Muttrc-%s", SYSCONFDIR, MUTT_VERSION);
-     if (access (buffer, F_OK) == -1)
-       snprintf (buffer, sizeof(buffer), "%s/Muttrc", SYSCONFDIR);
-     if (access (buffer, F_OK) == -1)
+-    if (access (buffer, F_OK) == -1)
+-      snprintf (buffer, sizeof(buffer), "%s/Muttrc", SYSCONFDIR);
+-    if (access (buffer, F_OK) == -1)
+-      snprintf (buffer, sizeof (buffer), "%s/Muttrc-%s", PKGDATADIR, MUTT_VERSION);
+-    if (access (buffer, F_OK) == -1)
+-      snprintf (buffer, sizeof (buffer), "%s/Muttrc", PKGDATADIR);
+-    if (access (buffer, F_OK) != -1)
++    do
+     {
+-      if (source_rc (buffer, &err) != 0)
++      if (mutt_set_xdg_path (kXDGConfigDirs, buffer, sizeof buffer))
++        break;
++
++      snprintf (buffer, sizeof buffer, "%s/NeoMuttrc", SYSCONFDIR);
++      if (access (buffer, F_OK) == 0)
++        break;
++
++      snprintf (buffer, sizeof buffer, "%s/Muttrc-%s", SYSCONFDIR, MUTT_VERSION);
++      if (access (buffer, F_OK) == 0)
++        break;
++
++      snprintf (buffer, sizeof buffer, "%s/Muttrc", SYSCONFDIR);
++      if (access (buffer, F_OK) == 0)
++        break;
++
++      snprintf (buffer, sizeof buffer, "%s/Muttrc-%s", PKGDATADIR, MUTT_VERSION);
++      if (access (buffer, F_OK) == 0)
++        break;
++
++      snprintf (buffer, sizeof buffer, "%s/Muttrc", PKGDATADIR);
++      if (access (buffer, F_OK) == 0)
+       {
+-	fputs (err.data, stderr);
+-	fputc ('\n', stderr);
+-	need_pause = 1;
++        if (source_rc (buffer, &err) != 0)
++        {
++          fputs (err.data, stderr);
++          fputc ('\n', stderr);
++          need_pause = 1;
++        }
+       }
+-    }
++    } while (0);
+   }
+ 
+   /* Read the user's initialization file.  */
 diff --git a/mkchangelog.sh b/mkchangelog.sh
 deleted file mode 100755
 index 2b610da..0000000
@@ -2078,6 +2520,61 @@ index b429fae..0000000
 -	esac
 -done
 -
+diff --git a/muttlib.c b/muttlib.c
+index f8e2537..fc6d165 100644
+--- a/muttlib.c
++++ b/muttlib.c
+@@ -53,6 +53,18 @@
+ #include <sys/types.h>
+ #include <utime.h>
+ 
++static const char *xdg_env_vars[] =
++{
++  [kXDGConfigHome] = "XDG_CONFIG_HOME",
++  [kXDGConfigDirs] = "XDG_CONFIG_DIRS",
++};
++
++static const char *xdg_defaults[] =
++{
++  [kXDGConfigHome] = "~/.config",
++  [kXDGConfigDirs] = "/etc/xdg",
++};
++
+ BODY *mutt_new_body (void)
+ {
+   BODY *p = (BODY *) safe_calloc (1, sizeof (BODY));
+@@ -2117,3 +2129,31 @@ void mutt_encode_path (char *dest, size_t dlen, const char *src)
+   strfcpy (dest, (rc == 0) ? NONULL(p) : NONULL(src), dlen);
+   FREE (&p);
+ }
++
++/*
++ * Process an XDG environment variable or its fallback.
++ *
++ * Return 1 if an entry was found that actually exists on disk and 0 otherwise.
++ */
++int mutt_set_xdg_path(const XDGType type, char *buf, size_t bufsize)
++{
++  char *xdg_env = getenv (xdg_env_vars[type]);
++  char *xdg     = (xdg_env && *xdg_env) ? safe_strdup (xdg_env) : safe_strdup (xdg_defaults[type]);
++  char *x       = xdg;  /* strsep() changes xdg, so free x instead later */
++  char *token   = NULL;
++
++  while ((token = strsep (&xdg, ":")))
++  {
++    if (snprintf (buf, bufsize, "%s/neomutt/config", token) < 0)
++      continue;
++    mutt_expand_path (buf, bufsize);
++    if (access (buf, F_OK) == 0)
++    {
++      FREE (&x);
++      return 1;
++    }
++  }
++
++  FREE (&x);
++  return 0;
++}
 diff --git a/patchlist.sh b/patchlist.sh
 index 2914b87..8565e09 100755
 --- a/patchlist.sh
@@ -2112,6 +2609,30 @@ index 2914b87..8565e09 100755
 +cat - | while read patch ; do
  	echo "  puts (\"${patch}\");"
  done
+ 
+diff --git a/protos.h b/protos.h
+index 5d54745..3f3f13b 100644
+--- a/protos.h
++++ b/protos.h
+@@ -37,6 +37,11 @@ struct hdr_format_info
+   const char *pager_progress;
+ };
+ 
++typedef enum {
++  kXDGConfigHome,  /* $XDG_CONFIG_HOME */
++  kXDGConfigDirs,  /* $XDG_CONFIG_DIRS */
++} XDGType;
++
+ void mutt_make_string_info (char *, size_t, const char *, struct hdr_format_info *, format_flag);
+ 
+ int mutt_extract_token (BUFFER *, BUFFER *, int);
+@@ -155,6 +160,7 @@ char *mutt_get_parameter (const char *, PARAMETER *);
+ LIST *mutt_crypt_hook (ADDRESS *);
+ char *mutt_make_date (char *, size_t);
+ void mutt_timeout_hook (void);
++int mutt_set_xdg_path(const XDGType type, char *buf, size_t bufsize);
+ 
+ const char *mutt_make_version (void);
  
 diff --git a/version.c b/version.c
 index 61c51ef..262f169 100644
