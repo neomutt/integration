@@ -1,4 +1,4 @@
-From 93be658a80ae9ba38843f896e84a8aa5d49b4107 Mon Sep 17 00:00:00 2001
+From 7a4a1263bc8ba73ebd4ebda407f300ac5f1dd7e3 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 6 May 2016 00:24:02 +0100
 Subject: [PATCH 14/19] misc/gpg.rc-paths

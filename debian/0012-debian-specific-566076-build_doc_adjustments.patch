@@ -1,4 +1,4 @@
-From 97f698e35a2bab22d65beac9c542998f0c4d8732 Mon Sep 17 00:00:00 2001
+From 4f27caa1b595d1a4d299befa6bb85979081661ec Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 6 May 2016 00:24:01 +0100
 Subject: [PATCH 12/19] debian-specific/566076-build_doc_adjustments

@@ -1,4 +1,4 @@
-From 069584f79a8580cb7c657578122a99444bb32e27 Mon Sep 17 00:00:00 2001
+From 598fbb78bcf48788e76ad90c542c9a4aced231d1 Mon Sep 17 00:00:00 2001
 From: Julius Plenz <plenz@cis.fu-berlin.de>
 Date: Sat, 30 Jan 2016 16:20:14 +0000
 Subject: [PATCH 07/16] feature: fmemopen

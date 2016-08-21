@@ -1,4 +1,4 @@
-From 54ff7b31fd512dfc0eb65ff7dab3a1d9a891e14b Mon Sep 17 00:00:00 2001
+From 793290206825afbcae37b46b010aab99f4eabed6 Mon Sep 17 00:00:00 2001
 From: Vsevolod Volkov <vvv@mutt.org.ua>
 Date: Thu, 7 Apr 2016 23:02:56 +0100
 Subject: [PATCH 10/16] feature: nntp

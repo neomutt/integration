@@ -1,4 +1,4 @@
-From 4845d41552598646879fb40485a59374132edbbc Mon Sep 17 00:00:00 2001
+From 9121ffac00155ddb88a25bde49b1750febe43fb0 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 6 May 2016 00:24:00 +0100
 Subject: [PATCH 11/19] debian-specific/467432-write_bcc

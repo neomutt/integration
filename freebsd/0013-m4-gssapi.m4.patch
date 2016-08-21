@@ -1,4 +1,4 @@
-From c4d5e276c1e07e1732cede734f307b17f176d3ab Mon Sep 17 00:00:00 2001
+From bf4cb1139d7237ab87f3488377e80beaccb71ba1 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 15:21:48 +0100
 Subject: [PATCH 13/21] m4-gssapi.m4

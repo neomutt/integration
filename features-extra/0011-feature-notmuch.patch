@@ -1,4 +1,4 @@
-From 5200985e115d6dd74dab525915cc61f44a8d3fa2 Mon Sep 17 00:00:00 2001
+From b9f1f6def31ad0f5434b9850fa5b93affc1f0eaf Mon Sep 17 00:00:00 2001
 From: Karel Zak <kzak@redhat.com>
 Date: Wed, 14 Dec 2011 11:58:47 +0100
 Subject: [PATCH 11/16] feature: notmuch

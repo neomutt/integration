@@ -1,4 +1,4 @@
-From 5809571ec3bf412ee21e779d228bf76d474adc1a Mon Sep 17 00:00:00 2001
+From f0d948d56b2a891fdf25cfd2bde0cbe6b22eb200 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Tue, 12 Jul 2016 17:30:30 +0100
 Subject: [PATCH 1/2] contrib: vim-keybindings

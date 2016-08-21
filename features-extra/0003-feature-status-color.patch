@@ -1,4 +1,4 @@
-From 0c716a65fed75e54ed151aba0330f9d91534de7e Mon Sep 17 00:00:00 2001
+From a8412a65e9467699d665df918b6b83466683e7f9 Mon Sep 17 00:00:00 2001
 From: David Sterba <dsterba@suse.cz>
 Date: Sat, 30 Jan 2016 16:53:57 +0000
 Subject: [PATCH 03/16] feature: status-color

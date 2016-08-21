@@ -1,4 +1,4 @@
-From 0783b335d53769cb91ff459d17dd7ba47ad5ba48 Mon Sep 17 00:00:00 2001
+From a2299a492aa27e8151345966f0dd4980e488d8aa Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 6 May 2016 00:24:03 +0100
 Subject: [PATCH 17/19] upstream/228671-pipe-mime

@@ -1,4 +1,4 @@
-From 846c28a1f2c08c01abca33e9f5c42ca86a9accdb Mon Sep 17 00:00:00 2001
+From 2150339cb1c67a46bd340f6333523ecda4644ac5 Mon Sep 17 00:00:00 2001
 From: Karel Zak <kzak@redhat.com>
 Date: Sat, 30 Jan 2016 16:27:19 +0000
 Subject: [PATCH 06/16] feature: quasi-delete

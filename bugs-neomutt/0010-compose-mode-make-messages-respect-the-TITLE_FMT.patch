@@ -1,4 +1,4 @@
-From b1c2fbfc8ca445f0b5db12b0257aed80455a599c Mon Sep 17 00:00:00 2001
+From 0e27006297e280f613380ccf3bde402b4fb0c98d Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Wed, 13 Apr 2016 21:42:34 +0100
 Subject: [PATCH 10/11] compose mode: make messages respect the TITLE_FMT

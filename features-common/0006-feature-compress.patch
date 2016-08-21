@@ -1,4 +1,4 @@
-From 7c9113f6c53dabc025dd73b522719d01d3a89427 Mon Sep 17 00:00:00 2001
+From e3d31e470d73ac17f060f864125377d037efe24a Mon Sep 17 00:00:00 2001
 From: Alain Penders <Alain@Finale-Dev.com>
 Date: Tue, 26 Jan 2016 18:31:05 +0000
 Subject: [PATCH 6/7] feature: compress

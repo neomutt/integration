@@ -1,4 +1,4 @@
-From 1cd7ae3bf3b2d9627728fadb0d72213211047392 Mon Sep 17 00:00:00 2001
+From 2d27409867827acdfc307a35173adea82d4e26ef Mon Sep 17 00:00:00 2001
 From: Phil Pennock <mutt-dev@spodhuis.demon.nl>
 Date: Sat, 30 Jan 2016 16:22:13 +0000
 Subject: [PATCH 05/16] feature: tls-sni
