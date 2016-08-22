@@ -18,7 +18,6 @@ The patchsets apply to the following distros:
 - Debian
 - Fedora
 - FreeBSD
-- Gentoo
 - OSX (Homebrew)
 - Suse
 
@@ -35,8 +34,6 @@ Each directory contains a set of patches which should be applied as a set.
 - features-extra/  -- Feature patches used by some distros
 - fedora/          -- Patches specific to Fedora
 - freebsd/         -- Patches specific to FreeBSD
-- gentoo-pre/      -- (Unstable) Mutt patches
-- gentoo/          -- Patches specific to Gentoo
 - suse/            -- Patches specific to Suse
 
 ## Features
@@ -117,16 +114,6 @@ The instructions, below, show the order in which they should be applied.
 - bugs-common/*
 - features-common/*
 - freebsd/*
-
-### Gentoo
-
-- bugs-common/*
-- features-common/*
-- features-extra/*
-- bugs-neomutt/*
-- neomutt-customisations.patch
-- gentoo-pre/*
-- gentoo/*
 
 ### Suse
 
