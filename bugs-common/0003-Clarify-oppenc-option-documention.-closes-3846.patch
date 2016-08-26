@@ -1,4 +1,4 @@
-From 6b9afd4c91881272ccc7f752f5564cc597e4f4f1 Mon Sep 17 00:00:00 2001
+From ddde994b760551573b4eb479b6b4a3f42dc13da3 Mon Sep 17 00:00:00 2001
 From: Kevin McCarthy <kevin@8t8.us>
 Date: Wed, 29 Jun 2016 12:25:34 -0700
 Subject: [PATCH 3/6] Clarify oppenc option documention. (closes #3846)

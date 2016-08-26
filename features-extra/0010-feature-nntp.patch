@@ -1,4 +1,4 @@
-From 793290206825afbcae37b46b010aab99f4eabed6 Mon Sep 17 00:00:00 2001
+From f690782064fabd84de836eeec96fbb5054452f69 Mon Sep 17 00:00:00 2001
 From: Vsevolod Volkov <vvv@mutt.org.ua>
 Date: Thu, 7 Apr 2016 23:02:56 +0100
 Subject: [PATCH 10/16] feature: nntp
@@ -8149,7 +8149,7 @@ index 0000000..2f37793
 +
 +#endif /* _NNTP_H_ */
 diff --git a/pager.c b/pager.c
-index f0e062b..21dda91 100644
+index a1afcaa..3616791 100644
 --- a/pager.c
 +++ b/pager.c
 @@ -1088,6 +1088,11 @@ fill_buffer (FILE *f, LOFF_T *last_pos, LOFF_T offset, unsigned char **buf,

@@ -1,4 +1,4 @@
-From a8412a65e9467699d665df918b6b83466683e7f9 Mon Sep 17 00:00:00 2001
+From b763a7d29574f0a827a4392e749da89ca06ce9ba Mon Sep 17 00:00:00 2001
 From: David Sterba <dsterba@suse.cz>
 Date: Sat, 30 Jan 2016 16:53:57 +0000
 Subject: [PATCH 03/16] feature: status-color
@@ -619,7 +619,7 @@ index 6f730a9..aa3a50b 100644
  
  void ci_init_color (void);
 diff --git a/pager.c b/pager.c
-index 226fe15..3f22d72 100644
+index 21af814..465af3d 100644
 --- a/pager.c
 +++ b/pager.c
 @@ -1841,13 +1841,13 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)

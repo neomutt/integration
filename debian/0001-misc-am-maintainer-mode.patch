@@ -1,4 +1,4 @@
-From 85d728d941f5437a8be9b5d6bfb72e1dfa4577df Mon Sep 17 00:00:00 2001
+From b48e7ec8b52cc271e2f49012635931c92416b19d Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 6 May 2016 00:23:44 +0100
 Subject: [PATCH 01/19] misc/am-maintainer-mode
@@ -8,7 +8,7 @@ Subject: [PATCH 01/19] misc/am-maintainer-mode
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/configure.ac b/configure.ac
-index 3e3f4f5..c84efce 100644
+index 935146c..8a8b2ea 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -10,7 +10,7 @@ AC_INIT([NeoMutt], m4_esyscmd(./git-version-gen --prefix "neomutt-" .tarball-ver

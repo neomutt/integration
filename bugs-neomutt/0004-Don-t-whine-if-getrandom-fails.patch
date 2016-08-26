@@ -1,4 +1,4 @@
-From 94133d2ecf095c580eb147722f86f32aa5aefa68 Mon Sep 17 00:00:00 2001
+From 2021d85ce687ae35124162f36564bd5d1ab953a3 Mon Sep 17 00:00:00 2001
 From: Adam Borowski <kilobyte@angband.pl>
 Date: Sun, 7 Aug 2016 05:48:14 +0200
 Subject: [PATCH 04/11] Don't whine if getrandom() fails.

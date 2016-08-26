@@ -1,4 +1,4 @@
-From 4e963446a36496d88e3168deb649a71b7feff00a Mon Sep 17 00:00:00 2001
+From ab7ece7e2f5d1bb4604679e63c33cb77a9ced706 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 03:01:54 +0100
 Subject: [PATCH 01/12] mutt-1.6.1
@@ -12,7 +12,7 @@ Subject: [PATCH 01/12] mutt-1.6.1
  5 files changed, 36 insertions(+), 2 deletions(-)
 
 diff --git a/configure.ac b/configure.ac
-index 3e3f4f5..3dae022 100644
+index 935146c..04b7b72 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -275,7 +275,7 @@ main ()

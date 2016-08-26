@@ -1,4 +1,4 @@
-From ab5c5e5d3db5b92194ebe92430409f51631c7716 Mon Sep 17 00:00:00 2001
+From b1e184fbdf697a6ec3b04a87718b38a5de0cd72a Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 27 May 2016 03:09:37 +0100
 Subject: [PATCH 11/12] mutt-1.5.21-mailcap

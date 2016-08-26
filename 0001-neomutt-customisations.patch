@@ -1,18 +1,18 @@
-From f50be0d47ec074975e1dc2d1315628367b3d40a3 Mon Sep 17 00:00:00 2001
+From 063e3de423493ac8a34fed08969466ce1f4ab87b Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 25 Mar 2016 18:30:01 +0000
 Subject: [PATCH] neomutt customisations
 
 ---
  .gitignore          |  56 +++++++++
- ChangeLog.neomutt   | 186 +++++++++++++++++++++++++++++
+ ChangeLog.neomutt   | 196 +++++++++++++++++++++++++++++++
  GPL                 | 194 +++++++++++++++---------------
  Makefile.am         |  49 ++++----
  README              |  28 -----
  README.mutt         |  28 +++++
  README.neomutt      |  94 +++++++++++++++
  VERSION.neo         |   1 +
- configure.ac        | 139 +++++++++++++---------
+ configure.ac        | 142 ++++++++++++----------
  contrib/Makefile.am |  19 ++-
  doc/Makefile.am     |  28 ++---
  doc/manual.xml.head |  99 +++++++++++-----
@@ -29,7 +29,7 @@ Subject: [PATCH] neomutt customisations
  protos.h            |   6 +
  version.c           |  12 +-
  version.sh          |  61 +---------
- 25 files changed, 1011 insertions(+), 919 deletions(-)
+ 25 files changed, 1023 insertions(+), 920 deletions(-)
  create mode 100644 .gitignore
  create mode 100644 ChangeLog.neomutt
  delete mode 100644 README
@@ -107,10 +107,20 @@ index 0000000..80d5ffc
 +txt2c
 diff --git a/ChangeLog.neomutt b/ChangeLog.neomutt
 new file mode 100644
-index 0000000..c800ddc
+index 0000000..b175c80
 --- /dev/null
 +++ b/ChangeLog.neomutt
-@@ -0,0 +1,186 @@
+@@ -0,0 +1,196 @@
++2016-08-26  Richard Russon  <rich@flatcap.org>
++* Build
++  - Disable fmemopen until bug is fixed
++* Contrib
++  - Keybase portability improvements
++    Joshua Jordi (JakkinStewart)
++* Bug Fixes
++  - Fix notmuch crash toggling virtual folders 
++  - Fix display of pager index when sidebar toggled
++
 +2016-08-21  Richard Russon  <rich@flatcap.org>
 +* Contrib
 +  - Updates to Keybase Support
@@ -972,7 +982,7 @@ index 0000000..9fcb455
 @@ -0,0 +1 @@
 +-neo
 diff --git a/configure.ac b/configure.ac
-index a97cfd8..3e3f4f5 100644
+index a97cfd8..935146c 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -3,7 +3,10 @@ dnl Process this file with autoconf to produce a configure script.
@@ -1272,7 +1282,17 @@ index a97cfd8..3e3f4f5 100644
  if test "$am_cv_func_iconv" != "yes"
  then
    AC_MSG_WARN([Configuring without iconv support. See INSTALL for details])
-@@ -1441,5 +1445,24 @@ fi
+@@ -1403,7 +1407,8 @@ fi
+ AC_CHECK_FUNCS(fmemopen open_memstream, [
+ 	AC_ARG_ENABLE(fmemopen, AS_HELP_STRING([--disable-fmemopen],[Do NOT use fmemopen]),
+ 	[],
+-	[AC_DEFINE(USE_FMEMOPEN, 1, [Use fmemopen])])
++	# Temporarily disable fmemopen, due to a bug
++	[AC_DEFINE(USE_FMEMOPEN, 0, [Use fmemopen])])
+ ])
+ 
+ dnl Documentation tools
+@@ -1441,5 +1446,24 @@ fi
  
  AC_CONFIG_FILES(Makefile contrib/Makefile doc/Makefile imap/Makefile
          intl/Makefile m4/Makefile po/Makefile.in

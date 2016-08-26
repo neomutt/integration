@@ -1,4 +1,4 @@
-From 3718ae61365c377d79262f577b317466cafc5818 Mon Sep 17 00:00:00 2001
+From 9e0f8517c8659b332816395db1e47dad7d638582 Mon Sep 17 00:00:00 2001
 From: Terry Chan <tchan@lunar-linux.org>
 Date: Mon, 16 Nov 2015 20:39:28 +0000
 Subject: [PATCH 7/7] feature: sidebar
@@ -3779,7 +3779,7 @@ index d926cf6..648f131 100644
  /* supported mailbox formats */
  enum
 diff --git a/pager.c b/pager.c
-index b9f72c2..e8b2b04 100644
+index b9f72c2..914839e 100644
 --- a/pager.c
 +++ b/pager.c
 @@ -29,6 +29,9 @@
@@ -3809,7 +3809,22 @@ index b9f72c2..e8b2b04 100644
    int helpoffset = LINES - 2;		/* offset for the help bar. */
    int bodylen = LINES - 2 - bodyoffset; /* length of displayable area */
  
-@@ -1726,6 +1730,9 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
+@@ -1696,6 +1700,14 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
+       }
+ #endif
+ 
++#ifdef USE_SIDEBAR
++      if ((redraw & REDRAW_FULL) || SidebarNeedsRedraw)
++      {
++        SidebarNeedsRedraw = 0;
++        mutt_sb_draw ();
++      }
++#endif
++
+       if (IsHeader (extra) && PagerIndexLines)
+       {
+ 	if (index == NULL)
+@@ -1726,6 +1738,9 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
        }
  
        redraw |= REDRAW_BODY | REDRAW_INDEX | REDRAW_STATUS;
@@ -3819,18 +3834,7 @@ index b9f72c2..e8b2b04 100644
        mutt_show_error ();
      }
  
-@@ -1744,10 +1751,18 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
- 	}
-     }
- 
-+#ifdef USE_SIDEBAR
-+    if ((redraw & REDRAW_SIDEBAR) || SidebarNeedsRedraw)
-+    {
-+      SidebarNeedsRedraw = 0;
-+      mutt_sb_draw ();
-+    }
-+#endif
-+
+@@ -1747,7 +1762,7 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
      if ((redraw & REDRAW_BODY) || topline != oldtopline)
      {
        do {

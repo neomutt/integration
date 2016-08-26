@@ -1,4 +1,4 @@
-From 07c3155a9696770385489314b094fd6824855e48 Mon Sep 17 00:00:00 2001
+From 1ca4aeabfc36950b72b8acde783145520f455030 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 6 May 2016 00:23:57 +0100
 Subject: [PATCH 03/19] features/compressed-folders.debian

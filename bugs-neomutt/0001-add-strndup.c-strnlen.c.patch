@@ -1,4 +1,4 @@
-From 8313653fe336d497244283d2ce2100bdd8211055 Mon Sep 17 00:00:00 2001
+From 46b1e8dfe03f536261b39a2099d5621de83ae81e Mon Sep 17 00:00:00 2001
 From: Karel Zak <kzak@redhat.com>
 Date: Thu, 6 Sep 2012 09:31:54 +0200
 Subject: [PATCH 01/11] add strndup.c strnlen.c

@@ -1,4 +1,4 @@
-From bbd6af7ffd5bef2ae4fa500d35450278af9596a3 Mon Sep 17 00:00:00 2001
+From 674d7df0a3f9dbd17732d0906b37d3aca6767d1e Mon Sep 17 00:00:00 2001
 From: Kevin McCarthy <kevin@8t8.us>
 Date: Wed, 29 Jun 2016 18:58:48 -0700
 Subject: [PATCH 4/6] Include ncurses tinfo library if found.

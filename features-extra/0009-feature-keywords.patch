@@ -1,4 +1,4 @@
-From 346d5007299545997f2d837b01f887d9041199f2 Mon Sep 17 00:00:00 2001
+From b2b148b80e383c8d423072e7597e80147a864e1d Mon Sep 17 00:00:00 2001
 From: David Champion <dgc@bikeshed.us>
 Date: Fri, 8 Apr 2016 01:01:50 +0100
 Subject: [PATCH 09/16] feature: keywords
@@ -1607,7 +1607,7 @@ index 1cd6342..b0aa8bf 100644
    {
      MOVE_ELEM(references);
 diff --git a/pager.c b/pager.c
-index 3f22d72..f0e062b 100644
+index 465af3d..a1afcaa 100644
 --- a/pager.c
 +++ b/pager.c
 @@ -2801,6 +2801,18 @@ search_next:

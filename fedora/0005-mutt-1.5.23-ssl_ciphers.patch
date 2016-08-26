@@ -1,4 +1,4 @@
-From c7fe20864518f535c312a9f3c896a8314dd2c3ea Mon Sep 17 00:00:00 2001
+From e1d17f171d1a685aebe587c9a24a0f638ed83fe4 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Sun, 29 May 2016 13:35:06 +0100
 Subject: [PATCH 5/5] mutt-1.5.23-ssl_ciphers

@@ -1,4 +1,4 @@
-From 343746e97f1ca4d6adac108f7fd664bbfa646095 Mon Sep 17 00:00:00 2001
+From da17437b4dcafe014de4120606129518f654d2c5 Mon Sep 17 00:00:00 2001
 From: Richard Russon <rich@flatcap.org>
 Date: Fri, 6 May 2016 00:23:57 +0100
 Subject: [PATCH 04/19] debian-specific/Muttrc

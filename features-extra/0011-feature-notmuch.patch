@@ -1,4 +1,4 @@
-From b9f1f6def31ad0f5434b9850fa5b93affc1f0eaf Mon Sep 17 00:00:00 2001
+From 1076b51defcc0e2596602e7bd06d10bac87cd8da Mon Sep 17 00:00:00 2001
 From: Karel Zak <kzak@redhat.com>
 Date: Wed, 14 Dec 2011 11:58:47 +0100
 Subject: [PATCH 11/16] feature: notmuch
@@ -46,14 +46,14 @@ Signed-off-by: Karel Zak <kzak@redhat.com>
  protos.h                |   15 +-
  send.c                  |   21 +-
  sendlib.c               |    5 +-
- sidebar.c               |   89 ++-
+ sidebar.c               |   90 ++-
  sidebar.h               |    1 +
  sort.h                  |    3 +-
  status.c                |   17 +-
  url.c                   |    5 +-
  url.h                   |    4 +
  version.c               |    5 +
- 48 files changed, 4747 insertions(+), 290 deletions(-)
+ 48 files changed, 4748 insertions(+), 290 deletions(-)
  create mode 100644 OPS.NOTMUCH
  create mode 100644 README.notmuch
  create mode 100644 UPDATING.kz
@@ -6333,7 +6333,7 @@ index bf86c4a..b661e71 100644
    mx_close_mailbox (&f, NULL);
  
 diff --git a/sidebar.c b/sidebar.c
-index 2dde381..f3eea5d 100644
+index 2dde381..1081f8a 100644
 --- a/sidebar.c
 +++ b/sidebar.c
 @@ -27,7 +27,9 @@
@@ -6457,7 +6457,7 @@ index 2dde381..f3eea5d 100644
    /* Any new/deleted mailboxes will cause a refresh.  As long as
     * they're valid, our pointers will be updated in prepare_sidebar() */
  
-@@ -1153,3 +1204,35 @@ void mutt_sb_notify_mailbox (BUFFY *b, int created)
+@@ -1153,3 +1204,36 @@ void mutt_sb_notify_mailbox (BUFFY *b, int created)
  
    SidebarNeedsRedraw = 1;
  }
@@ -6487,6 +6487,7 @@ index 2dde381..f3eea5d 100644
 +
 +	EntryCount = 0;
 +	FREE(&Entries);
++	EntryLen = 0;
 +	for (b = get_incoming(); b; b = b->next)
 +		mutt_sb_notify_mailbox (b, 1);
 +

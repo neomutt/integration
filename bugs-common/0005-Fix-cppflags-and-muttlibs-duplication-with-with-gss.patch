@@ -1,4 +1,4 @@
-From 50f2e10f8d828fbfec258cdbabf7cccafefb4f49 Mon Sep 17 00:00:00 2001
+From 82b035399aabdc6bcac39fa23b76dc13756beedb Mon Sep 17 00:00:00 2001
 From: Kevin McCarthy <kevin@8t8.us>
 Date: Wed, 29 Jun 2016 18:58:53 -0700
 Subject: [PATCH 5/6] Fix cppflags and muttlibs duplication with --with-gss.
